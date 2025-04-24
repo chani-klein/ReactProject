@@ -10,10 +10,7 @@ function App() {
   return (
     <div >
         {/* <GuessNumber/> */}
-       {/* <Calculator/> */}
-     {/* <TestCase/> */}
-     {/* <ToDoList/> */}
-    {/* <Clock/> */}
+
     {/* <App2/> */}
     <Keyboard/>
    </div>
