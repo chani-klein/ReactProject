@@ -1,0 +1,21 @@
+nav {
+    display: flex;
+    justify-content: center;
+    column-gap: 4px;
+}
+
+nav a {
+    display: flex;
+    justify-content: center;
+    color: gray;
+    padding: 6px;
+    border: solid gray;
+    border-radius: 6px;
+    text-decoration: none;
+}
+
+a.active {
+    color: red;
+    border: solid red;
+    font-style: italic;
+}
