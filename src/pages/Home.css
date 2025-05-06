@@ -1,0 +1,55 @@
+.home-container {
+    background-image: url('/public/images/ambulance.jpg.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    direction: rtl;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .overlay {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+  }
+  
+  .main-title {
+    font-size: 24px;
+    margin-bottom: 30px;
+    color: #000;
+    line-height: 1.6;
+  }
+  
+  .button-group {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .btn-register {
+    background-color: red;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    border-radius: 50px;
+    color: black;
+    cursor: pointer;
+  }
+  
+  .btn-volunteer {
+    background-color: red;
+    border: none;
+    padding: 15px 25px;
+    font-size: 18px;
+    border-radius: 50% 0 0 50%;
+    color: black;
+    cursor: pointer;
+  }
+  
