@@ -6,7 +6,7 @@
 // import { setAuth } from "../redux/auth/auth.slice"
 // import { RoleType } from "../types/user.types"
 
-// export const LoginPage = () => {
+// export const ge = () => {
 //     const navigate = useNavigate()
 //     const dispatch = useAppDispatch()
 
@@ -41,9 +41,9 @@
 //     </form>
 // }
 import React, { useState } from 'react';
-import './RegistrationForm.css'; // חיבור ל-CSS
+import '' ;
 
-export const LoginPage=()=> {
+export const ge=()=> {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
