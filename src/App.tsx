@@ -1,29 +1,19 @@
-// import { Provider } from "react-redux";
-// import store from "./redux/store";
-// import Router from "./routes/Router";
-// import InitializedAuth from "./auth/InitializedAuth";
-
-// function App() {
-//   return (
-//     <Provider store={store}>
-//       <InitializedAuth />
-//       <Router />
-//     </Provider>
-//   );
-// }
-
-import React from 'react';
-import { BrowserRouter as Router } from 'react-router';
-import AppRoutes from './routes/AppRoutes';
+import React from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import Home from './pages/Home'
+import Register from './pages/Register'
+import Emergency from './pages/Emergency'
 
 function App() {
   return (
     <Router>
-    <AppRoutes />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/emergency" element={<Emergency />} />
+      </Routes>
     </Router>
-  );
+  )
 }
 
-export default App;
-
-
+export default App
