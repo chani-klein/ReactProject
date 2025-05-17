@@ -1,5 +1,7 @@
+import "../style/registerVolunteer.css";
 import { useState } from "react";
 import { registerUser } from "../services/auth.service";
+
 export default function RegisterUserPage() {
   const [user, setUser] = useState({
     firstName: "",

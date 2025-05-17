@@ -1,12 +1,20 @@
-import { BrowserRouter, Routes, Route } from "react-router";
+import { BrowserRouter as Router, Routes, Route } from "react-router";
+import HomePage from "./pages/HomePage";
 import RegisterUserPage from "./pages/RegisterUserPage";
+import RegisterVolunteerPage from "./pages/RegisterVolunteerPage";
+// import RegisterVolunteerPage from "./pages/RegisterVolunteerPage"; // תכיני גם את זה
 
-export default function App() {
+function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <Routes>
-        <Route path="/" element={<RegisterUserPage />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/register-user" element={<RegisterUserPage />} />
+      <Route path="/register-volunteer" element={<RegisterVolunteerPage />} />
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 }
+
+export default App;
+

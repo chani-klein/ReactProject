@@ -1,0 +1,55 @@
+.home-container {
+  background-image: url("../../public/images/ambulance.jpg");
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+  direction: rtl;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.content {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 40px;
+  border-radius: 20px;
+  max-width: 600px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+}
+
+p {
+  font-size: 1.5em;
+  margin-bottom: 30px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.btn {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 1.2em;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn.outlined {
+  background-color: white;
+  color: red;
+  border: 2px solid red;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+}
