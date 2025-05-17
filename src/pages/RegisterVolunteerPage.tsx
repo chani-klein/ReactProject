@@ -11,7 +11,7 @@ export default function RegisterVolunteerPage() {
     specialization: "",
     address: "",
     city: "",
-     region: "",
+
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,7 +53,7 @@ export default function RegisterVolunteerPage() {
         <input name="specialization" placeholder="תחום (חובש/עזרה ראשונה...)" onChange={handleChange} />
         <input name="address" placeholder="כתובת" onChange={handleChange} />
         <input name="city" placeholder="עיר" onChange={handleChange} />
-        <input name="region" placeholder="איזור" onChange={handleChange} />
+    
 
         <button type="submit">שלח</button>
       </form>
