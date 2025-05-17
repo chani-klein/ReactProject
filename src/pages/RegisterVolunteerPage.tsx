@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { registerVolunteer } from "../services/volunteer.service";
-import "../style/registerVolunteer.css";
+import FormLayout from "../components/FormLayout"; // נשתמש בקומפוננטת העיצוב המשותפת
 
 export default function RegisterVolunteerPage() {
   const [volunteer, setVolunteer] = useState({
@@ -11,7 +11,6 @@ export default function RegisterVolunteerPage() {
     specialization: "",
     address: "",
     city: "",
-
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,20 +42,14 @@ export default function RegisterVolunteerPage() {
   };
 
   return (
-    <div className="form-container">
-      <form className="form" onSubmit={handleSubmit}>
-        <h2>טופס הרשמה למתנדבים</h2>
-        <input name="fullName" placeholder="שם מלא" onChange={handleChange} />
-        <input name="gmail" placeholder="אימייל" onChange={handleChange} />
-        <input name="password" type="password" placeholder="סיסמה" onChange={handleChange} />
-        <input name="phoneNumber" placeholder="טלפון" onChange={handleChange} />
-        <input name="specialization" placeholder="תחום (חובש/עזרה ראשונה...)" onChange={handleChange} />
-        <input name="address" placeholder="כתובת" onChange={handleChange} />
-        <input name="city" placeholder="עיר" onChange={handleChange} />
-    
-
-        <button type="submit">שלח</button>
-      </form>
-    </div>
+    <FormLayout title="טופס הרשמה למתנדבים" onSubmit={handleSubmit}>
+      <input name="fullName" placeholder="שם מלא" onChange={handleChange} />
+      <input name="gmail" placeholder="אימייל" onChange={handleChange} />
+      <input name="password" type="password" placeholder="סיסמה" onChange={handleChange} />
+      <input name="phoneNumber" placeholder="טלפון" onChange={handleChange} />
+      <input name="specialization" placeholder="תחום (חובש/עזרה ראשונה...)" onChange={handleChange} />
+      <input name="address" placeholder="כתובת" onChange={handleChange} />
+      <input name="city" placeholder="עיר" onChange={handleChange} />
+    </FormLayout>
   );
 }
