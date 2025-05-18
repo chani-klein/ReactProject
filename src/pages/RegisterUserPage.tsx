@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { registerUser } from "../services/auth.service";
 import FormLayout from "../components/FormLayout";
+import BackgroundLayout from "../layouts/BackgroundLayout"; // 👈 הוספה
 
 export default function RegisterUserPage() {
   const [user, setUser] = useState({
@@ -28,12 +29,14 @@ export default function RegisterUserPage() {
   };
 
   return (
-    <FormLayout title="טופס הרשמה למשתמשים" onSubmit={handleSubmit}>
-      <input name="firstName" placeholder="שם פרטי" onChange={handleChange} />
-      <input name="lastName" placeholder="שם משפחה" onChange={handleChange} />
-      <input name="phoneNumber" placeholder="טלפון" onChange={handleChange} />
-      <input name="gmail" placeholder="אימייל" onChange={handleChange} />
-      <input name="password" type="password" placeholder="סיסמה" onChange={handleChange} />
-    </FormLayout>
+    <BackgroundLayout>
+      <FormLayout title="טופס הרשמה למשתמשים" onSubmit={handleSubmit}>
+        <input name="firstName" placeholder="שם פרטי" onChange={handleChange} />
+        <input name="lastName" placeholder="שם משפחה" onChange={handleChange} />
+        <input name="phoneNumber" placeholder="טלפון" onChange={handleChange} />
+        <input name="gmail" placeholder="אימייל" onChange={handleChange} />
+        <input name="password" type="password" placeholder="סיסמה" onChange={handleChange} />
+      </FormLayout>
+    </BackgroundLayout>
   );
 }

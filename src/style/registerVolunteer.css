@@ -4,41 +4,51 @@
   align-items: center;
   direction: rtl;
   height: 100vh;
-  background: linear-gradient(to right, #f6f6f6, #e8f0ff);
+  background: url("/images/ambulance.jpg") center/cover no-repeat; /* רקע אחיד */
+  padding: 2rem;
 }
 
 .form {
-  background-color: white;
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+  background-color: rgba(255, 255, 255, 0.95); /* כמעט אטום */
+  padding: 2.5rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   width: 100%;
-  max-width: 500px;
+  max-width: 480px;
+  backdrop-filter: blur(6px);
 }
 
 .form h2 {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 1.5rem;
   color: #333;
+  font-size: 1.8rem;
 }
 
 .form input {
   width: 100%;
-  padding: 12px 15px;
-  margin-bottom: 15px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
   border: 1px solid #ccc;
-  border-radius: 10px;
+  border-radius: 0.8rem;
   font-size: 1rem;
+  background-color: #fafafa;
+  transition: border 0.3s;
+}
+
+.form input:focus {
+  border-color: #007bff;
+  outline: none;
 }
 
 .form button {
   width: 100%;
-  padding: 12px;
+  padding: 0.75rem;
   background-color: #d80000;
   color: white;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   border: none;
-  border-radius: 10px;
+  border-radius: 2rem;
   cursor: pointer;
   transition: 0.3s;
 }
