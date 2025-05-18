@@ -71,3 +71,18 @@ html, body {
 .content-wrapper button:hover {
   background-color: #b00000;
 }
+.emergency-btn {
+  background-color: #d80000;
+  color: white;
+  font-size: 1.5rem;
+  border: none;
+  border-radius: 100%;
+  width: 200px;
+  height: 200px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.emergency-btn:hover {
+  background-color: #b00000;
+}
