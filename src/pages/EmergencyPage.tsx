@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import BackgroundLayout from "../layouts/BackgroundLayout";
-import '../la'
+
 
 export default function EmergencyPage() {
   const navigate = useNavigate();

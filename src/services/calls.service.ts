@@ -10,3 +10,20 @@ export const createCall = (formData: FormData) => {
   });
 };
 
+
+// ✅ חדש: בקשה להוראות לפי תיאור
+export const getFirstAidSuggestions = (description: string) => {
+  return axios.post(`${API_BASE}/FirstAid/suggest`, JSON.stringify(description), {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};
+
+export const getFirstAidInstructions = (description: string) => {
+  return axios.post(`${API_BASE}/FirstAid/suggest`, JSON.stringify(description), {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};

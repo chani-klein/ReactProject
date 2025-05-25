@@ -4,6 +4,7 @@ import RegisterUserPage from "./pages/RegisterUserPage";
 import RegisterVolunteerPage from "./pages/RegisterVolunteerPage";
 import CreateCallPage from "./pages/CreateCallPage";
 import EmergencyPage from "./pages/EmergencyPage";
+
 // import RegisterVolunteerPage from "./pages/RegisterVolunteerPage"; // תכיני גם את זה
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
       <Route path="/register-volunteer" element={<RegisterVolunteerPage />} />
        <Route path="/create-call" element={<EmergencyPage />} />
         <Route path="/create-callPage" element={<CreateCallPage />} />
+      
       </Routes>
     </Router>
   );

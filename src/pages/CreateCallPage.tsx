@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BackgroundLayout from "../layouts/BackgroundLayout";
-import { createCall } from "../services/calls.service";
+import { createCall, getFirstAidInstructions } from "../services/calls.service";
 
 export default function CreateCallPage() {
   const navigate = useNavigate();
@@ -38,7 +38,6 @@ export default function CreateCallPage() {
     }
   };
 
-  // שליחה רגילה של טופס
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const data = new FormData();
@@ -52,13 +51,26 @@ export default function CreateCallPage() {
     try {
       await createCall(data);
       alert("הקריאה נשלחה");
+
+      // קבלת הוראות עזרה ראשונה לפי תיאור
+      if (formData.description) {
+        const response = await getFirstAidInstructions(formData.description);
+        const guides = response.data;
+
+        if (guides.length > 0) {
+          const instructionsText = guides.map((g: any) => `🩺 ${g.title}\n${g.description}`).join("\n\n");
+          alert("הוראות עזרה ראשונה:\n\n" + instructionsText);
+        } else {
+          alert("לא נמצאו הוראות מתאימות");
+        }
+      }
+
       navigate("/home");
     } catch (err) {
       alert("שגיאה בשליחה");
     }
   };
 
-  // לחצן SOS
   const handleSosClick = async () => {
     const data = new FormData();
     data.append("LocationX", formData.locationX);
