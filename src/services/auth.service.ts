@@ -1,7 +1,9 @@
-import axios from "axios";
-
-const API_BASE = "https://localhost:7219/api"; // כתובת ה-API שלך
+import axios from "./axios"; // זה הקובץ שמכיל את baseURL
 
 export const registerUser = (user: any) => {
-  return axios.post(`${API_BASE}/User`, user);
+  return axios.post("/User", user);
+};
+
+export const loginUser = (credentials: { gmail: string; password: string }) => {
+  return axios.post("/login", credentials);
 };

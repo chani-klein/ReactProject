@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { registerVolunteer } from "../services/volunteer.service";
 import FormLayout from "../components/FormLayout";
-import BackgroundLayout from "../layouts/BackgroundLayout"; // 👈 הוספה
+import BackgroundLayout from "../layouts/BackgroundLayout";
+import { useNavigate } from "react-router-dom";
+import { setSession } from "../services/auth.utils";
+import { Paths } from "../routes/paths";
 
 export default function RegisterVolunteerPage() {
+  const navigate = useNavigate();
+
   const [volunteer, setVolunteer] = useState({
     fullName: "",
     gmail: "",
@@ -29,8 +34,10 @@ export default function RegisterVolunteerPage() {
 
     try {
       const res = await registerVolunteer(volunteer);
-      console.log("ההרשמה הצליחה", res.data);
+      const { token } = res.data;
+      setSession(token);
       alert("נרשמת בהצלחה כמתנדב!");
+      navigate(`/${Paths.volunteerHome}`);
     } catch (err: any) {
       if (err.response) {
         console.error("שגיאת שרת:", err.response.data);

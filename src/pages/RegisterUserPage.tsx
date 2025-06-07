@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { registerUser } from "../services/auth.service";
 import FormLayout from "../components/FormLayout";
-import BackgroundLayout from "../layouts/BackgroundLayout"; // 👈 הוספה
+import BackgroundLayout from "../layouts/BackgroundLayout";
+import { useNavigate } from "react-router-dom";
+import { setSession } from "../services/auth.utils";
+import { Paths } from "../routes/paths";
 
 export default function RegisterUserPage() {
+  const navigate = useNavigate();
+
   const [user, setUser] = useState({
     firstName: "",
     lastName: "",
@@ -20,8 +25,17 @@ export default function RegisterUserPage() {
     e.preventDefault();
     try {
       const res = await registerUser(user);
-      console.log("נרשם בהצלחה", res.data);
-      alert("ההרשמה הצליחה!");
+      console.log("🔍 res.data =", res.data); // ✅ בדיקה של מה באמת חוזר מהשרת
+console.log("🔍 כל מה שמחזיר השרת:", res.data);
+
+      const { token } = res.data;
+      if (token) {
+        setSession(token);
+        alert("ההרשמה הצליחה!");
+        navigate(`/${Paths.userHome}`);
+      } else {
+        alert("❗לא התקבל טוקן מהשרת");
+      }
     } catch (err) {
       console.error(err);
       alert("שגיאה בהרשמה");
@@ -38,5 +52,6 @@ export default function RegisterUserPage() {
         <input name="password" type="password" placeholder="סיסמה" onChange={handleChange} />
       </FormLayout>
     </BackgroundLayout>
+    
   );
 }
