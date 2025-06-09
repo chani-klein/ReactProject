@@ -19,6 +19,9 @@ export const getFirstAidSuggestions = (description: string) => {
     },
   });
 };
+export const getCallStatus = async (callId: number) => {
+  return axios.get(`https://localhost:7219/api/Calls/status/${callId}`);
+};
 
 export const getFirstAidInstructions = (description: string) => {
   return axios.post(`${API_BASE}/FirstAid/suggest`, JSON.stringify(description), {

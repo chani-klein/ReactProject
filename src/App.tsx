@@ -7,6 +7,7 @@ import CreateCallPage from "./pages/CreateCallPage";
 import EmergencyPage from "./pages/EmergencyPage";
 import LoginPage from "./pages/LoginPage"; // ✅ דף התחברות
 import InitializedAuth from "./InitializedAuth"; // ✅ הפניה אוטומטית לפי טוקן
+import CallConfirmationPage from "./pages/CallConfirmationPage";
 
 function App() {
   return (
@@ -19,6 +20,8 @@ function App() {
         <Route path="/register-volunteer" element={<RegisterVolunteerPage />} />
         <Route path="/create-call" element={<EmergencyPage />} />
         <Route path="/create-call-page" element={<CreateCallPage />} />
+        <Route path="/call-confirmation" element={<CallConfirmationPage />} />
+
       </Routes>
     </Router>
   );

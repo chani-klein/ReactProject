@@ -15,7 +15,6 @@ export default function CreateCallPage() {
     fileImage: null as File | null,
   });
 
-  // קבלת מיקום GPS
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -25,7 +24,7 @@ export default function CreateCallPage() {
           locationY: pos.coords.longitude.toString(),
         }));
       },
-      () => alert("לא הצלחנו לאתר מיקום")
+      () => alert("⚠️ לא הצלחנו לאתר מיקום")
     );
   }, []);
 
@@ -50,74 +49,28 @@ export default function CreateCallPage() {
 
     try {
       await createCall(data);
-      alert("הקריאה נשלחה");
+      let guides = [];
 
-      // קבלת הוראות עזרה ראשונה לפי תיאור
       if (formData.description) {
         const response = await getFirstAidInstructions(formData.description);
-        const guides = response.data;
-
-        if (guides.length > 0) {
-          const instructionsText = guides.map((g: any) => `🩺 ${g.title}\n${g.description}`).join("\n\n");
-          alert("הוראות עזרה ראשונה:\n\n" + instructionsText);
-        } else {
-          alert("לא נמצאו הוראות מתאימות");
-        }
+        guides = response.data;
       }
 
-      navigate("/home");
+      navigate("/call-confirmation", { state: { guides } });
     } catch (err) {
-      alert("שגיאה בשליחה");
-    }
-  };
-
-  const handleSosClick = async () => {
-    const data = new FormData();
-    data.append("LocationX", formData.locationX);
-    data.append("LocationY", formData.locationY);
-    data.append("Status", "נפתח");
-
-    try {
-      await createCall(data);
-      alert("קריאת SOS נשלחה");
-      navigate("/home");
-    } catch (err) {
-      alert("שגיאה בשליחת SOS");
+      alert("❌ שגיאה בשליחה");
     }
   };
 
   return (
     <BackgroundLayout>
-      <div style={{ position: "relative", width: "100%" }}>
-        <form onSubmit={handleSubmit} className="form">
-          <h2>פתיחת קריאה</h2>
-          <input name="description" placeholder="תיאור (לא חובה)" onChange={handleChange} />
-          <input name="urgencyLevel" placeholder="רמת דחיפות (לא חובה)" onChange={handleChange} />
-          <input type="file" name="fileImage" onChange={handleChange} />
-          <button type="submit">שלח</button>
-        </form>
-
-        <button
-          onClick={handleSosClick}
-          type="button"
-          style={{
-            position: "absolute",
-            bottom: "-30px",
-            right: "0",
-            backgroundColor: "#d80000",
-            color: "white",
-            borderRadius: "50%",
-            border: "none",
-            width: "80px",
-            height: "80px",
-            fontSize: "1.2rem",
-            cursor: "pointer",
-            boxShadow: "0 0 15px rgba(0,0,0,0.3)",
-          }}
-        >
-          SOS
-        </button>
-      </div>
+      <form onSubmit={handleSubmit} className="form">
+        <h2>פתיחת קריאה</h2>
+        <input name="description" placeholder="תיאור (לא חובה)" onChange={handleChange} />
+        <input name="urgencyLevel" placeholder="רמת דחיפות (לא חובה)" onChange={handleChange} />
+        <input type="file" name="fileImage" onChange={handleChange} />
+        <button type="submit">שלח</button>
+      </form>
     </BackgroundLayout>
   );
 }
