@@ -2,24 +2,22 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden;
+  overflow-y: auto; /* ✨ שינוי כאן */
   font-family: 'Segoe UI', sans-serif;
 }
-
 .background-layout {
-  height: 100vh;
+  min-height: 100vh; /* ✨ שימי לב – min-height ולא height */
   width: 100vw;
   background-image: url("../../public/images/ambulance.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* ✨ אם רוצים שהתוכן יתחיל מלמעלה */
   justify-content: center;
   direction: rtl;
   padding: 2rem;
 }
-
 .content-wrapper {
   background: rgba(255, 255, 255, 0.95);
   padding: 3rem;
@@ -27,7 +25,7 @@ html, body {
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
   text-align: center;
   min-width: 350px;
-  max-width: 600px;
+  max-width: 900px; /* 👈 שינוי כאן */
   width: 100%;
 }
 

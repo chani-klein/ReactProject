@@ -8,3 +8,8 @@ export const registerVolunteer = (volunteer: any) => {
 export const getVolunteers = () => {
   return axios.get(`${API_BASE}/Volunteer`);
 }
+
+
+export const getAllVolunteers = async () => {
+  return await axios.get(`${API_BASE}/Volunteer`);
+};

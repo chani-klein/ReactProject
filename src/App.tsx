@@ -1,13 +1,14 @@
-// src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import RegisterUserPage from "./pages/RegisterUserPage";
 import RegisterVolunteerPage from "./pages/RegisterVolunteerPage";
 import CreateCallPage from "./pages/CreateCallPage";
 import EmergencyPage from "./pages/EmergencyPage";
-import LoginPage from "./pages/LoginPage"; // ✅ דף התחברות
-import InitializedAuth from "./InitializedAuth"; // ✅ הפניה אוטומטית לפי טוקן
+import LoginPage from "./pages/LoginPage";
+import InitializedAuth from "./InitializedAuth";
 import CallConfirmationPage from "./pages/CallConfirmationPage";
+import VolunteerListPage from "./pages/VolunteerListPage"; // דף רשימת מתנדבים
+ import VolunteerPage from "./pages/volunteerPage"; // דף התראות בזמן אמת
 
 function App() {
   return (
@@ -21,8 +22,8 @@ function App() {
         <Route path="/create-call" element={<EmergencyPage />} />
         <Route path="/create-call-page" element={<CreateCallPage />} />
         <Route path="/call-confirmation" element={<CallConfirmationPage />} />
-
-      </Routes>
+        <Route path="/volunteers" element={<VolunteerListPage />} />
+        <Route path="/volunteerPage" element={<VolunteerPage />} /></Routes>
     </Router>
   );
 }
