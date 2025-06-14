@@ -22,7 +22,7 @@ function App() {
         <Route path="/create-call" element={<EmergencyPage />} />
         <Route path="/create-call-page" element={<CreateCallPage />} />
         <Route path="/call-confirmation" element={<CallConfirmationPage />} />
-        <Route path="/volunteers" element={<VolunteerListPage />} />
+        <Route path="/VolunteerListPage" element={<VolunteerListPage />} />
         <Route path="/volunteerPage" element={<VolunteerPage />} /></Routes>
     </Router>
   );
