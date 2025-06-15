@@ -63,21 +63,7 @@ export default function CallConfirmationPage() {
           </>
         )}
 
-        <button
-          onClick={() => navigate("/home")}
-          style={{
-            marginTop: "2rem",
-            padding: "0.8rem 1.2rem",
-            backgroundColor: "#4caf50",
-            color: "white",
-            border: "none",
-            borderRadius: "1rem",
-            cursor: "pointer",
-            fontSize: "1rem",
-          }}
-        >
-          חזור למסך הבית
-        </button>
+        
       </div>
     </BackgroundLayout>
   );

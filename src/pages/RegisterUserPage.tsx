@@ -15,6 +15,7 @@ export default function RegisterUserPage() {
     phoneNumber: "",
     gmail: "",
     password: "",
+    Role:""
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,7 +26,9 @@ export default function RegisterUserPage() {
     e.preventDefault();
     try {
       const res = await registerUser(user);
-      console.log("🔍 res.data =", res.data); // ✅ בדיקה של מה באמת חוזר מהשרת
+      console.log("🔍 res.data =", res.data); 
+      console.log("🚀 נשלח לשרת:", user);
+// ✅ בדיקה של מה באמת חוזר מהשרת
 console.log("🔍 כל מה שמחזיר השרת:", res.data);
 
       const { token } = res.data;

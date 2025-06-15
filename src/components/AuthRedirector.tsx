@@ -1,36 +1,32 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getSession, isValidToken } from "../services/auth.utils";
-
-const getRoleFromToken = (token: string): string | null => {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-  } catch {
-    return null;
-  }
-};
+import { getSession, isValidToken, getRoleFromToken } from "../services/auth.utils";
+import HomePage from "../pages/HomePage";
 
 const AuthRedirector = () => {
   const navigate = useNavigate();
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     const token = getSession();
+
     if (token && isValidToken(token)) {
       const role = getRoleFromToken(token);
-
-      // ✅ הדפסת התפקיד לקונסול
-      console.log("🎭 תפקיד המשתמש הוא:", role);
-
       if (role === "User") {
         navigate("/create-call");
       } else if (role === "Volunteer") {
         navigate("/volunteerPage");
+      } else {
+        navigate("/auth/login");
       }
     }
+
+    setChecking(false);
   }, []);
 
-  return null;
+  if (checking) return null;
+
+  return <HomePage />;
 };
 
 export default AuthRedirector;

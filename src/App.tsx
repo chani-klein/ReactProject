@@ -1,4 +1,3 @@
-// src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
@@ -16,6 +15,7 @@ import HistoryPage from "./pages/VolunteerCallHistoryPage";
 import GlobalCallPopup from "./components/GlobalCallPopup";
 import VolunteerCallWatcher from "./components/VolunteerCallWatcher";
 import { CallProvider } from "./contexts/CallContext";
+import AuthRedirector from "./components/AuthRedirector"; // ✅ ההפניה האוטומטית לפי טוקן
 
 function App() {
   return (
@@ -25,12 +25,14 @@ function App() {
         <GlobalCallPopup />
 
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          {/* ✅ הפניה חכמה עם AuthRedirector */}
+          <Route path="/" element={<AuthRedirector />} />
+
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/register-user" element={<RegisterUserPage />} />
           <Route path="/register-volunteer" element={<RegisterVolunteerPage />} />
           <Route path="/create-call" element={<EmergencyPage />} />
-          <Route path="/create-call-page" element={<CreateCallPage />} />
+          <Route path="/CreateCallPage" element={<CreateCallPage />} />
           <Route path="/call-confirmation" element={<CallConfirmationPage />} />
           <Route path="/volunteerPage" element={<VolunteerPage />} />
           <Route path="/VolunteerListPage" element={<VolunteerListPage />} />
