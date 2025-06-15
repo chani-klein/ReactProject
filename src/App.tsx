@@ -1,30 +1,45 @@
+// src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
 import RegisterUserPage from "./pages/RegisterUserPage";
 import RegisterVolunteerPage from "./pages/RegisterVolunteerPage";
-import CreateCallPage from "./pages/CreateCallPage";
 import EmergencyPage from "./pages/EmergencyPage";
-import LoginPage from "./pages/LoginPage";
-import InitializedAuth from "./InitializedAuth";
+import CreateCallPage from "./pages/CreateCallPage";
 import CallConfirmationPage from "./pages/CallConfirmationPage";
-import VolunteerListPage from "./pages/VolunteerListPage"; // דף רשימת מתנדבים
- import VolunteerPage from "./pages/volunteerPage"; // דף התראות בזמן אמת
+import VolunteerPage from "./pages/volunteerPage";
+import VolunteerListPage from "./pages/VolunteerListPage";
+import VolunteerUpdatePage from "./pages/VolunteerUpdatePage";
+import ActiveCallsPage from "./pages/VolunteerActiveCallsPage";
+import HistoryPage from "./pages/VolunteerCallHistoryPage";
+
+import GlobalCallPopup from "./components/GlobalCallPopup";
+import VolunteerCallWatcher from "./components/VolunteerCallWatcher";
+import { CallProvider } from "./contexts/CallContext";
 
 function App() {
   return (
-    <Router>
-      <InitializedAuth />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/auth/login" element={<LoginPage />} />
-        <Route path="/register-user" element={<RegisterUserPage />} />
-        <Route path="/register-volunteer" element={<RegisterVolunteerPage />} />
-        <Route path="/create-call" element={<EmergencyPage />} />
-        <Route path="/create-call-page" element={<CreateCallPage />} />
-        <Route path="/call-confirmation" element={<CallConfirmationPage />} />
-        <Route path="/VolunteerListPage" element={<VolunteerListPage />} />
-        <Route path="/volunteerPage" element={<VolunteerPage />} /></Routes>
-    </Router>
+    <CallProvider>
+      <Router>
+        <VolunteerCallWatcher />
+        <GlobalCallPopup />
+
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/auth/login" element={<LoginPage />} />
+          <Route path="/register-user" element={<RegisterUserPage />} />
+          <Route path="/register-volunteer" element={<RegisterVolunteerPage />} />
+          <Route path="/create-call" element={<EmergencyPage />} />
+          <Route path="/create-call-page" element={<CreateCallPage />} />
+          <Route path="/call-confirmation" element={<CallConfirmationPage />} />
+          <Route path="/volunteerPage" element={<VolunteerPage />} />
+          <Route path="/VolunteerListPage" element={<VolunteerListPage />} />
+          <Route path="/volunteer/update-details" element={<VolunteerUpdatePage />} />
+          <Route path="/volunteer/active-calls" element={<ActiveCallsPage />} />
+          <Route path="/volunteer/history" element={<HistoryPage />} />
+        </Routes>
+      </Router>
+    </CallProvider>
   );
 }
 

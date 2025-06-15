@@ -30,3 +30,6 @@ export const getFirstAidInstructions = (description: string) => {
     },
   });
 };
+export const getAssignedCalls = async (volunteerId: number) => {
+  return axios.get(`${API_BASE}/Calls/assigned/${volunteerId}`);
+};

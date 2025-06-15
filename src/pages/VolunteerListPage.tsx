@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAllVolunteers } from "../services/volunteer.service";
+import { getVolunteers } from "../services/volunteer.service";
 import BackgroundLayout from "../layouts/BackgroundLayout";
 
 type Volunteer = {
@@ -18,7 +18,7 @@ export default function VolunteerListPage() {
   useEffect(() => {
     const fetchVolunteers = async () => {
       try {
-        const res = await getAllVolunteers();
+        const res = await getVolunteers();
         setVolunteers(res.data);
       } catch (err: any) {
         setError("שגיאה בטעינת מתנדבים");
