@@ -7,7 +7,7 @@ export default function EmergencyPage() {
 
   return (
     <BackgroundLayout>
-      <button className="emergency-btn" onClick={() => navigate("/create-callPage")}>
+      <button className="emergency-btn" onClick={() => navigate("/CreateCallPage")}>
         פתח קריאת חירום
       </button>
     </BackgroundLayout>
