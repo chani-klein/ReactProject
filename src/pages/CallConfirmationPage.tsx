@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
+import axios from "axios";
 import BackgroundLayout from "../layouts/BackgroundLayout";
 import { getCallStatus } from "../services/calls.service";
 
@@ -7,11 +8,13 @@ export default function CallConfirmationPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const guides = (location.state as any)?.guides || [];
   const callId = (location.state as any)?.callId;
+  const description = (location.state as any)?.description || "";
 
   const [status, setStatus] = useState("נשלחה");
+  const [guides, setGuides] = useState<{ title: string; description: string }[]>([]);
 
+  // סטטוס הקריאה כל 3 שניות
   useEffect(() => {
     if (!callId) return;
 
@@ -22,10 +25,29 @@ export default function CallConfirmationPage() {
       } catch (err) {
         console.error("שגיאה בקבלת סטטוס", err);
       }
-    }, 3000); // כל 3 שניות
+    }, 3000);
 
-    return () => clearInterval(interval); // ניקוי
+    return () => clearInterval(interval);
   }, [callId]);
+
+  // קריאה להוראות GPT
+  useEffect(() => {
+    const fetchGuideFromAI = async () => {
+      if (!description) return;
+
+      try {
+        const res = await axios.post("http://localhost:5000/api/firstaid/ai", description, {
+          headers: { "Content-Type": "application/json" },
+        });
+
+        setGuides([{ title: "הוראות עזרה ראשונה", description: res.data }]);
+      } catch (err) {
+        console.error("שגיאה בקבלת הוראות AI", err);
+      }
+    };
+
+    fetchGuideFromAI();
+  }, [description]);
 
   return (
     <BackgroundLayout>
@@ -44,7 +66,7 @@ export default function CallConfirmationPage() {
           <>
             <h3 style={{ color: "#d80000" }}>📋 הוראות עזרה ראשונה:</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              {guides.map((guide: any, index: number) => (
+              {guides.map((guide, index) => (
                 <div
                   key={index}
                   style={{
