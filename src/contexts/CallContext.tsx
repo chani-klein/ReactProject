@@ -14,5 +14,4 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
     </CallContext.Provider>
   );
 };
-
 export const useCallContext = () => useContext(CallContext);

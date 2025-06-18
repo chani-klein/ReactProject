@@ -17,6 +17,7 @@ export default function RegisterVolunteerPage() {
     specialization: "",
     address: "",
     city: "",
+     role: "Volunteer",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

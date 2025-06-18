@@ -12,7 +12,7 @@ import VolunteerUpdatePage from "./pages/VolunteerUpdatePage";
 import ActiveCallsPage from "./pages/VolunteerActiveCallsPage";
 import HistoryPage from "./pages/VolunteerCallHistoryPage";
 
-import GlobalCallPopup from "./components/GlobalCallPopup";
+
 import VolunteerCallWatcher from "./components/VolunteerCallWatcher";
 import { CallProvider } from "./contexts/CallContext";
 import AuthRedirector from "./components/AuthRedirector"; // ✅ ההפניה האוטומטית לפי טוקן
@@ -22,7 +22,7 @@ function App() {
     <CallProvider>
       <Router>
         <VolunteerCallWatcher />
-        <GlobalCallPopup />
+       
 
         <Routes>
           {/* ✅ הפניה חכמה עם AuthRedirector */}

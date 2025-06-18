@@ -1,4 +1,3 @@
-// src/hooks/useAssignedCallsWatcher.ts
 import { useEffect, useRef } from "react";
 import axios from "../services/axios";
 import { useCallContext } from "../contexts/CallContext";
@@ -18,13 +17,13 @@ export const useAssignedCallsWatcher = (volunteerId: number) => {
         for (const call of assignedCalls) {
           if (!seenCallsRef.current.has(call.id)) {
             seenCallsRef.current.add(call.id);
-            showCallPopup(call); // הקפצה
+            showCallPopup(call);
           }
         }
       } catch (err) {
-        console.error("📛 שגיאה בקבלת קריאות מוקצות:", err);
+        console.error("\u274C שגיאה בקבלת קריאות מוקצות:", err);
       }
-    }, 5000); // כל 5 שניות
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [volunteerId]);

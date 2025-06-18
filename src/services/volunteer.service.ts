@@ -28,8 +28,10 @@ export const deleteVolunteer = (id: number) => {
 };
 
 // שליפת קריאות קרובות (לפי מתנדב, כנראה לפי המיקום שלו)
-export const GetNearby = (locationX: number, locationY: number) => {
-  return axios.get("https://localhost:7219/api/Volunteer/nearby", {
+export const GetNearby = (locationX: number, locationY: number) => 
+   axios.get("https://localhost:7219/api/Volunteer/nearby", {
     params: { locationX, locationY },
   });
-};
+
+
+

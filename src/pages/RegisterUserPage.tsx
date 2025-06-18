@@ -35,9 +35,11 @@ console.log("🔍 כל מה שמחזיר השרת:", res.data);
       if (token) {
         setSession(token);
         alert("ההרשמה הצליחה!");
+        console.log(token.role)
         navigate(`/${Paths.userHome}`);
       } else {
         alert("❗לא התקבל טוקן מהשרת");
+        
       }
     } catch (err) {
       console.error(err);

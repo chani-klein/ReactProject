@@ -1,17 +1,9 @@
-// src/components/AlertModal.tsx
 import Modal from "react-modal";
 
 interface AlertModalProps {
   isOpen: boolean;
-  call: {
-    id: number;
-    description: string;
-    urgencyLevel: string;
-    locationDescription: string;
-    locationX: number;
-    locationY: number;
-  } | null;
-  address?: string | null; // ✅ כתובת אנושית שתעבור מההורה
+  call: any;
+  address: string | null;
   onAccept: () => void;
   onDecline: () => void;
   onClose: () => void;
@@ -28,7 +20,7 @@ export default function AlertModal({
   return (
     <Modal
       isOpen={isOpen}
-      contentLabel="קריאה חדשה"
+      onRequestClose={onClose}
       ariaHideApp={false}
       style={{
         content: {
@@ -45,16 +37,8 @@ export default function AlertModal({
         <>
           <h2>📢 קריאה חדשה באזור שלך!</h2>
           <p><strong>תיאור:</strong> {call.description}</p>
-          <p><strong>רמת דחיפות:</strong> {call.urgencyLevel}</p>
-          <p><strong>מיקום:</strong> {call.locationDescription || `${call.locationX}, ${call.locationY}`}</p>
-
-          {/* ✅ הצגת כתובת אנושית אם קיימת */}
-          {address && (
-          
-          <p style={{ marginTop: "1rem", fontWeight: "bold", color: "#333" }}>
-              🏠 <strong>כתובת:</strong> {address}
-            </p>
-          )}
+          <p><strong>דחיפות:</strong> {call.urgencyLevel}</p>
+          <p><strong>כתובת:</strong> {address || `${call.locationX}, ${call.locationY}`}</p>
 
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1.5rem" }}>
             <button onClick={onAccept} className="btn-confirm">אני בדרך</button>
