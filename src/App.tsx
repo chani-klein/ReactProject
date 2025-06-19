@@ -11,23 +11,24 @@ import VolunteerListPage from "./pages/VolunteerListPage";
 import VolunteerUpdatePage from "./pages/VolunteerUpdatePage";
 import ActiveCallsPage from "./pages/VolunteerActiveCallsPage";
 import HistoryPage from "./pages/VolunteerCallHistoryPage";
-
-
 import VolunteerCallWatcher from "./components/VolunteerCallWatcher";
+import  CallPopupModal  from "./components/CallPopupModal"; // יש לוודא שקיים
 import { CallProvider } from "./contexts/CallContext";
 import AuthRedirector from "./components/AuthRedirector"; // ✅ ההפניה האוטומטית לפי טוקן
-
+import VolunteerMenu from "./pages/volunteerPage"; // ודא שזה הנתיב הנכון
 function App() {
   return (
     <CallProvider>
+     
+      <CallPopupModal />
       <Router>
         <VolunteerCallWatcher />
        
+    <CallPopupModal />
 
         <Routes>
-          {/* ✅ הפניה חכמה עם AuthRedirector */}
+          
           <Route path="/" element={<AuthRedirector />} />
-
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/register-user" element={<RegisterUserPage />} />
           <Route path="/register-volunteer" element={<RegisterVolunteerPage />} />
@@ -39,6 +40,7 @@ function App() {
           <Route path="/volunteer/update-details" element={<VolunteerUpdatePage />} />
           <Route path="/volunteer/active-calls" element={<ActiveCallsPage />} />
           <Route path="/volunteer/history" element={<HistoryPage />} />
+          <Route path="/volunteer/menu" element={<VolunteerMenu />} />
         </Routes>
       </Router>
     </CallProvider>
@@ -46,3 +48,4 @@ function App() {
 }
 
 export default App;
+

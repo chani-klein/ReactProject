@@ -17,7 +17,7 @@ export default function RegisterVolunteerPage() {
     specialization: "",
     address: "",
     city: "",
-     role: "Volunteer",
+    role: "Volunteer",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,8 +35,13 @@ export default function RegisterVolunteerPage() {
 
     try {
       const res = await registerVolunteer(volunteer);
-      const { token } = res.data;
+      const { token, id } = res.data;
+
       setSession(token);
+      if (id) {
+        localStorage.setItem("volunteerId", id.toString());
+      }
+
       alert("נרשמת בהצלחה כמתנדב!");
       navigate(`/${Paths.volunteerHome}`);
     } catch (err: any) {

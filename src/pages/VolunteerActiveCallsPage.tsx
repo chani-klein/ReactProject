@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import AlertModal from "../components/AlertModal";
 import ActiveCallCard from "../components/ActiveCallCard";
 import BackgroundLayout from "../layouts/BackgroundLayout";
-import { GetNearby } from "../services/volunteer.service";
+import { getNearbyCalls } from "../services/volunteer.service";
 import axios from "../services/axios";
 
 export default function VolunteerActiveCallsPage() {
@@ -11,9 +11,13 @@ export default function VolunteerActiveCallsPage() {
   const [coords, setCoords] = useState<{ x: number; y: number } | null>(null);
   const [address, setAddress] = useState<string | null>(null);
 
+  // טיפול טוב יותר ב-volunteerId
+  const volunteerIdRaw = localStorage.getItem("volunteerId");
+  const volunteerId = volunteerIdRaw ? Number(volunteerIdRaw) : NaN;
+
   const fetchCalls = async () => {
     try {
-      const res = await axios.get("/Calls"); // ✅ תוקן
+      const res = await axios.get("/Calls");
       setActiveCalls(res.data);
     } catch (err) {
       console.error("שגיאה בטעינת קריאות:", err);
@@ -22,21 +26,22 @@ export default function VolunteerActiveCallsPage() {
   };
 
   const acceptCall = async () => {
-    if (!modalCall) return;
-    try {
-      await axios.put(`/Calls/${modalCall.id}/status`, { status: "בדרך" }); // ✅ תוקן
-      setActiveCalls((prev) => [...prev, modalCall]);
-      setModalCall(null);
-      setAddress(null);
-    } catch (err) {
-      console.error("שגיאה בעדכון סטטוס לקריאה 'בדרך':", err);
-    }
-  };
+  if (!modalCall) return;
+  try {
+    await axios.put(`/Calls/${modalCall.id}/status`, { status: "בדרך" });
+    setActiveCalls((prev) => [...prev, modalCall]); // הוסף את הקריאה רק כאן
+    setModalCall(null);
+    setAddress(null);
+  } catch (err) {
+    console.error("שגיאה בעדכון סטטוס לקריאה 'בדרך':", err);
+  }
+};
+
 
   const declineCall = async () => {
     if (!modalCall) return;
     try {
-      await axios.put(`/Calls/${modalCall.id}/status`, { status: "לא זמין" }); // ✅ תוקן
+      await axios.put(`/Calls/${modalCall.id}/status`, { status: "לא זמין" });
       setModalCall(null);
       setAddress(null);
     } catch (err) {
@@ -46,7 +51,7 @@ export default function VolunteerActiveCallsPage() {
 
   const updateStatus = async (id: number, status: string) => {
     try {
-      await axios.put(`/Calls/${id}/status`, { status }); // ✅ תוקן
+      await axios.put(`/Calls/${id}/status`, { status });
       fetchCalls();
     } catch (err) {
       console.error("שגיאה בעדכון סטטוס:", err);
@@ -79,28 +84,32 @@ export default function VolunteerActiveCallsPage() {
     );
   }, []);
 
-  useEffect(() => {
-    if (!coords) return;
+ useEffect(() => {
+  if (!coords || isNaN(volunteerId)) {
+    console.warn("⚠️ volunteerId לא תקין או שאין מיקום");
+    return;
+  }
 
-    const interval = setInterval(async () => {
-      try {
-        const res = await GetNearby(coords.x, coords.y);
-        if (res.data.length > 0) {
-          const newCall = res.data[0];
-          const alreadyExists = activeCalls.some((call) => call.id === newCall.id);
-          if (!alreadyExists) {
-            const addr = await reverseGeocode(newCall.locationX, newCall.locationY);
-            setAddress(addr);
-            setModalCall(newCall);
-          }
+  const interval = setInterval(async () => {
+    try {
+      const res = await getNearbyCalls(volunteerId);
+      if (res.data.length > 0) {
+        const newCall = res.data[0];
+        const alreadyExists = activeCalls.some((call) => call.id === newCall.id);
+        if (!alreadyExists) {
+          const addr = await reverseGeocode(newCall.locationX, newCall.locationY);
+          setAddress(addr);
+          setModalCall(newCall);
+          // אל תעשה setActiveCalls כאן!
         }
-      } catch (err) {
-        console.error("שגיאה ב-GetNearby:", err);
       }
-    }, 5000);
+    } catch (err) {
+      console.error("שגיאה ב-GetNearby:", err);
+    }
+  }, 5000);
 
-    return () => clearInterval(interval);
-  }, [coords, activeCalls]);
+  return () => clearInterval(interval);
+}, [coords, activeCalls, volunteerId]);
 
   return (
     <BackgroundLayout>
