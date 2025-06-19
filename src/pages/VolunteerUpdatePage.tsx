@@ -1,59 +1,56 @@
-// VolunteerUpdatePage.tsx
-
 import { useEffect, useState } from "react";
 import BackgroundLayout from "../layouts/BackgroundLayout";
-import { getSession } from "../services/auth.utils";
-import { getVolunteerById, updateVolunteer } from "../services/volunteer.service";
+import axios from "../services/axios";
+import { jwtDecode } from "jwt-decode";
 
-export default function VolunteerUpdatePage() {
+type TokenPayload = {
+  nameid: string;
+};
+
+function getVolunteerIdFromToken(): number | null {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  try {
+    const payload = jwtDecode<any>(token);
+    const id = payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+    return id ? parseInt(id) : null;
+  } catch (e) {
+    console.error("⚠️ שגיאה בפענוח ה-token:", e);
+    return null;
+  }
+}
+
+export default function UpdateVolunteerPage() {
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
     city: "",
-    address: "",
+    address: ""
   });
 
-  const [volunteerId, setVolunteerId] = useState<number | null>(null);
+  const volunteerId = getVolunteerIdFromToken();
 
   useEffect(() => {
-    const token = getSession();
-    if (!token) return;
+    if (!volunteerId) return;
 
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      const id = Number(payload["nameid"]);
-      setVolunteerId(id);
-    } catch (err) {
-      console.error("בעיה בפיענוח הטוקן", err);
-    }
-  }, []);
-
-  useEffect(() => {
-    const load = async () => {
-      if (!volunteerId) return;
-      try {
-        const res = await getVolunteerById(volunteerId);
-        setFormData(res.data);
-      } catch (err) {
-        console.error("שגיאה בטעינת מתנדב:", err);
-      }
-    };
-    load();
+    axios.get(`/Volunteer/${volunteerId}`)
+      .then(res => setFormData(res.data))
+      .catch(() => alert("❌ שגיאה בטעינת פרטים"));
   }, [volunteerId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!volunteerId) return;
     try {
-      await updateVolunteer(volunteerId, formData);
-      alert("✨ פרטים עודכנו בהצלחה");
-    } catch (err) {
-      alert("שגיאה בעדכון");
+      await axios.put(`/Volunteer/${volunteerId}`, formData);
+      alert("✅ נשמר בהצלחה");
+    } catch {
+      alert("❌ שגיאה בשמירה");
     }
   };
 
@@ -61,10 +58,10 @@ export default function VolunteerUpdatePage() {
     <BackgroundLayout>
       <h2>⚙ עדכון פרטים אישיים</h2>
       <form onSubmit={handleSubmit} className="form">
-        <input name="fullName" value={formData.fullName} onChange={handleChange} placeholder="שם מלא" />
-        <input name="phone" value={formData.phone} onChange={handleChange} placeholder="טלפון" />
-        <input name="city" value={formData.city} onChange={handleChange} placeholder="עיר" />
-        <input name="address" value={formData.address} onChange={handleChange} placeholder="כתובת" />
+        <input name="fullName" placeholder="שם מלא" value={formData.fullName} onChange={handleChange} />
+        <input name="phone" placeholder="טלפון" value={formData.phone} onChange={handleChange} />
+        <input name="city" placeholder="עיר" value={formData.city} onChange={handleChange} />
+        <input name="address" placeholder="כתובת" value={formData.address} onChange={handleChange} />
         <button type="submit">שמור</button>
       </form>
     </BackgroundLayout>

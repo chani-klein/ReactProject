@@ -6,9 +6,9 @@ import { createCall, getFirstAidInstructions } from "../services/calls.service";
 export default function CreateCallPage() {
   const navigate = useNavigate();
 
+  const [location, setLocation] = useState<{ x: string; y: string } | null>(null);
+
   const [formData, setFormData] = useState({
-    locationX: "",
-    locationY: "",
     description: "",
     urgencyLevel: "",
     status: "נפתח",
@@ -17,13 +17,11 @@ export default function CreateCallPage() {
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setFormData((prev) => ({
-          ...prev,
-          locationX: pos.coords.latitude.toString(),
-          locationY: pos.coords.longitude.toString(),
-        }));
-      },
+      (pos) =>
+        setLocation({
+          x: pos.coords.latitude.toString(),
+          y: pos.coords.longitude.toString(),
+        }),
       () => alert("⚠️ לא הצלחנו לאתר מיקום")
     );
   }, []);
@@ -39,9 +37,15 @@ export default function CreateCallPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!location) {
+      alert("אין מיקום זמין עדיין");
+      return;
+    }
+
     const data = new FormData();
-    data.append("LocationX", formData.locationX);
-    data.append("LocationY", formData.locationY);
+    data.append("LocationX", location.x);
+    data.append("LocationY", location.y);
     data.append("Status", formData.status);
     if (formData.description) data.append("Description", formData.description);
     if (formData.urgencyLevel) data.append("UrgencyLevel", formData.urgencyLevel);
@@ -49,27 +53,59 @@ export default function CreateCallPage() {
 
     try {
       await createCall(data);
-      let guides = [];
 
+      let guides = [];
       if (formData.description) {
         const response = await getFirstAidInstructions(formData.description);
         guides = response.data;
       }
 
       navigate("/call-confirmation", { state: { guides } });
-    } catch (err) {
+    } catch {
       alert("❌ שגיאה בשליחה");
+    }
+  };
+
+  const sendSosCall = async () => {
+    if (!location) {
+      alert("אין מיקום זמין עדיין");
+      return;
+    }
+
+    const data = new FormData();
+    data.append("LocationX", location.x);
+    data.append("LocationY", location.y);
+    data.append("Status", "נפתח");
+    data.append("Description", "קריאת SOS");
+
+    try {
+      await createCall(data);
+      alert("📢 קריאת SOS נשלחה");
+      navigate("/call-confirmation");
+    } catch {
+      alert("❌ שגיאה בשליחת קריאת SOS");
     }
   };
 
   return (
     <BackgroundLayout>
+      <h2 style={{ textAlign: "center" }}>🚨 פתיחת קריאה</h2>
+
+   
+
       <form onSubmit={handleSubmit} className="form">
-        <h2>פתיחת קריאה</h2>
-        <input name="description" placeholder="תיאור (לא חובה)" onChange={handleChange} />
-        <input name="urgencyLevel" placeholder="רמת דחיפות (לא חובה)" onChange={handleChange} />
+        <input
+          name="description"
+          placeholder="תיאור (לא חובה)"
+          onChange={handleChange}
+        />
+        <input
+          name="urgencyLevel"
+          placeholder="רמת דחיפות (לא חובה)"
+          onChange={handleChange}
+        />
         <input type="file" name="fileImage" onChange={handleChange} />
-        <button type="submit">שלח</button>
+        <button type="submit">📤 שלח קריאה רגילה</button>
       </form>
     </BackgroundLayout>
   );
