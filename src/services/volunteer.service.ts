@@ -27,11 +27,9 @@ export const deleteVolunteer = (id: number) => {
   return axios.delete(`${API_BASE}/Volunteer/${id}`);
 };
 
-// שליפת קריאות קרובות (לפי מתנדב, כנראה לפי המיקום שלו)
-export const GetNearby = (locationX: number, locationY: number) => 
-   axios.get("https://localhost:7219/api/Volunteer/nearby", {
-    params: { locationX, locationY },
+// שליפת קריאות קרובות לפי מזהה מתנדב
+export const getNearbyCalls = (volunteerId: number) => {
+  return axios.get(`${API_BASE}/Volunteer/nearby-alerts`, {
+    params: { id: volunteerId },
   });
-
-
-
+};
