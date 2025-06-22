@@ -1,56 +1,67 @@
-import Modal from "react-modal";
 import { useCallContext } from "../contexts/CallContext";
-import axios from "../services/axios";
-import {updateCallStatus} from "../services/calls.service";
+import { useEffect, useState } from "react";
+import { updateCallStatus } from "../services/calls.service";
+import AlertModal from "./AlertModal";
 export default function CallPopupModal() {
-  const { popupCall, setPopupCall } = useCallContext();
+  const { popupCall, setPopupCall, isLoading, setIsLoading } = useCallContext();
+  const [address, setAddress] = useState<string>('');
 
-  if (!popupCall) return null;
+  useEffect(() => {
+    if (popupCall) {
+      // Reverse geocoding for address
+      reverseGeocode(popupCall.locationX, popupCall.locationY)
+        .then(setAddress)
+        .catch(() => setAddress('כתובת לא זמינה'));
+    }
+  }, [popupCall]);
 
-const accept = async () => {
-  try {
-    await updateCallStatus(popupCall.id, "בדרך");
-    setPopupCall(null);
-  } catch (err) {
-    console.error("שגיאה באישור הקריאה:", err);
-  }
-};
+  const reverseGeocode = async (lat: number, lon: number): Promise<string> => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=he`
+      );
+      const data = await response.json();
+      return data.display_name || 'כתובת לא זמינה';
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      return 'כתובת לא זמינה';
+    }
+  };
 
-const decline = async () => {
-  try {
-    await updateCallStatus(popupCall.id, "לא זמין");
-    setPopupCall(null);
-  } catch (err) {
-    console.error("שגיאה בסירוב הקריאה:", err);
-  }
-};
+  const accept = async () => {
+    if (!popupCall) return;
+    setIsLoading(true);
+    try {
+      await updateCallStatus(popupCall.id, "בדרך");
+      setPopupCall(null);
+    } catch (err) {
+      console.error("שגיאה באישור הקריאה:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  const decline = async () => {
+    if (!popupCall) return;
+    setIsLoading(true);
+    try {
+      await updateCallStatus(popupCall.id, "לא זמין");
+      setPopupCall(null);
+    } catch (err) {
+      console.error("שגיאה בסירוב הקריאה:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <Modal
+    <AlertModal
       isOpen={!!popupCall}
-      ariaHideApp={false}
-      style={{
-        content: {
-          direction: "rtl",
-          maxWidth: "500px",
-          margin: "auto",
-          padding: "2rem",
-          borderRadius: "1rem",
-          backgroundColor: "#fff",
-          zIndex: 9999,
-        },
-      }}
-    >
-      <h2>📣 קריאה חדשה</h2>
-      <p>📝 תיאור: {popupCall.description}</p>
-      <p>🚨 דחיפות: {popupCall.urgencyLevel}</p>
-      <p>📍 מיקום: {popupCall.locationX}, {popupCall.locationY}</p>
-
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
-        <button onClick={accept}>🚑 אני בדרך</button>
-        <button onClick={decline}>❌ לא זמין</button>
-      </div>
-    </Modal>
+      call={popupCall}
+      address={address}
+      onAccept={accept}
+      onDecline={decline}
+      onClose={() => setPopupCall(null)}
+    />
   );
 }

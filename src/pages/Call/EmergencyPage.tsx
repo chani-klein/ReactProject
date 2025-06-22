@@ -1,8 +1,9 @@
+// EmergencyPage.tsx - עמוד הבית עם עיצוב מודרני
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import BackgroundLayout from "../../layouts/BackgroundLayout";
 import { createCall } from "../../services/calls.service";
-
+import "./emergency-styles.css"; // יבוא קובץ ה-CSS
 
 export default function EmergencyPage() {
   const navigate = useNavigate();
@@ -33,7 +34,6 @@ export default function EmergencyPage() {
 
     try {
       await createCall(data);
-     
       navigate("/call-confirmation");
     } catch {
       alert("❌ שגיאה בשליחת קריאה");
@@ -45,19 +45,22 @@ export default function EmergencyPage() {
       <div className="emergency-container">
         <div className="emergency-content">
           {/* כפתור חירום ראשי גדול */}
-          <button className="main-emergency-btn" onClick={() => navigate("/CreateCallPage")}>
+          <button 
+            className="main-emergency-btn emergency-pulse" 
+            onClick={() => navigate("/CreateCallPage")}
+          >
             <div className="btn-content">
               <div className="emergency-icon">🚨</div>
               <div className="emergency-text">פתח קריאת חירום</div>
             </div>
           </button>
-          
+
           {/* כפתור SOS קטן */}
           <button className="sos-btn" onClick={sendSosCall}>
             SOS
           </button>
-          
-          {/* כפתור קריאה רגילה
+
+          {/* כפתור קריאה רגילה - מוסתר כרגע
           <button className="regular-call-btn" onClick={() => navigate("/CreateCallPage")}>
             <span className="btn-icon">✏️</span>
             קריאה רגילה

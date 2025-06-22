@@ -15,7 +15,7 @@ export const useNearbyCallPolling = (volunteerId: number) => {
         const res = await getNearbyCalls(volunteerId); // ודא שהמתנדב מחובר
         console.log("📦 תוצאה מהשרת:", res.data);
 
-        const newCall = res.data.find((call: Call) => call.status === "פתוחה"); // ✅ שם משתנה ברור
+        const newCall = res.data.find((call: Call) => call.status === "נפתחה"); // ✅ שם משתנה ברור
 
         if (newCall) {
           console.log("🚨 קריאה חדשה:", newCall);

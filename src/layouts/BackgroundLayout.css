@@ -165,35 +165,7 @@ html, body {
   transform: translateY(-1px) scale(1.05);
 }
 
-/* כפתור קריאה רגילה
-.regular-call-btn {
-  padding: 1rem 2.5rem;
-  border-radius: 50px;
-  border: none;
-  background: linear-gradient(145deg, #5f27cd, #341f97);
-  color: white;
-  font-size: 1.2rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  box-shadow: 
-    0 10px 20px rgba(95, 39, 205, 0.3),
-    inset 0 -3px 6px rgba(0, 0, 0, 0.2),
-    inset 0 3px 6px rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-  min-width: 200px;
-  justify-content: center;
-} */
 
-.regular-call-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 
-    0 15px 25px rgba(95, 39, 205, 0.4),
-    inset 0 -3px 6px rgba(0, 0, 0, 0.2),
-    inset 0 3px 6px rgba(255, 255, 255, 0.1);
-}
 
 .regular-call-btn:active {
   transform: translateY(-1px);
@@ -1180,10 +1152,7 @@ html, body {
   transition: var(--transition);
 }
 
-.form button:hover {
-  background: #2563eb;
-  transform: translateY(-2px);
-}
+
 
 /* Loading Animation */
 .loading {

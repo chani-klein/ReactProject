@@ -113,6 +113,12 @@ export default function VolunteerActiveCallsPage() {
 
   return (
     <BackgroundLayout>
+       {/* <div className="page-header">
+       <button onClick={() => navigate(-1)} className="back-btn">
+          <span className="back-icon">←</span>
+          חזור
+        </button>
+      </div> */}
       <h2 style={{ textAlign: "center" }}>📡 קריאות פעילות</h2>
 
       <AlertModal

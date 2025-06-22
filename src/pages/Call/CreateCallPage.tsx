@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import BackgroundLayout from "../../layouts/BackgroundLayout";
 import { createCall, getFirstAidInstructions } from "../../services/calls.service";
+import "./emergency-styles.css"; // יבוא קובץ ה-CSS
 
 export default function CreateCallPage() {
   const navigate = useNavigate();
-
   const [location, setLocation] = useState<{ x: string; y: string } | null>(null);
-
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     description: "",
     urgencyLevel: "",
@@ -26,10 +26,11 @@ export default function CreateCallPage() {
     );
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     if (type === "file") {
-      setFormData({ ...formData, [name]: e.target.files?.[0] || null });
+      const target = e.target as HTMLInputElement;
+      setFormData({ ...formData, [name]: target.files?.[0] || null });
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -37,12 +38,13 @@ export default function CreateCallPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!location) {
-      alert("אין מיקום זמין עדיין");
+      alert("📍 אין מיקום זמין עדיין");
       return;
     }
 
+    setIsLoading(true);
+    
     const data = new FormData();
     data.append("LocationX", location.x);
     data.append("LocationY", location.y);
@@ -53,60 +55,66 @@ export default function CreateCallPage() {
 
     try {
       await createCall(data);
-
       let guides = [];
       if (formData.description) {
         const response = await getFirstAidInstructions(formData.description);
         guides = response.data;
       }
-
       navigate("/call-confirmation", { state: { guides } });
     } catch {
       alert("❌ שגיאה בשליחה");
-    }
-  };
-
-  const sendSosCall = async () => {
-    if (!location) {
-      alert("אין מיקום זמין עדיין");
-      return;
-    }
-
-    const data = new FormData();
-    data.append("LocationX", location.x);
-    data.append("LocationY", location.y);
-    data.append("Status", "נפתח");
-    data.append("Description", "קריאת SOS");
-
-    try {
-      await createCall(data);
-      alert("📢 קריאת SOS נשלחה");
-      navigate("/call-confirmation");
-    } catch {
-      alert("❌ שגיאה בשליחת קריאת SOS");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <BackgroundLayout>
-      <h2 style={{ textAlign: "center" }}>🚨 פתיחת קריאה</h2>
-
-   
-
-      <form onSubmit={handleSubmit} className="form">
-        <input
-          name="description"
-          placeholder="תיאור (לא חובה)"
-          onChange={handleChange}
-        />
-        <input
-          name="urgencyLevel"
-          placeholder="רמת דחיפות (לא חובה)"
-          onChange={handleChange}
-        />
-        <input type="file" name="fileImage" onChange={handleChange} />
-        <button type="submit">📤 שלח קריאה רגילה</button>
-      </form>
+      <div className="create-call-container">
+        <h2 className="page-title">🚨 פתיחת קריאה</h2>
+        
+        <form onSubmit={handleSubmit} className="form">
+          <textarea
+            name="description"
+            placeholder="תיאור המצב (לא חובה) - תאר מה קרה בקצרה"
+            value={formData.description}
+            onChange={handleChange}
+            rows={4}
+            className="form-textarea"
+          />
+          
+          <input
+            name="urgencyLevel"
+            placeholder="רמת דחיפות: דחוף / בינוני / נמוך (לא חובה)"
+            value={formData.urgencyLevel}
+            onChange={handleChange}
+            type="text"
+          />
+          
+          <div className="file-upload-container">
+            <input 
+              type="file" 
+              name="fileImage" 
+              onChange={handleChange}
+              accept="image/*"
+            />
+            <small className="file-help-text">
+              📸 אפשר לצרף תמונה להמחשת המצב
+            </small>
+          </div>
+          
+          <button type="submit" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <span className="loading-spinner"></span>
+                שולח קריאה...
+              </>
+            ) : (
+              "📤 שלח קריאה רגילה"
+            )}
+          </button>
+        </form>
+      </div>
     </BackgroundLayout>
   );
 }

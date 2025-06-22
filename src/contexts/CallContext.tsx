@@ -1,32 +1,42 @@
 
 import React, { useState, useEffect, useContext, createContext } from 'react';
+import { Call } from '../types/call.types'
 
-// טיפוס עבור ערך הקונטקסט (אפשר להחליף any בטיפוס מותאם)
 interface CallContextType {
-  popupCall: any;
-  setPopupCall: React.Dispatch<React.SetStateAction<any>>;
+  popupCall: Call | null;
+  setPopupCall: React.Dispatch<React.SetStateAction<Call | null>>;
+  isLoading: boolean;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  activeCalls: Call[];
+  setActiveCalls: React.Dispatch<React.SetStateAction<Call[]>>;
 }
 
-// יצירת קונטקסט
+
+
 const CallContext = createContext<CallContextType | null>(null);
 
-// קומפוננטת Provider עוטפת את כל האפליקציה
 export const CallProvider = ({ children }: { children: React.ReactNode }) => {
-  const [popupCall, setPopupCall] = useState<any | null>(null);
+  const [popupCall, setPopupCall] = useState<Call | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeCalls, setActiveCalls] = useState<Call[]>([]);
 
   return (
-    <CallContext.Provider value={{ popupCall, setPopupCall }}>
+    <CallContext.Provider value={{ 
+      popupCall, 
+      setPopupCall, 
+      isLoading, 
+      setIsLoading,
+      activeCalls,
+      setActiveCalls
+    }}>
       {children}
     </CallContext.Provider>
   );
 };
-
-// ההוק לשימוש בקונטקסט
 export const useCallContext = () => {
   const context = useContext(CallContext);
   if (!context) {
-    throw new Error("useCallContext חייב להיות בשימוש בתוך CallProvider");
+    throw new Error("useCallContext must be used within a CallProvider");
   }
   return context;
 };
-
