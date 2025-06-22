@@ -1,15 +1,16 @@
 import { useState } from "react";
-import { registerVolunteer } from "../services/volunteer.service";
-import FormLayout from "../components/FormLayout";
-import BackgroundLayout from "../layouts/BackgroundLayout";
+import { registerVolunteer } from "../../services/volunteer.service";
+import FormLayout from "../../components/FormLayout";
+import BackgroundLayout from "../../layouts/BackgroundLayout";
 import { useNavigate } from "react-router-dom";
-import { setSession } from "../services/auth.utils";
-import { Paths } from "../routes/paths";
+import { setSession } from "../../auth/auth.utils";
+import { Paths } from "../../routes/paths";
+import { VolunteerRegisterData } from "../../types/auth.types";
 
 export default function RegisterVolunteerPage() {
   const navigate = useNavigate();
 
-  const [volunteer, setVolunteer] = useState({
+  const [volunteer, setVolunteer] = useState<VolunteerRegisterData>({
     fullName: "",
     gmail: "",
     password: "",
@@ -17,7 +18,7 @@ export default function RegisterVolunteerPage() {
     specialization: "",
     address: "",
     city: "",
-    role: "Volunteer",
+    role: "Volunteer"
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

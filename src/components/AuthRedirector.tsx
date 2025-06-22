@@ -1,7 +1,7 @@
 // ✅ src/components/AuthRedirector.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getSession, isValidToken, getRoleFromToken } from "../services/auth.utils";
+import { getSession, isValidToken, getRoleFromToken } from "../auth/auth.utils";
 // import { refreshToken } from "../services/auth.service";
 import HomePage from "../pages/HomePage";
 

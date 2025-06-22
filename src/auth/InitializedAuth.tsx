@@ -1,7 +1,7 @@
 // components/InitializedAuth.tsx
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getSession, isValidToken } from "./services/auth.utils";
+import { getSession, isValidToken } from "./auth.utils";
 
 const getRoleFromToken = (token: string): string | null => {
   try {

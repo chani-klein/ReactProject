@@ -12,7 +12,7 @@ export default function HomePage() {
         <button onClick={() => navigate("/register-user")}>להרשמה</button>
         <button onClick={() => navigate("/register-volunteer")}>הירשם כמתנדב</button>
         {/* <button onClick={() => navigate("/create-call")}>פתח קריאת חירום</button> */}
-        <button onClick={() => navigate("/VolunteerListPage")}>צפה במתנדבים</button>
+        {/* <button onClick={() => navigate("/VolunteerListPage")}>צפה במתנדבים</button> */}
       </div>
     </BackgroundLayout>
   );

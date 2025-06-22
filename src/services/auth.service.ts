@@ -1,6 +1,6 @@
 // auth.service.ts
 import axios from "./axios"; // axios שהוגדר עם baseURL
-import { setSession, removeSession } from "./auth.utils";
+import { setSession, removeSession } from "../auth/auth.utils";
 
 
 export const refreshTokenIfVolunteer = async () => {

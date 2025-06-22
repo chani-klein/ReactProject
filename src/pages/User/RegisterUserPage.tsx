@@ -1,21 +1,22 @@
 import { useState } from "react";
-import { registerUser } from "../services/auth.service";
-import FormLayout from "../components/FormLayout";
-import BackgroundLayout from "../layouts/BackgroundLayout";
+import { registerUser } from "../../services/auth.service";
+import FormLayout from "../../components/FormLayout";
+import BackgroundLayout from "../..//layouts/BackgroundLayout";
 import { useNavigate } from "react-router-dom";
-import { setSession } from "../services/auth.utils";
-import { Paths } from "../routes/paths";
+import { setSession } from "../../auth/auth.utils";
+import { Paths } from "../../routes/paths"
+import { UserRegisterData } from "../../types/auth.types";
 
 export default function RegisterUserPage() {
   const navigate = useNavigate();
 
-  const [user, setUser] = useState({
+  const [user, setUser] = useState<UserRegisterData>({
     firstName: "",
     lastName: "",
     phoneNumber: "",
     gmail: "",
     password: "",
-    Role:""
+    Role: ""
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,20 +27,14 @@ export default function RegisterUserPage() {
     e.preventDefault();
     try {
       const res = await registerUser(user);
-      console.log("🔍 res.data =", res.data); 
-      console.log("🚀 נשלח לשרת:", user);
-// ✅ בדיקה של מה באמת חוזר מהשרת
-console.log("🔍 כל מה שמחזיר השרת:", res.data);
-
       const { token } = res.data;
+
       if (token) {
         setSession(token);
         alert("ההרשמה הצליחה!");
-        console.log(token.role)
         navigate(`/${Paths.userHome}`);
       } else {
         alert("❗לא התקבל טוקן מהשרת");
-        
       }
     } catch (err) {
       console.error(err);
@@ -57,6 +52,5 @@ console.log("🔍 כל מה שמחזיר השרת:", res.data);
         <input name="password" type="password" placeholder="סיסמה" onChange={handleChange} />
       </FormLayout>
     </BackgroundLayout>
-    
   );
 }

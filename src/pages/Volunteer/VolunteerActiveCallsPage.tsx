@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import AlertModal from "../components/AlertModal";
-import ActiveCallCard from "../components/ActiveCallCard";
-import BackgroundLayout from "../layouts/BackgroundLayout";
-import { getNearbyCalls } from "../services/volunteer.service";
-import axios from "../services/axios";
+import AlertModal from "../../components/AlertModal";
+import ActiveCallCard from "../../components/ActiveCallCard";
+import BackgroundLayout from "../../layouts/BackgroundLayout";
+import { getNearbyCalls } from "../../services/volunteer.service";
+import axios from "../../services/axios";
 
 export default function VolunteerActiveCallsPage() {
   const [activeCalls, setActiveCalls] = useState<any[]>([]);

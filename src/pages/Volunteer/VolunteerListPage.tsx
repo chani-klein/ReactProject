@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getVolunteers } from "../services/volunteer.service";
-import BackgroundLayout from "../layouts/BackgroundLayout";
+import { getVolunteers } from "../../services/volunteer.service";
+import BackgroundLayout from "../../layouts/BackgroundLayout";
 
 type Volunteer = {
   id: number;

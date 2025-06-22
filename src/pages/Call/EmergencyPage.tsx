@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import BackgroundLayout from "../layouts/BackgroundLayout";
-import { createCall } from "../services/calls.service";
+import BackgroundLayout from "../../layouts/BackgroundLayout";
+import { createCall } from "../../services/calls.service";
+
 
 export default function EmergencyPage() {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ export default function EmergencyPage() {
 
     try {
       await createCall(data);
-      alert("📢 קריאת חירום נשלחה בהצלחה");
+     
       navigate("/call-confirmation");
     } catch {
       alert("❌ שגיאה בשליחת קריאה");
@@ -41,13 +42,27 @@ export default function EmergencyPage() {
 
   return (
     <BackgroundLayout>
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: "center" }}>
-        <button className="emergency-btn" onClick={sendSosCall}>
-          🚨 קריאת SOS מיידית
-        </button>
-        <button className="regular-btn" onClick={() => navigate("/CreateCallPage")}>
-          ✏️ פתח קריאה רגילה
-        </button>
+      <div className="emergency-container">
+        <div className="emergency-content">
+          {/* כפתור חירום ראשי גדול */}
+          <button className="main-emergency-btn" onClick={() => navigate("/CreateCallPage")}>
+            <div className="btn-content">
+              <div className="emergency-icon">🚨</div>
+              <div className="emergency-text">פתח קריאת חירום</div>
+            </div>
+          </button>
+          
+          {/* כפתור SOS קטן */}
+          <button className="sos-btn" onClick={sendSosCall}>
+            SOS
+          </button>
+          
+          {/* כפתור קריאה רגילה
+          <button className="regular-call-btn" onClick={() => navigate("/CreateCallPage")}>
+            <span className="btn-icon">✏️</span>
+            קריאה רגילה
+          </button> */}
+        </div>
       </div>
     </BackgroundLayout>
   );

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { getSession } from "../services/auth.utils";
+import { getSession } from "../auth/auth.utils";
 import { useCallContext } from "../contexts/CallContext";
 import {getNearbyCalls} from "../services/volunteer.service";
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "../services/axios";
-import BackgroundLayout from "../layouts/BackgroundLayout";
-import CloseCallForm from "../components/CloseCallForm";
+import axios from "../../services/axios";
+import BackgroundLayout from "../../layouts/BackgroundLayout";
+import CloseCallForm from "../../components/CloseCallForm";
 
 export default function HistoryPage() {
   const [calls, setCalls] = useState<any[]>([]);

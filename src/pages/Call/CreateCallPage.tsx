@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import BackgroundLayout from "../layouts/BackgroundLayout";
-import { createCall, getFirstAidInstructions } from "../services/calls.service";
+import BackgroundLayout from "../../layouts/BackgroundLayout";
+import { createCall, getFirstAidInstructions } from "../../services/calls.service";
 
 export default function CreateCallPage() {
   const navigate = useNavigate();

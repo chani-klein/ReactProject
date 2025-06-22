@@ -14,3 +14,11 @@ export interface PersonDto {
   address: string;
   role: RoleType;
 }
+export interface UserRegisterData {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  gmail: string;
+  password: string;
+  Role: string;
+}

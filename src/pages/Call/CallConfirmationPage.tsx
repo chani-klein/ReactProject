@@ -1,8 +1,8 @@
 import { useLocation, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import BackgroundLayout from "../layouts/BackgroundLayout";
-import { getCallStatus } from "../services/calls.service";
+import BackgroundLayout from "../../layouts/BackgroundLayout";
+import { getCallStatus } from "../../services/calls.service";
 
 export default function CallConfirmationPage() {
   const location = useLocation();

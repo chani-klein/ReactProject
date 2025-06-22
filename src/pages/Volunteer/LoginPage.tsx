@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { setSession } from "../services/auth.utils";
-import BackgroundLayout from "../layouts/BackgroundLayout";
-import FormLayout from "../components/FormLayout";
-import { Paths } from "../routes/paths";
-import axios from "../services/axios";
+import { setSession } from "../../auth/auth.utils";
+import BackgroundLayout from "../../layouts/BackgroundLayout";
+import FormLayout from "../../components/FormLayout";
+import { Paths } from "../../routes/paths";
+import axios from "../../services/axios";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
