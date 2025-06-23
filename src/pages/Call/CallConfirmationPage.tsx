@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import BackgroundLayout from "../../layouts/BackgroundLayout";
 import { getCallStatus } from "../../services/calls.service";
-import "./emergency-styles.css"; // יבוא קובץ ה-CSS
+import "../../style/emergency-styles.css"; // יבוא קובץ ה-CSS
 
 export default function CallConfirmationPage() {
   const location = useLocation();

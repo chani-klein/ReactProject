@@ -18,7 +18,7 @@ html, body {
   direction: rtl;
   padding: 2rem;
 }
-.content-wrapper {
+/* .content-wrapper {
   background: rgba(255, 255, 255, 0.95);
   padding: 3rem;
   border-radius: 2rem;
@@ -26,8 +26,8 @@ html, body {
   text-align: center;
   min-width: 350px;
   max-width: 900px; /* 👈 שינוי כאן */
-  width: 100%;
-}
+  /* width: 100%;
+} */ */
 
 /* כותרות */
 .content-wrapper h1,

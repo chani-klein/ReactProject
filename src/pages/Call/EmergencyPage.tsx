@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import BackgroundLayout from "../../layouts/BackgroundLayout";
 import { createCall } from "../../services/calls.service";
-import "./emergency-styles.css"; // יבוא קובץ ה-CSS
+import "../../style/emergency-styles.css"; // יבוא קובץ ה-CSS
 
 export default function EmergencyPage() {
   const navigate = useNavigate();

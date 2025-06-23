@@ -1,12 +1,3 @@
-.form-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  direction: rtl;
-  height: 100vh;
-  background: url("/images/ambulance.jpg") center/cover no-repeat; /* רקע אחיד */
-  padding: 2rem;
-}
 
 .form {
   background-color: rgba(255, 255, 255, 0.95); /* כמעט אטום */

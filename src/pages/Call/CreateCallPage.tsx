@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import BackgroundLayout from "../../layouts/BackgroundLayout";
 import { createCall, getFirstAidInstructions } from "../../services/calls.service";
-import "./emergency-styles.css"; // יבוא קובץ ה-CSS
+import "../../style/emergency-styles.css"; // יבוא קובץ ה-CSS
 
 export default function CreateCallPage() {
   const navigate = useNavigate();
@@ -46,11 +46,15 @@ export default function CreateCallPage() {
     setIsLoading(true);
     
     const data = new FormData();
-    data.append("LocationX", location.x);
-    data.append("LocationY", location.y);
+   
     data.append("Status", formData.status);
+    data.append("LocationX", Number(location.x).toString());
+    data.append("LocationY", Number(location.y).toString());
+   data.append("UrgencyLevel", Number(formData.urgencyLevel).toString());
+    data.append("Date", new Date().toISOString());
+
+
     if (formData.description) data.append("Description", formData.description);
-    if (formData.urgencyLevel) data.append("UrgencyLevel", formData.urgencyLevel);
     if (formData.fileImage) data.append("FileImage", formData.fileImage);
 
     try {
