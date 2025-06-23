@@ -1,14 +1,16 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import type { Call } from "../types/call.types";
+"use client"
+
+import { useState } from "react"
+import type { Call } from "../types/call.types"
 
 interface AlertModalProps {
-  isOpen: boolean;
-  call: Call | null;
-  address: string | null;
-  onAccept: () => Promise<void>;
-  onDecline: () => Promise<void>;
-  onClose: () => void;
+  isOpen: boolean
+  call: Call | null
+  address: string | null
+  onAccept: () => Promise<void>
+  onDecline: () => Promise<void>
+  onClose: () => void
+  onNavigateToActiveCalls?: () => void // ✅ הוספתי callback לניווט
 }
 
 export default function AlertModal({
@@ -18,40 +20,44 @@ export default function AlertModal({
   onAccept,
   onDecline,
   onClose,
+  onNavigateToActiveCalls,
 }: AlertModalProps) {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const navigate = useNavigate(); // ✅ תקין בתוך הפונקציה
+  const [isProcessing, setIsProcessing] = useState(false)
 
   const handleAccept = async () => {
-    console.log("מתחיל לטפל בקבלת הקריאה...");
-    setIsProcessing(true);
+    console.log("מתחיל לטפל בקבלת הקריאה...")
+    setIsProcessing(true)
     try {
-      await onAccept();
-      console.log("קריאה התקבלה בהצלחה, מעביר לדף קריאות פעילות...");
-      navigate("/volunteer/active-calls"); // ✅ ניווט תקין ב-React Router
+      await onAccept()
+      console.log("קריאה התקבלה בהצלחה, מעביר לדף קריאות פעילות...")
+
+      // ✅ השתמש בcallback במקום useRouter
+      if (onNavigateToActiveCalls) {
+        onNavigateToActiveCalls()
+      }
     } catch (error) {
-      console.error("שגיאה בקבלת הקריאה:", error);
-      alert("שגיאה בקבלת הקריאה. אנא נסה שוב.");
+      console.error("שגיאה בקבלת הקריאה:", error)
+      alert("שגיאה בקבלת הקריאה. אנא נסה שוב.")
     } finally {
-      setIsProcessing(false);
+      setIsProcessing(false)
     }
-  };
+  }
 
   const handleDecline = async () => {
-    console.log("מסרב לקריאה...");
-    setIsProcessing(true);
+    console.log("מסרב לקריאה...")
+    setIsProcessing(true)
     try {
-      await onDecline();
-      console.log("סירוב נשמר בהצלחה");
+      await onDecline()
+      console.log("סירוב נשמר בהצלחה")
     } catch (error) {
-      console.error("שגיאה בסירוב הקריאה:", error);
-      alert("שגיאה בסירוב הקריאה. אנא נסה שוב.");
+      console.error("שגיאה בסירוב הקריאה:", error)
+      alert("שגיאה בסירוב הקריאה. אנא נסה שוב.")
     } finally {
-      setIsProcessing(false);
+      setIsProcessing(false)
     }
-  };
+  }
 
-  if (!isOpen || !call) return null;
+  if (!isOpen || !call) return null
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -73,16 +79,11 @@ export default function AlertModal({
               <strong>📍 כתובת:</strong> {address || `${call.locationX}, ${call.locationY}`}
             </p>
             <p>
-              <strong>⏰ זמן:</strong>{" "}
-              {call.createdAt
-                ? new Date(call.createdAt).toLocaleString("he-IL")
-                : "זמן לא זמין"}
+              <strong>⏰ זמן:</strong> {new Date(call.createdAt).toLocaleString("he-IL")}
             </p>
           </div>
 
-          <div className="modal-warning">
-            ⚠️ לחיצה על "אני יוצא" תעביר אותך לקריאות הפעילות
-          </div>
+          <div className="modal-warning">⚠️ לחיצה על "אני יוצא" תעביר אותך לקריאות הפעילות</div>
         </div>
 
         <div className="modal-actions">
@@ -95,5 +96,5 @@ export default function AlertModal({
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -37,7 +37,6 @@ export default function CallPopupModal() {
     if (!popupCall || isNaN(volunteerId)) return
     setIsLoading(true)
     try {
-      // עדכון סטטוס המתנדב ל"going"
       await axios.post("/VolunteerCalls/respond", {
         callId: popupCall.id,
         volunteerId: volunteerId,
@@ -55,7 +54,6 @@ export default function CallPopupModal() {
     if (!popupCall || isNaN(volunteerId)) return
     setIsLoading(true)
     try {
-      // עדכון סטטוס המתנדב ל"cant"
       await axios.post("/VolunteerCalls/respond", {
         callId: popupCall.id,
         volunteerId: volunteerId,
@@ -69,6 +67,13 @@ export default function CallPopupModal() {
     }
   }
 
+  // ✅ פונקציה לניווט לקריאות פעילות
+  const navigateToActiveCalls = () => {
+    // אם יש לך ניווט ספציפי, הוסף כאן
+    // לדוגמה: window.location.href = '/volunteer/active-calls'
+    console.log("מעביר לקריאות פעילות...")
+  }
+
   return (
     <AlertModal
       isOpen={!!popupCall}
@@ -77,6 +82,7 @@ export default function CallPopupModal() {
       onAccept={accept}
       onDecline={decline}
       onClose={() => setPopupCall(null)}
+      onNavigateToActiveCalls={navigateToActiveCalls} // ✅ הוספתי את הפונקציה
     />
   )
 }
