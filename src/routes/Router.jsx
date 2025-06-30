@@ -14,7 +14,7 @@ import ActiveCallsPage from "../pages/Volunteer/VolunteerActiveCallsPage";
 import HistoryPage from "../pages/Volunteer/VolunteerCallHistoryPage";
 import AuthRedirector from "../components/AuthRedirector";
 import VolunteerMenu from "../pages/Volunteer/volunteerPage";
-
+import MyCallsPage from "../pages/Call/MyCallsPage";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -77,6 +77,10 @@ const router = createBrowserRouter([
     path: "*",
     element: <h1>404 - Page Not Found</h1>,
   },
+  {
+  path: "/my-calls",
+  element: <MyCallsPage />,
+},
 ]);
 
 export default function AppRouter() {

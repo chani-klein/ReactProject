@@ -60,4 +60,11 @@ export const getVolunteerDetails = async (): Promise<number | null> => {
   } catch {
     return null;
   }
+
 };
+
+// 🧐 פונקציה שבודקת אם מתנדב קיים לפי טלפון או אימייל (דוגמה)
+export const checkVolunteerExists = (gmail: string) =>
+  axios.get(`${API_BASE}/Volunteer/exists`, {
+    params: { gmail },
+  });
