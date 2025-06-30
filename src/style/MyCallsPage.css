@@ -1,0 +1,54 @@
+.calls-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.calls-container {
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 2.5rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 1000px;
+  backdrop-filter: blur(6px);
+  direction: rtl;
+}
+
+.calls-container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #333;
+  font-size: 1.8rem;
+}
+
+.calls-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.calls-table th,
+.calls-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #ccc;
+  text-align: center;
+}
+
+.calls-table th {
+  background-color: #f8f8f8;
+  color: #333;
+}
+
+.calls-table tr:hover {
+  background-color: #f0f8ff;
+}
+
+.calls-table a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.calls-table a:hover {
+  text-decoration: underline;
+}

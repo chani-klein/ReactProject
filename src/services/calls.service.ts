@@ -69,3 +69,7 @@ export const getAllFirstAidGuides = () =>
   axios.get(`${API_BASE}/FirstAid/all`, {
     headers: getAuthHeaders(),
   });
+  export const getMyCalls = () =>
+  axios.get(`${API_BASE}/Calls/by-user`, {
+    headers: getAuthHeaders(),
+  });
