@@ -1,138 +1,178 @@
-"use client"
-
-import { useState } from "react"
-import type { Call } from "../types/call.types"
-import CloseCallForm from "./CloseCallForm"
+'use client';
+import { useState, useEffect } from 'react';
+import CloseCallForm from './CloseCallForm';
+import { updateVolunteerStatus, completeCall, getCallVolunteersInfo } from '../services/volunteer.service';
+import { getVolunteerDetails } from '../services/volunteer.service';
+import type { Call, VolunteerStatus } from '../types/call.types';
 
 interface ActiveCallCardProps {
-  call: Call & { volunteerStatus?: string }
-  onStatusUpdate: (id: number, status: string, summary?: string) => void
+  call: Call;
+  onStatusUpdate: (callId: number, newStatus: 'going' | 'arrived' | 'finished', summary?: string) => void;
 }
 
 export default function ActiveCallCard({ call, onStatusUpdate }: ActiveCallCardProps) {
-  const [isNavigating, setIsNavigating] = useState(false)
-  const [showCloseForm, setShowCloseForm] = useState(false)
-  const [isUpdating, setIsUpdating] = useState(false)
+  const [address, setAddress] = useState<string>('');
+  const [showCloseForm, setShowCloseForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [volunteerStatus, setVolunteerStatus] = useState<string>('going');
+  const [goingVolunteersCount, setGoingVolunteersCount] = useState<number>(call.goingVolunteersCount || 0);
 
-  const getUrgencyColor = (urgency: string) => {
-    switch (urgency) {
-      case "קריטי":
-        return "danger"
-      case "גבוה":
-        return "warning"
-      case "בינוני":
-        return "primary"
-      default:
-        return "success"
+  useEffect(() => {
+    if (call.locationX && call.locationY) {
+      reverseGeocode(call.locationX, call.locationY)
+        .then(setAddress)
+        .catch(() => setAddress('כתובת לא זמינה'));
+    } else {
+      setAddress('כתובת לא זמינה');
     }
-  }
 
-  const getVolunteerStatusDisplay = (status: string) => {
-    switch (status) {
-      case "going":
-        return { text: "בדרך למקום", class: "on-way", icon: "🚗" }
-      case "arrived":
-        return { text: "הגעתי למקום", class: "arrived", icon: "📍" }
-      default:
-        return { text: "לא ידוע", class: "pending", icon: "❓" }
-    }
-  }
+    const fetchGoingCount = async () => {
+      try {
+        const info = await getCallVolunteersInfo(call.id);
+        setGoingVolunteersCount(info.data.goingVolunteersCount);
+      } catch (err) {
+        console.error('שגיאה בשליפת מידע קריאה:', err);
+      }
+    };
+    fetchGoingCount();
+  }, [call]);
 
-  const navigateToLocation = async (lat: number, lon: number) => {
-    setIsNavigating(true)
+  useEffect(() => {
+    const fetchVolunteerStatus = async () => {
+      const volunteerId = await getVolunteerDetails();
+      if (!volunteerId) return;
+
+      const statusObj = call.volunteersStatus?.find((v: VolunteerStatus) => v.volunteerId === volunteerId);
+      if (statusObj) {
+        setVolunteerStatus(statusObj.response);
+      }
+    };
+    fetchVolunteerStatus();
+  }, [call.volunteersStatus]);
+
+  const reverseGeocode = async (lat: number, lon: number): Promise<string> => {
     try {
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-      const wazeURL = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`
-      const gmapsURL = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`
-
-      window.open(isMobile ? wazeURL : gmapsURL, "_blank")
-
-      setTimeout(() => setIsNavigating(false), 1000)
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=he`
+      );
+      const data = await response.json();
+      return data.display_name || 'כתובת לא זמינה';
     } catch (error) {
-      console.error("Navigation error:", error)
-      setIsNavigating(false)
+      console.error('Geocoding error:', error);
+      return 'כתובת לא זמינה';
     }
-  }
+  };
 
-  const handleStatusUpdate = async (newStatus: string) => {
-    setIsUpdating(true)
+  const handleStatusUpdate = async (newStatus: 'going' | 'arrived' | 'finished') => {
+    setIsLoading(true);
     try {
-      await onStatusUpdate(call.id, newStatus)
+      const volunteerId = await getVolunteerDetails();
+      if (!volunteerId) throw new Error('מתנדב לא מזוהה');
+      await onStatusUpdate(call.id, newStatus);
+      setVolunteerStatus(newStatus);
+    } catch (error) {
+      console.error('שגיאה בעדכון סטטוס:', error);
+      alert('שגיאה בעדכון הסטטוס, נסה שוב');
     } finally {
-      setIsUpdating(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  const handleFinishCall = async (summary: string) => {
-    setIsUpdating(true)
+  const handleCompleteCall = async (summary: string) => {
+    setIsLoading(true);
     try {
-      await onStatusUpdate(call.id, "finished", summary)
-      setShowCloseForm(false)
+      const volunteerId = await getVolunteerDetails();
+      if (!volunteerId) throw new Error('מתנדב לא מזוהה');
+      await completeCall(call.id, summary);
+      await onStatusUpdate(call.id, 'finished', summary);
+      setShowCloseForm(false);
+    } catch (error) {
+      console.error('שגיאה בסיום קריאה:', error);
+      alert('שגיאה בסיום הקריאה, נסה שוב');
     } finally {
-      setIsUpdating(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  const statusInfo = getVolunteerStatusDisplay(call.volunteerStatus || "going")
+  const getStatusDisplay = () => {
+    switch (volunteerStatus) {
+      case 'going':
+        return { text: '🚗 בדרך', color: '#ff9800' };
+      case 'arrived':
+        return { text: '🎯 הגעתי', color: '#4caf50' };
+      case 'finished':
+        return { text: '✅ הושלם', color: '#8bc34a' };
+      default:
+        return { text: '🚗 בדרך', color: '#ff9800' };
+    }
+  };
 
-  if (showCloseForm) {
-    return (
-      <div className="call-card">
-        <CloseCallForm onSubmit={handleFinishCall} isLoading={isUpdating} />
-        <button className="btn btn-secondary" onClick={() => setShowCloseForm(false)} disabled={isUpdating}>
-          ← חזור
-        </button>
-      </div>
-    )
-  }
+  const statusDisplay = getStatusDisplay();
 
   return (
-    <div className={`call-card status-${statusInfo.class}`}>
-      <div className="call-header">
-        <div className="call-info">
-          <div className="call-icon">🚨</div>
-          <div className="call-details">
-            <h3>קריאה #{call.id}</h3>
-            <p>נוצר: {new Date(call.createdAt).toLocaleString("he-IL")}</p>
+    <div className="card" style={{ marginBottom: '1rem' }}>
+      <div className="card-header">
+        <h3 style={{ margin: 0 }}>{call.description}</h3>
+        <span
+          style={{
+            backgroundColor: statusDisplay.color,
+            color: 'white',
+            padding: '0.25rem 0.5rem',
+            borderRadius: '4px',
+            fontSize: '0.8rem',
+          }}
+        >
+          {statusDisplay.text}
+        </span>
+      </div>
+
+      <div className="card-body">
+        <p><strong>🚨 דחיפות:</strong> {call.urgencyLevel}</p>
+        <p><strong>📍 כתובת:</strong> {address}</p>
+        <p><strong>⏰ זמן:</strong> {new Date(call.createdAt).toLocaleString('he-IL')}</p>
+        <p><strong>🚗 מתנדבים בדרך:</strong> {goingVolunteersCount}</p>
+        {call.imageUrl && (
+          <div style={{ margin: '1rem 0' }}>
+            <img src={call.imageUrl} alt="תמונת הקריאה" style={{ maxWidth: '200px', borderRadius: '4px' }} />
           </div>
-        </div>
-        <div className={`call-status ${statusInfo.class}`}>
-          {statusInfo.icon} {statusInfo.text}
-        </div>
+        )}
       </div>
 
-      <div className="call-description">
-        <strong>תיאור:</strong> {call.description}
-      </div>
-
-      <div className="call-location">
-        📍 מיקום: ({call.locationX.toFixed(4)}, {call.locationY.toFixed(4)})
-      </div>
-
-      <div className={`call-urgency ${getUrgencyColor(call.urgencyLevel || "")}`}>🚨 דחיפות: {call.urgencyLevel}</div>
-
-      <div className="actions">
-        {call.volunteerStatus === "going" && (
-          <>
-            <button
-              className="btn btn-primary"
-              onClick={() => navigateToLocation(call.locationX, call.locationY)}
-              disabled={isNavigating || isUpdating}
-            >
-              {isNavigating ? "🔄 פותח ניווט..." : "🗺️ ניווט"}
-            </button>
-            <button className="btn btn-success" onClick={() => handleStatusUpdate("arrived")} disabled={isUpdating}>
-              {isUpdating ? "🔄 מעדכן..." : "📍 הגעתי"}
-            </button>
-          </>
+      <div className="card-actions">
+        {volunteerStatus === 'going' && (
+          <button
+            className="btn btn-success"
+            onClick={() => handleStatusUpdate('arrived')}
+            disabled={isLoading}
+          >
+            {isLoading ? '🔄 מעדכן...' : '🎯 הגעתי'}
+          </button>
         )}
 
-        {call.volunteerStatus === "arrived" && (
-          <button className="btn btn-danger" onClick={() => setShowCloseForm(true)} disabled={isUpdating}>
-            ✅ סיים קריאה
+        {volunteerStatus === 'arrived' && (
+          <button
+            className="btn btn-warning"
+            onClick={() => setShowCloseForm(true)}
+            disabled={isLoading}
+          >
+            {isLoading ? '🔄 מעדכן...' : '✅ סיום קריאה'}
           </button>
+        )}
+
+        {showCloseForm && (
+          <div style={{ marginTop: '1rem' }}>
+            <CloseCallForm onSubmit={handleCompleteCall} isLoading={isLoading} />
+            <button
+              className="btn btn-secondary"
+              onClick={() => setShowCloseForm(false)}
+              style={{ marginTop: '0.5rem' }}
+              disabled={isLoading}
+            >
+              ❌ ביטול
+            </button>
+          </div>
         )}
       </div>
     </div>
-  )
+  );
 }

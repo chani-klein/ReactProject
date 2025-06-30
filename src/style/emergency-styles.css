@@ -51,7 +51,7 @@ body {
 /* Background Layout */
 .background-layout {
   min-height: 100vh;
-  background: var(--background-gradient);
+  /* background: var(--background-gradient); */
   padding: 20px;
   display: flex;
   flex-direction: column;

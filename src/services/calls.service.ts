@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "./axios";
 const API_BASE = "https://localhost:7219/api";
 // 🟢 התחברות או הרשמה (אזרח)
 export const registerCitizen = (user: any) => axios.post(`${API_BASE}/User`, user);

@@ -1,48 +1,86 @@
+import React, { useEffect, useState } from 'react';
+import { getNearbyCalls } from '../services/volunteer.service'; // התאם את הנתיב
+import { jwtDecode } from 'jwt-decode'; // ייבוא נכון של jwt-decode
+import type { Call } from '../types/call.types'; // התאם את הנתיב
 
-import { useEffect, useRef } from "react";
-import { getSession } from "../auth/auth.utils";
-import { useCallContext } from "../contexts/CallContext";
-import { getNearbyCalls } from "../services/volunteer.service";
-import type { Call } from "../types/call.types";
+interface JwtPayload {
+  nameid: string; // תואם ל-ClaimTypes.NameIdentifier
+}
 
-export default function VolunteerCallWatcher() {
-  const { setPopupCall, popupCall } = useCallContext();
-  const ignoredCallIds = useRef<Set<number>>(new Set());
+const VolunteerCallWatcher: React.FC = () => {
+  const [calls, setCalls] = useState<Call[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  const getVolunteerId = (): number | null => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('אנא התחבר מחדש');
+      return null;
+    }
+    try {
+      const decoded: JwtPayload = jwtDecode(token); // תיקון הייבוא
+      return parseInt(decoded.nameid);
+    } catch (err) {
+      setError('שגיאה בקריאת פרטי משתמש');
+      return null;
+    }
+  };
 
   useEffect(() => {
-    const token = getSession();
-    if (!token) return;
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsAuthenticated(true);
+    } else {
+      setError('אנא התחבר כדי לראות קריאות קרובות');
+      return;
+    }
 
-    const payloadBase64 = token.split(".")[1];
-    if (!payloadBase64) return;
+    const fetchCalls = async () => {
+      const volunteerId = getVolunteerId();
+      if (!volunteerId) return;
 
-    const decodedPayload = atob(payloadBase64);
-    const payload = JSON.parse(decodedPayload);
-    const volunteerId = Number(payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]);
-    const role = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-
-    if (role !== "Volunteer" || !volunteerId) return;
-
-    const interval = setInterval(async () => {
       try {
-        const res = await getNearbyCalls(volunteerId);
-        const calls: Call[] = res.data;
-
-        const newCall = calls.find(call => {
-          const alreadyIgnored = ignoredCallIds.current.has(call.id);
-          const alreadyShown = popupCall?.id === call.id;
-          return !alreadyIgnored && !alreadyShown;
-        });
-
-        if (newCall) {
-          setPopupCall(newCall);
+        const response = await getNearbyCalls(volunteerId);
+        setCalls(response.data);
+        setError(null);
+      } catch (err: any) {
+        let errorMessage = 'שגיאה באיתור קריאות';
+        if (err.response?.status === 404) {
+          errorMessage = 'מתנדב לא נמצא או אין קריאות קרובות';
+        } else if (err.response?.status === 400) {
+          errorMessage = 'למתנדב אין מיקום מוגדר';
+        } else {
+          errorMessage = err.response?.data?.error || err.message;
         }
-      } catch (err) {
-        console.error("שגיאה באיתור קריאות", err);
+        setError(errorMessage);
+        console.error('שגיאה באיתור קריאות:', err);
       }
-    }, 5000);
+    };
 
-    return () => clearInterval(interval);
-  }, [setPopupCall, popupCall]);
-   return null;
-}
+    if (isAuthenticated) {
+      fetchCalls();
+      const interval = setInterval(fetchCalls, 30000); // עדכון כל 30 שניות
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated]);
+
+  return (
+    <div>
+      {error && <div style={{ color: 'red' }}>{error}</div>}
+      {calls.length === 0 && !error ? (
+        <p>אין קריאות קרובות זמינות</p>
+      ) : (
+        <ul>
+          {calls.map((call) => (
+            <li key={call.id}>
+              קריאה #{call.id} - סטטוס: {call.status}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+export default VolunteerCallWatcher;

@@ -35,7 +35,15 @@ export default function UpdateVolunteerPage() {
     if (!volunteerId) return;
 
     axios.get(`/Volunteer/${volunteerId}`)
-      .then(res => setFormData(res.data))
+      .then(res => {
+        const data = res.data || {};
+        setFormData({
+          fullName: data.fullName || "",
+          phone: data.phone || "",
+          city: data.city || "",
+          address: data.address || ""
+        });
+      })
       .catch(() => alert("❌ שגיאה בטעינת פרטים"));
   }, [volunteerId]);
 
