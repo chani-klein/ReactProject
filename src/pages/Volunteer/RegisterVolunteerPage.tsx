@@ -8,6 +8,7 @@ import { Paths } from "../../routes/paths";
 import { VolunteerRegisterData } from "../../types/auth.types";
 import { UserPlus, Heart, Shield } from "lucide-react";
 import "../register.css";
+import {checkVolunteerExists}  from "../../services/volunteer.service"
 
 interface ValidationErrors {
   [key: string]: string;
@@ -133,38 +134,47 @@ export default function RegisterVolunteerPage() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsSubmitting(true);
 
-    if (!validateForm()) {
+  if (!validateForm()) {
+    setIsSubmitting(false);
+    return;
+  }
+
+  try {
+    // בדיקה אם המשתמש כבר קיים לפי אימייל
+    const existsRes = await checkVolunteerExists(volunteer.gmail);
+    if (existsRes.data.exists) {
+      setErrors(prev => ({
+        ...prev,
+        gmail: "כתובת אימייל זו כבר רשומה במערכת"
+      }));
       setIsSubmitting(false);
       return;
     }
 
-    try {
-      const res = await registerVolunteer(volunteer);
-      const { token, id } = res.data;
+    const res = await registerVolunteer(volunteer);
+    const { token, id } = res.data;
 
-      setSession(token);
-      if (id) {
-        localStorage.setItem("volunteerId", id.toString());
-      }
+    setSession(token);
+    if (id) localStorage.setItem("volunteerId", id.toString());
 
-      alert("נרשמת בהצלחה כמתנדב!");
-      navigate(`/${Paths.volunteerHome}`);
-    } catch (err: any) {
-      if (err.response) {
-        console.error("שגיאת שרת:", err.response.data);
-        alert("שגיאה: " + JSON.stringify(err.response.data));
-      } else {
-        console.error(err);
-        alert("שגיאה לא צפויה בהרשמה");
-      }
-    } finally {
-      setIsSubmitting(false);
+    alert("נרשמת בהצלחה כמתנדב!");
+    navigate(`/${Paths.volunteerHome}`);
+  } catch (err: any) {
+    if (err.response) {
+      console.error("שגיאת שרת:", err.response.data);
+      alert("שגיאה: " + JSON.stringify(err.response.data));
+    } else {
+      console.error(err);
+      alert("שגיאה לא צפויה בהרשמה");
     }
-  };
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="volunteer-registration">

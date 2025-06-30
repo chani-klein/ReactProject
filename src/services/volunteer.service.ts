@@ -2,34 +2,35 @@ import axios from "axios";
 
 const API_BASE = "https://localhost:7219/api";
 
-// רישום מתנדב חדש
 export const registerVolunteer = (volunteer: any) => {
   return axios.post(`${API_BASE}/Volunteer`, volunteer);
 };
 
-// שליפת כל המתנדבים
+export const checkVolunteerExists = (gmail: string) => {
+  return axios.get(`${API_BASE}/Volunteer/exists`, {
+    params: { gmail }
+  });
+};
+
+
 export const getVolunteers = () => {
   return axios.get(`${API_BASE}/Volunteer`);
 };
 
-// שליפת מתנדב לפי ID
 export const getVolunteerById = (id: number) => {
   return axios.get(`${API_BASE}/Volunteer/${id}`);
 };
 
-// עדכון מתנדב
 export const updateVolunteer = (id: number, updatedData: any) => {
   return axios.put(`${API_BASE}/Volunteer/${id}`, updatedData);
 };
 
-// מחיקת מתנדב
 export const deleteVolunteer = (id: number) => {
   return axios.delete(`${API_BASE}/Volunteer/${id}`);
 };
 
-// שליפת קריאות קרובות לפי מזהה מתנדב
 export const getNearbyCalls = (volunteerId: number) => {
   return axios.get(`${API_BASE}/Volunteer/nearby-alerts`, {
-    params: { id: volunteerId },
+    params: { id: volunteerId }
   });
 };
