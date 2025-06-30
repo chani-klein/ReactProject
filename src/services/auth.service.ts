@@ -26,6 +26,9 @@ export const refreshTokenIfVolunteer = async () => {
   }
 };
 
+export const checkUserExists = (gmail: string) => {
+  return axios.get(`/User/exists?gmail=${encodeURIComponent(gmail)}`);
+};
 export const registerUser = (user: any) => {
   return axios.post("/User", user); // ודא שהשרת אכן מקבל כאן את הרישום
 };
