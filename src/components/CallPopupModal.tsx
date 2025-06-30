@@ -3,6 +3,7 @@
 import { useCallContext } from "../contexts/CallContext"
 import { useEffect, useState } from "react"
 import AlertModal from "./AlertModal"
+import { respondToCall } from "../services/volunteer.service" // ✅ שימוש בפונקציה מהשירות
 import axios from "../services/axios"
 
 export default function CallPopupModal() {
@@ -23,7 +24,7 @@ export default function CallPopupModal() {
   const reverseGeocode = async (lat: number, lon: number): Promise<string> => {
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=he`,
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=he`
       )
       const data = await response.json()
       return data.display_name || "כתובת לא זמינה"
@@ -37,9 +38,9 @@ export default function CallPopupModal() {
     if (!popupCall || isNaN(volunteerId)) return
     setIsLoading(true)
     try {
-      await axios.post("/VolunteerCalls/respond", {
+      await respondToCall({
         callId: popupCall.id,
-        volunteerId: volunteerId,
+        volunteerId,
         response: "going",
       })
       setPopupCall(null)
@@ -54,9 +55,9 @@ export default function CallPopupModal() {
     if (!popupCall || isNaN(volunteerId)) return
     setIsLoading(true)
     try {
-      await axios.post("/VolunteerCalls/respond", {
+      await respondToCall({
         callId: popupCall.id,
-        volunteerId: volunteerId,
+        volunteerId,
         response: "cant",
       })
       setPopupCall(null)
@@ -67,13 +68,6 @@ export default function CallPopupModal() {
     }
   }
 
-  // ✅ פונקציה לניווט לקריאות פעילות
-  const navigateToActiveCalls = () => {
-    // אם יש לך ניווט ספציפי, הוסף כאן
-    // לדוגמה: window.location.href = '/volunteer/active-calls'
-    console.log("מעביר לקריאות פעילות...")
-  }
-
   return (
     <AlertModal
       isOpen={!!popupCall}
@@ -82,7 +76,6 @@ export default function CallPopupModal() {
       onAccept={accept}
       onDecline={decline}
       onClose={() => setPopupCall(null)}
-      onNavigateToActiveCalls={navigateToActiveCalls} // ✅ הוספתי את הפונקציה
     />
   )
 }

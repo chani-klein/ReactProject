@@ -1,16 +1,10 @@
-// export interface Call {
-//   id: string;
-//   locationX: number;
-//   locationY: number;
-//   imageUrl?: string;
-//   description?: string;
-//   urgencyLevel?: number;
-//   status?: string;
-//   numVolanteer: number; // חשוב - זה חייב להיות ללא ? 
-//   createdAt: Date | string;
-// }
+export interface VolunteerStatus {
+  volunteerId: number;
+  response: 'going' | 'declined' | 'arrived' | 'none'; // דוגמאות לסטטוסים אפשריים
+}
+
 export interface Call {
-  id: number ;
+  id: number;
   description: string;
   urgencyLevel: 'נמוך' | 'בינוני' | 'גבוה' | 'קריטי';
   locationX: number;
@@ -18,6 +12,7 @@ export interface Call {
   status: 'נפתחה' | 'בדרך' | 'בטיפול' | 'דורש תגבורת' | 'נסגר';
   createdAt: string;
   updatedAt?: string;
-    imageUrl?: string;
-     numVolanteer: number
+  imageUrl?: string;
+  numVolanteer: number;
+  volunteersStatus?: VolunteerStatus[];  // השדה החדש שצריך להוסיף
 }

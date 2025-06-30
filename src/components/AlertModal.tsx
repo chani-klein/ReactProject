@@ -10,48 +10,39 @@ interface AlertModalProps {
   onAccept: () => Promise<void>
   onDecline: () => Promise<void>
   onClose: () => void
-  onNavigateToActiveCalls?: () => void // ✅ הוספתי callback לניווט
 }
 
-export default function AlertModal({
-  isOpen,
-  call,
-  address,
-  onAccept,
-  onDecline,
-  onClose,
-  onNavigateToActiveCalls,
-}: AlertModalProps) {
+export default function AlertModal({ isOpen, call, address, onAccept, onDecline, onClose }: AlertModalProps) {
   const [isProcessing, setIsProcessing] = useState(false)
 
   const handleAccept = async () => {
-    console.log("מתחיל לטפל בקבלת הקריאה...")
+    console.log("🚨 [DEBUG] לחיצה על כפתור 'אני יוצא'")
     setIsProcessing(true)
-    try {
-      await onAccept()
-      console.log("קריאה התקבלה בהצלחה, מעביר לדף קריאות פעילות...")
 
-      // ✅ השתמש בcallback במקום useRouter
-      if (onNavigateToActiveCalls) {
-        onNavigateToActiveCalls()
-      }
+    try {
+      console.log("🚨 [DEBUG] מתחיל לקרוא ל-onAccept()...")
+      await onAccept()
+      console.log("🚨 [DEBUG] onAccept() הושלם בהצלחה!")
     } catch (error) {
-      console.error("שגיאה בקבלת הקריאה:", error)
-      alert("שגיאה בקבלת הקריאה. אנא נסה שוב.")
+      const err = error as any
+      console.error("🚨 [ERROR] שגיאה בקבלת הקריאה:", err)
+      alert(`שגיאה בקבלת הקריאה: ${err}`)
     } finally {
+      console.log("🚨 [DEBUG] מסיים - מגדיר isProcessing ל-false")
       setIsProcessing(false)
     }
   }
 
   const handleDecline = async () => {
-    console.log("מסרב לקריאה...")
+    console.log("🚨 [DEBUG] לחיצה על כפתור 'לא יכול'")
     setIsProcessing(true)
     try {
       await onDecline()
-      console.log("סירוב נשמר בהצלחה")
+      console.log("🚨 [DEBUG] סירוב נשמר בהצלחה")
     } catch (error) {
-      console.error("שגיאה בסירוב הקריאה:", error)
-      alert("שגיאה בסירוב הקריאה. אנא נסה שוב.")
+      const err = error as any
+      console.error("🚨 [ERROR] שגיאה בסירוב הקריאה:", err)
+      alert(`שגיאה בסירוב הקריאה: ${err}`)
     } finally {
       setIsProcessing(false)
     }
