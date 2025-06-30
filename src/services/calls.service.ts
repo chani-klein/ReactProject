@@ -1,41 +1,33 @@
+import axios from "axios";
+const API_BASE = "https://localhost:7219/api";
+// 🟢 התחברות או הרשמה (אזרח)
+export const registerCitizen = (user: any) => axios.post(`${API_BASE}/User`, user);
+export const loginCitizen = (credentials: any) => axios.post(`${API_BASE}/login`, credentials);
 
-import axios from "./axios";
-
-// יצירת קריאה חדשה (כולל קובץ)
-export const createCall = (formData: FormData) => {
-  return axios.post("/Calls", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
+// 🟡 פתיחת קריאה
+export const createCall = (formData: FormData) =>
+  axios.post(`${API_BASE}/Calls`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
   });
-};
 
-// שליחת תיאור לקריאה לקבלת הוראות עזרה ראשונה
-export const getFirstAidSuggestions = (description: string) => {
-  return axios.post("/FirstAid/suggest", JSON.stringify(description), {
-    headers: {
-      "Content-Type": "application/json",
-    },
+export const assignNearbyVolunteers = (callId: number) =>
+  axios.post(`${API_BASE}/Calls/${callId}/assign-nearby`);
+
+// 📋 סיום קריאה
+export const completeCall = (callId: number, formData: any) =>
+  axios.put(`${API_BASE}/Calls/${callId}/complete`, formData);
+
+// 🧾 מידע על קריאה
+export const getCallStatus = (callId: number) =>
+  axios.get(`${API_BASE}/Calls/status/${callId}`);
+
+export const getCallById = (callId: number) => axios.get(`${API_BASE}/Calls/${callId}`);
+export const getAllCalls = () => axios.get(`${API_BASE}/Calls`);
+
+// 🧠 עזרה ראשונה
+export const getFirstAidSuggestions = (description: string) =>
+  axios.post(`${API_BASE}/FirstAid/suggest`, JSON.stringify(description), {
+    headers: { "Content-Type": "application/json" },
   });
-};
 
-// שליחת תיאור לקבלת הוראות (שמות חופפים לקוד אחר)
-export const getFirstAidInstructions = getFirstAidSuggestions;
-
-// שליפת קריאה מוקצת לפי מזהה מתנדב
-export const getAssignedCalls = (volunteerId: number) => {
-  return axios.get(`/Calls/assigned/${volunteerId}`);
-};
-
-// עדכון סטטוס קריאה ("בדרך", "לא זמין" וכו')
-export const updateCallStatus = (id: number, status: string) => {
-  return axios.put(`/Calls/${id}/status`, { status });
-};
-
-// שליפת סטטוס לפי מזהה קריאה
-export const getCallStatus = (id: number) => {
-  return axios.get(`/Calls/status/${id}`);
-};
-// // קריאות מוקצות למתנדב
-// export const getAssignedCalls = (volunteerId: number) =>
-//   axios.get(`${API_BASE}/Calls/assigned/${volunteerId}`);
+export const getAllFirstAidGuides = () => axios.get(`${API_BASE}/FirstAid/all`);

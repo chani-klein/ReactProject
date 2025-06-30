@@ -19,7 +19,7 @@ const InitializedAuth = () => {
     const token = getSession();
 
     if (!token || !isValidToken(token)) {
-      navigate("/auth/login");
+      navigate("/login");
       return;
     }
 
@@ -29,7 +29,7 @@ const InitializedAuth = () => {
     } else if (role === "User") {
       navigate("/create-call");
     } else {
-      navigate("/auth/login"); // ברירת מחדל במקרה שתפקיד לא מזוהה
+      navigate("login"); // ברירת מחדל במקרה שתפקיד לא מזוהה
     }
   }, []);
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import BackgroundLayout from "../../layouts/BackgroundLayout";
-import { createCall, getFirstAidInstructions } from "../../services/calls.service";
+import { createCall, getFirstAidSuggestions } from "../../services/calls.service";
 import "../../style/emergency-styles.css"; // יבוא קובץ ה-CSS
 
 export default function CreateCallPage() {
@@ -61,7 +61,7 @@ export default function CreateCallPage() {
       await createCall(data);
       let guides = [];
       if (formData.description) {
-        const response = await getFirstAidInstructions(formData.description);
+        const response = await getFirstAidSuggestions(formData.description);
         guides = response.data;
       }
       navigate("/call-confirmation", { state: { guides } });
