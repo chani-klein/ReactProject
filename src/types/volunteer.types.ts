@@ -2,7 +2,7 @@ import type { VolunteerCall } from "./call.types"
 
 export interface Volunteer {
   id: number
-  email: string // 🔧 שינוי מ-gmail ל-email
+  Gmail: string // 🔧 שינוי מ-gmail ל-email
   fullName: string
   phoneNumber: string
   specialization: string
@@ -19,5 +19,5 @@ export interface VolunteerUpdateData {
   phoneNumber: string
   address: string
   city: string
-  email: string
+  Gmail: string
 }

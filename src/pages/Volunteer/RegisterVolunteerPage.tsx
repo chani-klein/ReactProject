@@ -2,7 +2,8 @@
 import { useState } from "react"
 import type React from "react"
 
-import { registerVolunteer } from "../../services/auth.service"
+ import {registerVolunteer} from "../../services/volunteer.service";
+
 import { useNavigate } from "react-router-dom"
 import { setSession } from "../../auth/auth.utils"
 import { Paths } from "../../routes/paths"
@@ -19,7 +20,7 @@ export default function RegisterVolunteerPage() {
 
   const [volunteer, setVolunteer] = useState<VolunteerRegisterData>({
     fullName: "",
-    email: "", // 🔧 שינוי מ-gmail ל-email
+    Gmail: "", // 🔧 שינוי מ-gmail ל-email
     password: "",
     phoneNumber: "",
     specialization: "",
@@ -193,10 +194,10 @@ export default function RegisterVolunteerPage() {
 
           <div className="form-group">
             <input
-              name="email" // 🔧 שינוי מ-gmail ל-email
+              name="Gmail" // 🔧 שינוי מ-gmail ל-email
               type="email"
               placeholder="כתובת אימייל"
-              value={volunteer.email}
+              value={volunteer.Gmail}
               onChange={handleChange}
               className={`form-input ${errors.email ? "error" : ""}`}
               required

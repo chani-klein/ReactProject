@@ -121,7 +121,7 @@ const VolunteerListPage = () => {
 
               <div className="volunteer-details">
                 <p>
-                  <strong>אימייל:</strong> {volunteer.email}
+                  <strong>אימייל:</strong> {volunteer.Gmail}
                 </p>
                 <p>
                   <strong>טלפון:</strong> {volunteer.phoneNumber}

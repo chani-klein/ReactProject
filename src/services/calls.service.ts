@@ -78,7 +78,7 @@ import type { Call, CallResponse, CallCreateRequest } from "../types"
  const API_BASE = "https://localhost:7219/api";
 
 // 🔧 יצירת קריאה חדשה - תיקון הפורמט והוספת לוגים
-export const createCall = async (callData: FormData | CallCreateRequest): Promise<AxiosResponse<CallResponse>> => {
+export const createCall = async (callData: FormData | CallCreateRequest): Promise<AxiosResponse<CallCreateRequest>> => {
   try {
     console.log("🚨 Creating emergency call:", callData)
 

@@ -19,7 +19,7 @@ export default function RegisterUserPage() {
     firstName: "",
     lastName: "",
     phoneNumber: "",
-    email: "", // 🔧 שינוי מ-gmail ל-email
+    Gmail: "", // 🔧 שינוי מ-gmail ל-email
     password: "",
     role: "User", // 🔧 שינוי מ-Role ל-role
   })
@@ -95,7 +95,7 @@ export default function RegisterUserPage() {
     newErrors.firstName = validateName(user.firstName)
     newErrors.lastName = validateName(user.lastName)
     newErrors.phoneNumber = validatePhone(user.phoneNumber)
-    newErrors.email = validateEmail(user.email) // 🔧 שינוי מ-gmail ל-email
+    newErrors.email = validateEmail(user.Gmail) // 🔧 שינוי מ-gmail ל-email
     newErrors.password = validatePassword(user.password)
 
     setErrors(newErrors)
@@ -177,12 +177,12 @@ export default function RegisterUserPage() {
 
             <div className="form-group">
               <input
-                name="email" // 🔧 שינוי מ-gmail ל-email
+                name="Gmail" // 🔧 שינוי מ-gmail ל-email
                 type="email"
                 placeholder="אימייל"
-                value={user.email}
+                value={user.Gmail}
                 onChange={handleChange}
-                className={errors.email ? "error" : user.email ? "success" : ""}
+                className={errors.email ? "error" : user.Gmail ? "success" : ""}
               />
               {errors.email && <div className="error-message show">{errors.email}</div>}
             </div>

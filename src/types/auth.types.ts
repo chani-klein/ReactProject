@@ -3,14 +3,14 @@ export interface UserRegisterData {
   firstName: string
   lastName: string
   phoneNumber: string
-  email: string // 🔧 שינוי מ-gmail ל-email
+  Gmail: string // 🔧 שינוי מ-gmail ל-email
   password: string
   role: string // 🔧 שינוי מ-Role ל-role לעקביות
 }
 
 export interface VolunteerRegisterData {
   fullName: string
-  email: string // 🔧 שינוי מ-gmail ל-email
+  Gmail: string // 🔧 שינוי מ-gmail ל-email
   password: string
   phoneNumber: string
   specialization: string
