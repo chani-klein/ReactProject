@@ -1,118 +1,55 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { useCallContext } from '../contexts/CallContext';
-import { respondToCall } from '../services/volunteer.service';
-import { getVolunteerDetails } from '../services/volunteer.service';
-import type { Call } from '../types/call.types';
-interface AlertModalProps {
-  isOpen: boolean;
-  call: Call | null;
-  address: string | null;
-  onAccept: () => Promise<void>;
-  onDecline: () => Promise<void>;
-  onClose: () => void;
+"use client"
+
+import type React from "react"
+
+interface Call {
+  id: string
+  callerName: string
+  // Add other properties as needed
 }
 
-export default function CallPopupModal() {
-  const { popupCall, setPopupCall, isLoading, setIsLoading } = useCallContext();
-  const [address, setAddress] = useState<string>('');
-  const [volunteerId, setVolunteerId] = useState<number | null>(null);
+interface CallPopupModalProps {
+  call: Call | null
+  onClose: () => void
+  respondToCall: (callId: string, response: string) => void // Modified to accept a response
+}
 
-  useEffect(() => {
-    const fetchVolunteerId = async () => {
-      const id = await getVolunteerDetails();
-      setVolunteerId(id);
-    };
-    fetchVolunteerId();
-  }, []);
-
-  useEffect(() => {
-    if (popupCall) {
-      reverseGeocode(popupCall.locationX, popupCall.locationY)
-        .then(setAddress)
-        .catch(() => setAddress('כתובת לא זמינה'));
-    }
-  }, [popupCall]);
-
-  const reverseGeocode = async (lat: number, lon: number): Promise<string> => {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=he`
-      );
-      const data = await response.json();
-      return data.display_name || 'כתובת לא זמינה';
-    } catch (error) {
-      console.error('Geocoding error:', error);
-      return 'כתובת לא זמינה';
-    }
-  };
-
-  const accept = async () => {
-    if (!popupCall || !volunteerId) return;
-    setIsLoading(true);
-    try {
-      await respondToCall({
-        callId: popupCall.id,
-        volunteerId,
-        response: 'going',
-      });
-      // הפעלת ניווט
-      window.open(`https://www.google.com/maps/dir/?api=1&destination=${popupCall.locationX},${popupCall.locationY}`, '_blank');
-      setPopupCall(null);
-    } catch (err) {
-      console.error('שגיאה באישור הקריאה:', err);
-      alert('שגיאה באישור הקריאה, נסה שוב');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const decline = async () => {
-    if (!popupCall || !volunteerId) return;
-    setIsLoading(true);
-    try {
-      await respondToCall({
-        callId: popupCall.id,
-        volunteerId,
-        response: 'cant',
-      });
-      setPopupCall(null);
-    } catch (err) {
-      console.error('שגיאה בסירוב הקריאה:', err);
-      alert('שגיאה בסירוב הקריאה, נסה שוב');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (!popupCall) return null;
+const CallPopupModal: React.FC<CallPopupModalProps> = ({ call, onClose, respondToCall }) => {
+  if (!call) {
+    return null
+  }
 
   return (
-    <div className="modal-overlay" onClick={() => setPopupCall(null)}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <div className="modal-icon">🚨</div>
-          <h2 className="modal-title">קריאה חדשה באזור שלך!</h2>
-        </div>
-        <div className="modal-body">
-          <div className="modal-info">
-            <p><strong>📝 תיאור:</strong> {popupCall.description}</p>
-            <p><strong>🚨 דחיפות:</strong> {popupCall.urgencyLevel}</p>
-            <p><strong>📍 כתובת:</strong> {address || `${popupCall.locationX}, ${popupCall.locationY}`}</p>
-            <p><strong>⏰ זמן:</strong> {new Date(popupCall.createdAt).toLocaleString('he-IL')}</p>
-            <p><strong>🚗 מתנדבים בדרך:</strong> {popupCall.goingVolunteersCount || 0}</p>
-          </div>
-          <div className="modal-warning">⚠️ לחיצה על "אני יוצא" תפתח ניווט</div>
-        </div>
-        <div className="modal-actions">
-          <button className="btn btn-success" onClick={accept} disabled={isLoading}>
-            {isLoading ? '🔄 מעבד...' : '🚑 אני יוצא'}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white p-6 rounded-md shadow-lg">
+        <h2 className="text-lg font-semibold mb-4">Incoming Call</h2>
+        <p>Caller: {call.callerName}</p>
+        <div className="mt-4 flex justify-around">
+          <button
+            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            onClick={() => {
+              respondToCall(call.id, "going") // Updated line
+              onClose()
+            }}
+          >
+            Answer
           </button>
-          <button className="btn btn-danger" onClick={decline} disabled={isLoading}>
-            {isLoading ? '🔄 מעבד...' : '❌ לא יכול'}
+          <button
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            onClick={() => {
+              respondToCall(call.id, "cant") // Updated line
+              onClose()
+            }}
+          >
+            Decline
+          </button>
+          <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded" onClick={onClose}>
+            Close
           </button>
         </div>
       </div>
     </div>
-  );
+  )
 }
+
+export default CallPopupModal

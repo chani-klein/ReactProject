@@ -45,10 +45,12 @@ const router = createBrowserRouter([
     path: "/CreateCallPage",
     element: <CreateCallPage />,
   },
+  
   {
-    path: "/call-confirmation",
-    element: <CallConfirmationPage />,
-  },
+  path: "/call-confirmation/:callId",
+  element: <CallConfirmationPage />,
+},
+
   {
     path: "/volunteerPage",
     element: <VolunteerPage />,

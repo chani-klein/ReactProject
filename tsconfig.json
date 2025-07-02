@@ -1,11 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+     "target": "es2015",          // ← משנה מ־"es5"
+  "lib": ["dom", "es2015"],     // ← מתאים ל־target
+  "downlevelIteration": true, 
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,

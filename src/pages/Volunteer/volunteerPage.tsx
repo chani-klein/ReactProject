@@ -79,11 +79,8 @@ export default function VolunteerMenu() {
     }
 
     try {
-      await respondToCall({
-        callId: modalCall.id,
-        volunteerId: volunteerId,
-        response: "going",
-      })
+     await respondToCall(modalCall.id, "going")
+
 
       // סוגר את המודל ומנקה כתובת
       setModalCall(null)
@@ -104,11 +101,8 @@ export default function VolunteerMenu() {
     }
 
     try {
-      await respondToCall({
-        callId: modalCall.id,
-        volunteerId: volunteerId,
-        response: "cant", // תיקון: סירוב קריאה
-      })
+      await respondToCall(modalCall.id, "cant")
+
 
       // סוגר את המודל ומנקה כתובת
       setModalCall(null)
@@ -163,7 +157,7 @@ export default function VolunteerMenu() {
 
     const interval = setInterval(async () => {
       try {
-        const res = await getNearbyCalls(volunteerId)
+        const res = await getNearbyCalls()
 
         // אם יש קריאה חדשה ועדיין אין מודל מוצג
         if (res.data.length > 0 && !modalCall) {
@@ -253,3 +247,198 @@ export default function VolunteerMenu() {
     </BackgroundLayout>
   )
 }
+// "use client"
+
+// import { useState, useEffect } from "react"
+// import { getNearbyCalls, respondToCall } from "../../services/volunteer.service"
+// import type { Call } from "../../types/call.types"
+// import BackgroundLayout from "../../layouts/BackgroundLayout"
+
+// interface ModalCall extends Call {
+//   // הוספת properties נוספים אם נדרש
+// }
+
+// const getUrgencyText = (urgency: number) => {
+//   switch (urgency) {
+//     case 1:
+//       return "נמוכה"
+//     case 2:
+//       return "בינוני"
+//     case 3:
+//       return "גבוהה"
+//     case 4:
+//       return "קריטית"
+//     default:
+//       return "לא ידוע"
+//   }
+// }
+
+// const getUrgencyClass = (urgency: number) => {
+//   switch (urgency) {
+//     case 1:
+//       return "urgency-low"
+//     case 2:
+//       return "urgency-medium"
+//     case 3:
+//       return "urgency-high"
+//     case 4:
+//       return "urgency-critical"
+//     default:
+//       return "urgency-unknown"
+//   }
+// }
+
+// const VolunteerPage = () => {
+//   const [calls, setCalls] = useState<Call[]>([])
+//   const [modalCall, setModalCall] = useState<ModalCall | null>(null)
+//   const [isLoading, setIsLoading] = useState(true)
+//   const [error, setError] = useState<string | null>(null)
+
+//   useEffect(() => {
+//     fetchCalls()
+//     // רענון כל 30 שניות
+//     const interval = setInterval(fetchCalls, 3000)
+//     return () => clearInterval(interval)
+//   }, [])
+
+//   const fetchCalls = async () => {
+//     try {
+//       // 🔧 תיקון: הסרת הפרמטר volunteerId
+//       const res = await getNearbyCalls()
+//       setCalls(res.data)
+//       setError(null)
+//     } catch (error) {
+//       console.error("Error fetching calls:", error)
+//       setError("שגיאה בטעינת קריאות")
+//     } finally {
+//       setIsLoading(false)
+//     }
+//   }
+
+//   const handleRespondToCall = async (response: "going" | "cant") => {
+//     if (!modalCall) return
+
+//     try {
+//       // 🔧 תיקון: שימוש בפרמטרים הנכונים
+//       await respondToCall(modalCall.id, response)
+//       setModalCall(null)
+//       fetchCalls() // רענון הקריאות
+//     } catch (error) {
+//       console.error("Error responding to call:", error)
+//       alert("שגיאה בתגובה לקריאה")
+//     }
+//   }
+
+//   if (isLoading) {
+//     return (
+//       <BackgroundLayout>
+//         <div className="loading-container">
+//           <div className="loading-spinner"></div>
+//           <p>טוען קריאות קרובות...</p>
+//         </div>
+//       </BackgroundLayout>
+//     )
+//   }
+
+//   return (
+//     <BackgroundLayout>
+//       <div className="volunteer-page">
+//         <h1>קריאות קרובות</h1>
+
+//         {error && (
+//           <div className="error-message">
+//             <p>{error}</p>
+//             <button onClick={fetchCalls} className="retry-button">
+//               נסה שוב
+//             </button>
+//           </div>
+//         )}
+
+//         {calls.length > 0 ? (
+//           <div className="calls-grid">
+//             {calls.map((call) => (
+//               <div key={call.id} className="call-card">
+//                 <div className="call-header">
+//                   <h3>קריאה #{call.id}</h3>
+//                   <span className={`urgency-badge ${getUrgencyClass(call.urgencyLevel)}`}>
+//                     {getUrgencyText(call.urgencyLevel)}
+//                   </span>
+//                 </div>
+
+//                 <div className="call-details">
+//                   <p>
+//                     <strong>תיאור:</strong> {call.description}
+//                   </p>
+//                   <p>
+//                     <strong>מיקום:</strong> {call.locationY.toFixed(4)}, {call.locationX.toFixed(4)}
+//                   </p>
+//                   <p>
+//                     <strong>זמן יצירה:</strong> {new Date(call.createdAt).toLocaleString("he-IL")}
+//                   </p>
+//                 </div>
+
+//                 <div className="call-actions">
+//                   <button className="view-details-button" onClick={() => setModalCall(call)}>
+//                     צפה בפרטים
+//                   </button>
+//                 </div>
+//               </div>
+//             ))}
+//           </div>
+//         ) : (
+//           <div className="no-calls">
+//             <p>אין קריאות קרובות כרגע</p>
+//           </div>
+//         )}
+
+//         {/* מודל פרטי קריאה */}
+//         {modalCall && (
+//           <div className="modal-overlay">
+//             <div className="modal-content">
+//               <div className="modal-header">
+//                 <h2>פרטי קריאה #{modalCall.id}</h2>
+//                 <button className="close-button" onClick={() => setModalCall(null)}>
+//                   ✕
+//                 </button>
+//               </div>
+
+//               <div className="modal-body">
+//                 <p>
+//                   <strong>תיאור:</strong> {modalCall.description}
+//                 </p>
+//                 <p>
+//                   <strong>רמת דחיפות:</strong> {getUrgencyText(modalCall.urgencyLevel)}
+//                 </p>
+//                 <p>
+//                   <strong>מיקום:</strong> {modalCall.locationY.toFixed(4)}, {modalCall.locationX.toFixed(4)}
+//                 </p>
+//                 <p>
+//                   <strong>זמן יצירה:</strong> {new Date(modalCall.createdAt).toLocaleString("he-IL")}
+//                 </p>
+//                 {modalCall.imageUrl && (
+//                   <div className="call-image">
+//                     <img src={modalCall.imageUrl || "/placeholder.svg"} alt="תמונת הקריאה" />
+//                   </div>
+//                 )}
+//               </div>
+
+//               <div className="modal-actions">
+//                 <button className="going-button" onClick={() => handleRespondToCall("going")}>
+//                   אני הולך
+//                 </button>
+//                 <button className="cant-button" onClick={() => handleRespondToCall("cant")}>
+//                   לא יכול
+//                 </button>
+//                 <button className="close-modal-button" onClick={() => setModalCall(null)}>
+//                   סגור
+//                 </button>
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </div>
+//     </BackgroundLayout>
+//   )
+// }
+
+// export default VolunteerPage

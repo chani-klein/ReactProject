@@ -1,136 +1,140 @@
-import { useState } from "react";
-import { registerUser, checkUserExists } from "../../services/auth.service";
-import BackgroundLayout from "../../layouts/BackgroundLayout";
-import { useNavigate } from "react-router-dom";
-import { setSession } from "../../auth/auth.utils";
-import { Paths } from "../../routes/paths";
-import { UserRegisterData } from "../../types/auth.types";
-
-import "../register.css";
+"use client"
+import type React from "react"
+import { useState } from "react"
+import { registerUser } from "../../services/auth.service"
+import BackgroundLayout from "../../layouts/BackgroundLayout"
+import { useNavigate } from "react-router-dom"
+import { setSession } from "../../auth/auth.utils"
+import { Paths } from "../../routes/paths"
+import type { UserRegisterData } from "../../types"
+import "../register.css"
 
 interface ValidationErrors {
-  [key: string]: string;
+  [key: string]: string
 }
 
 export default function RegisterUserPage() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const [user, setUser] = useState<UserRegisterData>({
     firstName: "",
     lastName: "",
     phoneNumber: "",
-    gmail: "",
+    email: "", // 🔧 שינוי מ-gmail ל-email
     password: "",
-    Role: ""
-  });
+    role: "User", // 🔧 שינוי מ-Role ל-role
+  })
 
-  const [errors, setErrors] = useState<ValidationErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<ValidationErrors>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // פונקציות אימות
   const validateName = (name: string): string => {
-    if (!name.trim()) return "שדה זה הוא חובה";
-    if (name.trim().length < 2) return "השם חייב להכיל לפחות 2 תווים";
-    if (!/^[\u0590-\u05FFa-zA-Z\s]+$/.test(name)) return "השם יכול להכיל רק אותיות";
-    return "";
-  };
+    if (!name.trim()) return "שדה זה הוא חובה"
+    if (name.trim().length < 2) return "השם חייב להכיל לפחות 2 תווים"
+    if (!/^[\u0590-\u05FFa-zA-Z\s]+$/.test(name)) return "השם יכול להכיל רק אותיות"
+    return ""
+  }
 
   const validatePhone = (phone: string): string => {
-    if (!phone.trim()) return "מספר טלפון הוא חובה";
-    const phoneRegex = /^0\d{1,2}-?\d{7}$|^0\d{9}$/;
-    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
-      return "מספר טלפון לא תקין (לדוגמה: 050-1234567)";
+    if (!phone.trim()) return "מספר טלפון הוא חובה"
+    const phoneRegex = /^0\d{1,2}-?\d{7}$|^0\d{9}$/
+    if (!phoneRegex.test(phone.replace(/\s/g, ""))) {
+      return "מספר טלפון לא תקין (לדוגמה: 050-1234567)"
     }
-    return "";
-  };
+    return ""
+  }
 
   const validateEmail = (email: string): string => {
-    if (!email.trim()) return "כתובת אימייל היא חובה";
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) return "כתובת אימייל לא תקינה";
-    return "";
-  };
+    if (!email.trim()) return "כתובת אימייל היא חובה"
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) return "כתובת אימייל לא תקינה"
+    return ""
+  }
 
   const validatePassword = (password: string): string => {
-    if (!password.trim()) return "סיסמה היא חובה";
-    if (password.length < 8) return "הסיסמה חייבת להכיל לפחות 8 תווים";
+    if (!password.trim()) return "סיסמה היא חובה"
+    if (password.length < 8) return "הסיסמה חייבת להכיל לפחות 8 תווים"
     if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(password)) {
-      return "הסיסמה חייבת להכיל לפחות אות אחת ומספר אחד";
+      return "הסיסמה חייבת להכיל לפחות אות אחת ומספר אחד"
     }
-    return "";
-  };
+    return ""
+  }
 
   const validateField = (name: string, value: string): string => {
     switch (name) {
       case "firstName":
       case "lastName":
-        return validateName(value);
+        return validateName(value)
       case "phoneNumber":
-        return validatePhone(value);
-      case "gmail":
-        return validateEmail(value);
+        return validatePhone(value)
+      case "email": // 🔧 שינוי מ-gmail ל-email
+        return validateEmail(value)
       case "password":
-        return validatePassword(value);
+        return validatePassword(value)
       default:
-        return "";
+        return ""
     }
-  };
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setUser((prev) => ({ ...prev, [name]: value }));
+    const { name, value } = e.target
 
-    const error = validateField(name, value);
+    setUser({ ...user, [name]: value })
+
+    // אימות בזמן אמת
+    const error = validateField(name, value)
     setErrors((prev) => ({
       ...prev,
-      [name]: error
-    }));
-  };
+      [name]: error,
+    }))
+  }
 
   const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {
-      firstName: validateName(user.firstName),
-      lastName: validateName(user.lastName),
-      phoneNumber: validatePhone(user.phoneNumber),
-      gmail: validateEmail(user.gmail),
-      password: validatePassword(user.password)
-    };
+    const newErrors: ValidationErrors = {}
 
-    setErrors(newErrors);
-    return !Object.values(newErrors).some((error) => error);
-  };
+    newErrors.firstName = validateName(user.firstName)
+    newErrors.lastName = validateName(user.lastName)
+    newErrors.phoneNumber = validatePhone(user.phoneNumber)
+    newErrors.email = validateEmail(user.email) // 🔧 שינוי מ-gmail ל-email
+    newErrors.password = validatePassword(user.password)
+
+    setErrors(newErrors)
+
+    return !Object.values(newErrors).some((error) => error !== "")
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+    e.preventDefault()
 
-    setIsSubmitting(true);
+    if (!validateForm()) {
+      alert("אנא תקן את השגיאות בטופס")
+      return
+    }
+
+    setIsSubmitting(true)
+
     try {
-      const existsRes = await checkUserExists(user.gmail);
-      if (existsRes.data.exists) {
-        setErrors((prev) => ({
-          ...prev,
-          gmail: "כתובת אימייל זו כבר רשומה במערכת"
-        }));
-        setIsSubmitting(false);
-        return;
-      }
-
-      const res = await registerUser(user);
-      const { token } = res.data;
+      const res = await registerUser(user)
+      const { token } = res.data
 
       if (token) {
-        setSession(token);
-        alert("ההרשמה הצליחה!");
-        navigate(`/${Paths.userHome}`);
+        setSession(token)
+        alert("ההרשמה הצליחה!")
+        navigate(`/${Paths.userHome}`)
       } else {
-        alert("❗לא התקבל טוקן מהשרת");
+        alert("❗לא התקבל טוקן מהשרת")
       }
     } catch (err: any) {
-      console.error(err);
-      alert("שגיאה בהרשמה");
+      console.error(err)
+      if (err.response?.data?.message) {
+        alert("שגיאה: " + err.response.data.message)
+      } else {
+        alert("שגיאה בהרשמה")
+      }
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <BackgroundLayout>
@@ -138,25 +142,62 @@ export default function RegisterUserPage() {
         <div className="form-layout">
           <h2 className="form-title">טופס הרשמה למשתמשים</h2>
           <form onSubmit={handleSubmit}>
-            {["firstName", "lastName", "phoneNumber", "gmail", "password"].map((field) => (
-              <div className="form-group" key={field}>
-                <input
-                  name={field}
-                  type={field === "password" ? "password" : field === "gmail" ? "email" : "text"}
-                  placeholder={
-                    field === "firstName" ? "שם פרטי" :
-                    field === "lastName" ? "שם משפחה" :
-                    field === "phoneNumber" ? "טלפון (לדוגמה: 050-1234567)" :
-                    field === "gmail" ? "אימייל" :
-                    "סיסמה (לפחות 8 תווים)"
-                  }
-                  value={(user as any)[field]}
-                  onChange={handleChange}
-                  className={`form-input ${errors[field] ? "error" : ""}`}
-                />
-                {errors[field] && <div className="error-message">{errors[field]}</div>}
-              </div>
-            ))}
+            <div className="form-group">
+              <input
+                name="firstName"
+                placeholder="שם פרטי"
+                value={user.firstName}
+                onChange={handleChange}
+                className={errors.firstName ? "error" : user.firstName ? "success" : ""}
+              />
+              {errors.firstName && <div className="error-message show">{errors.firstName}</div>}
+            </div>
+
+            <div className="form-group">
+              <input
+                name="lastName"
+                placeholder="שם משפחה"
+                value={user.lastName}
+                onChange={handleChange}
+                className={errors.lastName ? "error" : user.lastName ? "success" : ""}
+              />
+              {errors.lastName && <div className="error-message show">{errors.lastName}</div>}
+            </div>
+
+            <div className="form-group">
+              <input
+                name="phoneNumber"
+                placeholder="טלפון (לדוגמה: 050-1234567)"
+                value={user.phoneNumber}
+                onChange={handleChange}
+                className={errors.phoneNumber ? "error" : user.phoneNumber ? "success" : ""}
+              />
+              {errors.phoneNumber && <div className="error-message show">{errors.phoneNumber}</div>}
+            </div>
+
+            <div className="form-group">
+              <input
+                name="email" // 🔧 שינוי מ-gmail ל-email
+                type="email"
+                placeholder="אימייל"
+                value={user.email}
+                onChange={handleChange}
+                className={errors.email ? "error" : user.email ? "success" : ""}
+              />
+              {errors.email && <div className="error-message show">{errors.email}</div>}
+            </div>
+
+            <div className="form-group">
+              <input
+                name="password"
+                type="password"
+                placeholder="סיסמה (לפחות 8 תווים)"
+                value={user.password}
+                onChange={handleChange}
+                className={errors.password ? "error" : user.password ? "success" : ""}
+              />
+              {errors.password && <div className="error-message show">{errors.password}</div>}
+            </div>
 
             <button type="submit" className="submit-button" disabled={isSubmitting}>
               {isSubmitting ? "מבצע הרשמה..." : "הירשם עכשיו"}
@@ -165,5 +206,5 @@ export default function RegisterUserPage() {
         </div>
       </div>
     </BackgroundLayout>
-  );
+  )
 }

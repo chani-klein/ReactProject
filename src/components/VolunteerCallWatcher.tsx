@@ -41,7 +41,7 @@ const VolunteerCallWatcher: React.FC = () => {
       if (!volunteerId) return;
 
       try {
-        const response = await getNearbyCalls(volunteerId);
+        const response = await getNearbyCalls();
         setCalls(response.data);
         setError(null);
       } catch (err: any) {

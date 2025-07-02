@@ -1,92 +1,107 @@
-"use client";
-import type React from "react";
-import { useState } from "react";
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
+import { CheckCircle, X } from "lucide-react"
 
 interface CloseCallFormProps {
-  onSubmit: (summary: string) => void;
-  isLoading?: boolean;
+  call: { id: number; description?: string }
+  onComplete: (callId: number, summary: string) => Promise<void>
 }
 
-export default function CloseCallForm({ onSubmit, isLoading = false }: CloseCallFormProps) {
-  const [summary, setSummary] = useState("");
-  const [charCount, setCharCount] = useState(0);
-  const maxChars = 500;
+export default function CloseCallForm({ call, onComplete }: CloseCallFormProps) {
+  const [summary, setSummary] = useState("")
+  const [sentToHospital, setSentToHospital] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showForm, setShowForm] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (summary.trim() && summary.length >= 10) {
-      onSubmit(summary.trim());
-      setSummary("");
-      setCharCount(0);
-    }
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    if (value.length <= maxChars) {
-      setSummary(value);
-      setCharCount(value.length);
+    if (!summary.trim()) {
+      alert("אנא הזן סיכום הקריאה")
+      return
     }
-  };
+
+    setIsSubmitting(true)
+    try {
+      const fullSummary = sentToHospital ? `${summary} | פונה לבית חולים: כן` : summary
+      await onComplete(call.id, fullSummary)
+      setShowForm(false)
+      setSummary("")
+      setSentToHospital(false)
+    } catch (error) {
+      console.error("שגיאה בסיום קריאה:", error)
+      alert("שגיאה בסיום הקריאה")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (!showForm) {
+    return (
+      <div className="close-call-trigger">
+        <button className="complete-call-btn" onClick={() => setShowForm(true)}>
+          <CheckCircle size={20} />
+          סיים קריאה
+        </button>
+      </div>
+    )
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="form">
-      <h3>📝 דו״ח סיום קריאה</h3>
-      <div style={{ position: "relative" }}>
-        <textarea
-          value={summary}
-          onChange={handleChange}
-          placeholder="אנא פרט את הפעולות שבוצעו, המצב הסופי, והערות רלוונטיות נוספות..."
-          required
-          minLength={10}
-          disabled={isLoading}
-          style={{
-            minHeight: "150px",
-            paddingBottom: "2rem",
-            width: "100%",
-            padding: "1rem",
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-            fontSize: "1rem",
-            fontFamily: "inherit",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: "0.5rem",
-            left: "1rem",
-            fontSize: "0.8rem",
-            color: charCount > maxChars * 0.8 ? "#ff6b6b" : "#666",
-          }}
-        >
-          {charCount}/{maxChars}
-        </div>
+    <div className="close-call-form">
+      <div className="form-header">
+        <h3>סיום קריאה #{call.id}</h3>
+        <button className="close-form-btn" onClick={() => setShowForm(false)}>
+          <X size={20} />
+        </button>
       </div>
-      <button
-        type="submit"
-        className="btn btn-success"
-        disabled={isLoading || summary.length < 10}
-        style={{
-          opacity: isLoading || summary.length < 10 ? 0.6 : 1,
-          cursor: isLoading || summary.length < 10 ? "not-allowed" : "pointer",
-          marginTop: "1rem",
-        }}
-      >
-        {isLoading ? "🔄 שומר דו״ח..." : "✅ סיים קריאה"}
-      </button>
-      {summary.length > 0 && summary.length < 10 && (
-        <p
-          style={{
-            color: "#ff6b6b",
-            fontSize: "0.9rem",
-            marginTop: "0.5rem",
-            textAlign: "center",
-          }}
-        >
-          נדרשים לפחות 10 תווים לדו״ח
-        </p>
+
+      {call.description && (
+        <div className="call-reminder">
+          <p>
+            <strong>תיאור הקריאה:</strong> {call.description}
+          </p>
+        </div>
       )}
-    </form>
-  );
+
+      <form onSubmit={handleSubmit} className="summary-form">
+        <div className="form-group">
+          <label htmlFor="summary">סיכום הטיפול *</label>
+          <textarea
+            id="summary"
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+            placeholder="תאר מה נעשה בקריאה, מצב הנפגע, טיפול שניתן וכו'..."
+            rows={5}
+            className="form-textarea"
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={sentToHospital}
+              onChange={(e) => setSentToHospital(e.target.checked)}
+              className="form-checkbox"
+            />
+            <span className="checkbox-text">הנפגע פונה לבית חולים</span>
+          </label>
+        </div>
+
+        <div className="form-actions">
+          <button type="submit" disabled={isSubmitting} className="submit-btn">
+            {isSubmitting ? "מסיים קריאה..." : "סיים קריאה"}
+          </button>
+          <button type="button" onClick={() => setShowForm(false)} disabled={isSubmitting} className="cancel-btn">
+            ביטול
+          </button>
+        </div>
+      </form>
+    </div>
+  )
 }
