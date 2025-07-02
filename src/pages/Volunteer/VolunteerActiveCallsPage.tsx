@@ -1,102 +1,95 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import ActiveCallCard from "../../components/ActiveCallCard"
-import BackgroundLayout from "../../layouts/BackgroundLayout"
-import { getActiveCalls, updateVolunteerStatus as updateStatusService } from "../../services/volunteer.service"
+'use client';
+import { useEffect, useState } from 'react';
+import ActiveCallCard from '../../components/ActiveCallCard';
+import BackgroundLayout from '../../layouts/BackgroundLayout';
+import { getActiveCalls, updateVolunteerStatus, completeCall } from '../../services/volunteer.service';
+import { getVolunteerDetails } from '../../services/volunteer.service';
+import type { Call } from '../../types/call.types';
 
 export default function VolunteerActiveCallsPage() {
-  const [activeCalls, setActiveCalls] = useState<any[]>([])
-
-  const volunteerIdRaw = localStorage.getItem("volunteerId")
-  const volunteerId = volunteerIdRaw ? Number(volunteerIdRaw) : Number.NaN
+  const [activeCalls, setActiveCalls] = useState<Call[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchActiveCalls = async () => {
-    if (isNaN(volunteerId)) {
-      console.warn("⚠️ volunteerId לא תקין")
-      return
+    const volunteerId = await getVolunteerDetails();
+    if (!volunteerId) {
+      console.error('❌ volunteerId לא תקין');
+      alert('אנא התחבר מחדש למערכת');
+      return;
     }
 
+    setIsLoading(true);
     try {
-      console.log("🔄 טוען קריאות פעילות למתנדב:", volunteerId)
-      const res = await getActiveCalls(volunteerId)
-      console.log("✅ קריאות פעילות נטענו:", res.data)
-      setActiveCalls(res.data)
+      const res = await getActiveCalls(volunteerId);
+      setActiveCalls(res.data);
     } catch (err) {
-      const error = err as any
-      console.error("❌ שגיאה בטעינת קריאות פעילות:", error)
-      setActiveCalls([])
+      console.error('❌ שגיאה בטעינת קריאות פעילות:', err);
+      setActiveCalls([]);
+      alert('שגיאה בטעינת קריאות פעילות');
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
-  const updateVolunteerStatus = async (callId: number, newStatus: string, summary?: string) => {
+  const updateVolunteerStatus = async (callId: number, newStatus: 'going' | 'arrived' | 'finished', summary?: string) => {
     try {
-      console.log("🔄 מעדכן סטטוס מתנדב:", callId, newStatus)
+      const volunteerId = await getVolunteerDetails();
+      if (!volunteerId) throw new Error('מתנדב לא מזוהה');
 
-      await updateStatusService(callId, volunteerId, newStatus)
-
-      console.log("✅ סטטוס מתנדב עודכן")
-
-      if (newStatus === "finished") {
-        setActiveCalls((prev) => prev.filter((call) => call.id !== callId))
+      if (newStatus === 'finished') {
+        await completeCall(callId, summary || '');
+        setActiveCalls((prev) => prev.filter((call) => call.id !== callId));
       } else {
+        await updateVolunteerStatus(callId, newStatus);
         setActiveCalls((prev) =>
-          prev.map((call) => (call.id === callId ? { ...call, volunteerStatus: newStatus } : call)),
-        )
+          prev.map((call) =>
+            call.id === callId ? { ...call, volunteersStatus: [{ volunteerId, response: newStatus }] } : call
+          )
+        );
       }
     } catch (err) {
-      const error = err as any
-      console.error("❌ שגיאה בעדכון סטטוס מתנדב:", error)
+      console.error('❌ שגיאה בעדכון סטטוס מתנדב:', err);
+      alert('שגיאה בעדכון הסטטוס, נסה שוב');
     }
-  }
+  };
 
   useEffect(() => {
-    console.log("🔄 רכיב נטען, volunteerId:", volunteerId)
-
-    if (!isNaN(volunteerId)) {
-      fetchActiveCalls()
-    } else {
-      console.error("❌ volunteerId לא תקין")
-      alert("אנא התחבר מחדש למערכת")
-    }
-  }, [volunteerId])
+    fetchActiveCalls();
+  }, []);
 
   return (
     <BackgroundLayout>
       <div className="page-header">
-        <h2 style={{ textAlign: "center" }}>📡 קריאות פעילות</h2>
+        <h2 style={{ textAlign: 'center' }}>📡 קריאות פעילות</h2>
         <button
           onClick={fetchActiveCalls}
           className="btn btn-secondary"
-          style={{ margin: "1rem auto", display: "block" }}
+          style={{ margin: '1rem auto', display: 'block' }}
+          disabled={isLoading}
         >
-          🔄 רענן רשימה
-        </button>
-
-        <button
-          onClick={() => {
-            console.log("🚨 [DEBUG] volunteerId:", volunteerId)
-            console.log("🚨 [DEBUG] activeCalls:", activeCalls)
-          }}
-          className="btn btn-warning"
-          style={{ margin: "0.5rem auto", display: "block" }}
-        >
-          🔍 הצג מידע דיבוג
+          {isLoading ? '🔄 טוען...' : '🔄 רענן רשימה'}
         </button>
       </div>
 
-      {activeCalls.length === 0 && (
-        <div style={{ textAlign: "center", padding: "2rem" }}>
+      {isLoading && (
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p>🔄 טוען קריאות פעילות...</p>
+        </div>
+      )}
+
+      {!isLoading && activeCalls.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
           <p>🔍 אין קריאות פעילות כרגע</p>
-          <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
             הקריאות שתקבל יופיעו כאן אחרי שתלחץ "אני יוצא"
           </p>
         </div>
       )}
 
-      {activeCalls.map((call) => (
-        <ActiveCallCard key={call.id} call={call} onStatusUpdate={updateVolunteerStatus} />
-      ))}
+      {!isLoading &&
+        activeCalls.map((call) => (
+          <ActiveCallCard key={call.id} call={call} onStatusUpdate={updateVolunteerStatus} />
+        ))}
     </BackgroundLayout>
-  )
+  );
 }

@@ -1,18 +1,31 @@
-export interface VolunteerStatus {
+import type { Volunteer } from "../types/volunteer.types";
+
+
+// ✅ עדכון הממשקים להתאמה למבנה הנתונים בצד השרת
+export interface VolunteerCall {
+  id: number;
+  callsId: number;
   volunteerId: number;
-  response: 'going' | 'declined' | 'arrived' | 'none'; // דוגמאות לסטטוסים אפשריים
+  volunteerStatus?: 'notified' | 'going' | 'cant' | 'arrived' | 'finished';
+  responseTime?: string;
+  volunteer?: Volunteer; // אם אתה רוצה לכלול פרטי מתנדב
 }
 
 export interface Call {
   id: number;
   description: string;
-  urgencyLevel: 'נמוך' | 'בינוני' | 'גבוה' | 'קריטי';
+  urgencyLevel: string;
   locationX: number;
   locationY: number;
-  status: 'נפתחה' | 'בדרך' | 'בטיפול' | 'דורש תגבורת' | 'נסגר';
   createdAt: string;
-  updatedAt?: string;
+  status: 'Open' | 'InProgress' | 'Closed';
   imageUrl?: string;
-  numVolanteer: number;
-  volunteersStatus?: VolunteerStatus[];  // השדה החדש שצריך להוסיף
+  summary?: string;
+   volunteersStatus?: VolunteerStatus[]; // הוספת השדה
+  goingVolunteersCount?: number; // מספר מתנדבים ב-"going"
+}
+
+export interface VolunteerStatus {
+  volunteerId: number;
+  response: 'notified' | 'going' | 'cant' | 'arrived' | 'finished';
 }

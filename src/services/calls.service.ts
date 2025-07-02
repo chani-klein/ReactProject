@@ -1,5 +1,4 @@
-import axios from "axios";
-
+import axios from "./axios";
 const API_BASE = "https://localhost:7219/api";
 
 // פונקציה ליצירת Axios עם Authorization Header

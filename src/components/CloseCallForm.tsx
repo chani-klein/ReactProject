@@ -1,40 +1,37 @@
-"use client"
-
-import type React from "react"
-
-import { useState } from "react"
+"use client";
+import type React from "react";
+import { useState } from "react";
 
 interface CloseCallFormProps {
-  onSubmit: (summary: string) => void
-  isLoading?: boolean
+  onSubmit: (summary: string) => void;
+  isLoading?: boolean;
 }
 
 export default function CloseCallForm({ onSubmit, isLoading = false }: CloseCallFormProps) {
-  const [summary, setSummary] = useState("")
-  const [charCount, setCharCount] = useState(0)
-  const maxChars = 500
+  const [summary, setSummary] = useState("");
+  const [charCount, setCharCount] = useState(0);
+  const maxChars = 500;
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (summary.trim() && summary.length >= 10) {
-      onSubmit(summary.trim())
-      setSummary("")
-      setCharCount(0)
+      onSubmit(summary.trim());
+      setSummary("");
+      setCharCount(0);
     }
-  }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value
+    const value = e.target.value;
     if (value.length <= maxChars) {
-      setSummary(value)
-      setCharCount(value.length)
+      setSummary(value);
+      setCharCount(value.length);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="form">
       <h3>📝 דו״ח סיום קריאה</h3>
-
       <div style={{ position: "relative" }}>
         <textarea
           value={summary}
@@ -66,7 +63,6 @@ export default function CloseCallForm({ onSubmit, isLoading = false }: CloseCall
           {charCount}/{maxChars}
         </div>
       </div>
-
       <button
         type="submit"
         className="btn btn-success"
@@ -79,7 +75,6 @@ export default function CloseCallForm({ onSubmit, isLoading = false }: CloseCall
       >
         {isLoading ? "🔄 שומר דו״ח..." : "✅ סיים קריאה"}
       </button>
-
       {summary.length > 0 && summary.length < 10 && (
         <p
           style={{
@@ -93,5 +88,5 @@ export default function CloseCallForm({ onSubmit, isLoading = false }: CloseCall
         </p>
       )}
     </form>
-  )
+  );
 }
