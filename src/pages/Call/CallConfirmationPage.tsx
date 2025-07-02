@@ -11,16 +11,15 @@ export default function CallConfirmationPage() {
   const navigate = useNavigate();
   const callId = (location.state as any)?.callId;
   const description = (location.state as any)?.description || "";
-  const guidesFromState = (location.state as any)?.guides || [];
-  
+
   const [status, setStatus] = useState("נשלחה");
-  const [guides, setGuides] = useState<{ title: string; description: string }[]>(guidesFromState);
+  const [guides, setGuides] = useState<{ title: string; description: string }[]>([]);
   const [isLoadingGuides, setIsLoadingGuides] = useState(false);
 
   // סטטוס הקריאה כל 3 שניות
   useEffect(() => {
     if (!callId) return;
-    
+
     const interval = setInterval(async () => {
       try {
         const response = await getCallStatus(callId);
@@ -29,15 +28,15 @@ export default function CallConfirmationPage() {
         console.error("שגיאה בקבלת סטטוס", err);
       }
     }, 3000);
-    
+
     return () => clearInterval(interval);
   }, [callId]);
 
-  // קריאה להוראות GPT אם אין הוראות מהסטייט
+  // תמיד לקרוא ל-AI בלי קשר ל-guides קיימים
   useEffect(() => {
     const fetchGuideFromAI = async () => {
-      if (!description || guides.length > 0) return;
-      
+      if (!description) return;
+
       setIsLoadingGuides(true);
       try {
         const res = await axios.post("http://localhost:5000/api/firstaid/ai", description, {
@@ -52,7 +51,7 @@ export default function CallConfirmationPage() {
     };
 
     fetchGuideFromAI();
-  }, [description, guides.length]);
+  }, [description]);
 
   const getStatusColor = (currentStatus: string) => {
     switch (currentStatus) {
@@ -88,7 +87,7 @@ export default function CallConfirmationPage() {
         <h2 className="confirmation-title success-bounce">
           ✔️ הקריאה נשלחה בהצלחה
         </h2>
-        
+
         <div className="alert-message">
           <div className="alert-message-text">
             🚑 כעת יצאו כוננים לאזור שלך!
@@ -100,11 +99,8 @@ export default function CallConfirmationPage() {
 
         <div className="status-container">
           <div className="status-text">
-            {getStatusIcon(status)} סטטוס הקריאה: 
-            <span 
-              className="status-value"
-              style={{ color: getStatusColor(status) }}
-            >
+            {getStatusIcon(status)} סטטוס הקריאה:{" "}
+            <span className="status-value" style={{ color: getStatusColor(status) }}>
               {status}
             </span>
           </div>
@@ -112,16 +108,10 @@ export default function CallConfirmationPage() {
 
         {/* כפתורים לניווט */}
         <div className="action-buttons">
-          <button 
-            className="secondary-btn"
-            onClick={() => navigate("/")}
-          >
+          <button className="secondary-btn" onClick={() => navigate("/")}>
             🏠 חזור לעמוד הבית
           </button>
-          <button 
-            className="primary-btn"
-            onClick={() => navigate("/my-calls")}
-          >
+          <button className="primary-btn" onClick={() => navigate("/my-calls")}>
             📋 הקריאות שלי
           </button>
         </div>
@@ -129,10 +119,8 @@ export default function CallConfirmationPage() {
         {/* הוראות עזרה ראשונה */}
         {(guides.length > 0 || isLoadingGuides) && (
           <div className="guides-section">
-            <h3 className="guides-title">
-              📋 הוראות עזרה ראשונה
-            </h3>
-            
+            <h3 className="guides-title">📋 הוראות עזרה ראשונה</h3>
+
             {isLoadingGuides ? (
               <div className="loading-container">
                 <span className="loading-spinner"></span>
@@ -142,12 +130,8 @@ export default function CallConfirmationPage() {
               <div className="guides-container">
                 {guides.map((guide, index) => (
                   <div key={index} className="guide-card">
-                    <h4 className="guide-title">
-                      🩺 {guide.title}
-                    </h4>
-                    <div className="guide-description">
-                      {guide.description}
-                    </div>
+                    <h4 className="guide-title">🩺 {guide.title}</h4>
+                    <div className="guide-description">{guide.description}</div>
                   </div>
                 ))}
               </div>
@@ -157,8 +141,7 @@ export default function CallConfirmationPage() {
 
         {/* הודעת זהירות */}
         <div className="warning-note">
-          <strong>⚠️ חשוב:</strong> הוראות אלו הן לעזרה ראשונה בלבד. 
-          אל תחליף טיפול רפואי מקצועי.
+          <strong>⚠️ חשוב:</strong> הוראות אלו הן לעזרה ראשונה בלבד. אל תחליף טיפול רפואי מקצועי.
         </div>
       </div>
     </BackgroundLayout>
