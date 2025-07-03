@@ -18,6 +18,7 @@ export default function ActiveCallCard({ call, onStatusUpdate }: ActiveCallCardP
   const [goingVolunteersCount, setGoingVolunteersCount] = useState<number>(call.goingVolunteersCount || 0);
 
   useEffect(() => {
+    if (!call.id) return; // אל תבצע קריאה אם אין id
     if (call.locationX && call.locationY) {
       reverseGeocode(call.locationX, call.locationY)
         .then(setAddress)
@@ -127,10 +128,10 @@ export default function ActiveCallCard({ call, onStatusUpdate }: ActiveCallCardP
       </div>
 
       <div className="card-body">
-        <p><strong>🚨 דחיפות:</strong> {call.urgencyLevel}</p>
-        <p><strong>📍 כתובת:</strong> {address}</p>
-        <p><strong>⏰ זמן:</strong> {new Date(call.createdAt).toLocaleString('he-IL')}</p>
-        <p><strong>🚗 מתנדבים בדרך:</strong> {goingVolunteersCount}</p>
+        <p><strong>🚨 דחיפות:</strong> {call.urgencyLevel ?? "לא זמין"}</p>
+        <p><strong>📍 כתובת:</strong> {address || "לא זמין"}</p>
+        <p><strong>⏰ זמן:</strong> {call.createdAt ? new Date(call.createdAt).toLocaleString('he-IL') : "לא זמין"}</p>
+        <p><strong>🚗 מתנדבים בדרך:</strong> {goingVolunteersCount ?? 0}</p>
         {call.imageUrl && (
           <div style={{ margin: '1rem 0' }}>
             <img src={call.imageUrl} alt="תמונת הקריאה" style={{ maxWidth: '200px', borderRadius: '4px' }} />

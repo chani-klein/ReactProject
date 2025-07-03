@@ -74,11 +74,19 @@
 //   });
 import axios from "./axios"
 import type { AxiosResponse } from "axios"
-import type { Call, CallResponse, CallCreateRequest } from "../types"
- const API_BASE = "https://localhost:7219/api";
+import type { Call, CallResponse, CallCreateRequest } from "../types/call.types"
+const API_BASE = "https://localhost:7219/api";
+
+// פונקציה ליצירת Axios עם Authorization Header
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+};
 
 // 🔧 יצירת קריאה חדשה - תיקון הפורמט והוספת לוגים
-export const createCall = async (callData: FormData | CallCreateRequest): Promise<AxiosResponse<CallCreateRequest>> => {
+export const createCall = async (callData: FormData | CallCreateRequest): Promise<import("axios").AxiosResponse<CallResponse>> => {
   try {
     console.log("🚨 Creating emergency call:", callData)
 
@@ -264,5 +272,39 @@ export const getMyCalls = async (): Promise<AxiosResponse<Call[]>> => {
   } catch (error: any) {
     console.error("❌ Failed to get my calls:", error.response?.data || error.message)
     throw error
+  }
+}
+
+// הוספת פונקציה לשליפת קריאות מוקצות למתנדב
+export const getAssignedCalls = async (volunteerId: number) => {
+  const res = await axios.get(`/VolunteersCalls/by-volunteer/${volunteerId}`);
+  return res.data;
+};
+
+// שליפת קריאות פעילות למתנדב (כולל פרטי קריאה מלאים)
+export const getActiveVolunteerCalls = async (volunteerId: number) => {
+  const res = await axios.get(`/VolunteersCalls/active/${volunteerId}`)
+  return res.data;
+}
+
+// שליחת תגובת מתנדב לקריאה (going/cant/arrived/finished)
+export const respondToVolunteerCall = async (callId: number, volunteerId: number, status: string) => {
+  if (!callId || !volunteerId || !status) {
+    throw new Error(`Missing data for respondToVolunteerCall: callId=${callId}, volunteerId=${volunteerId}, status=${status}`);
+  }
+  console.log("🚑 Sending respondToVolunteerCall (via UpdateVolunteerStatus):", { callId, volunteerId, status });
+  try {
+    // שלח שמות שדות בפורמט PascalCase + Authorization Header
+    const res = await axios.put(`/VolunteersCalls/${callId}/${volunteerId}/status`, {
+      Status: status, // תואם ל-DTO החדש
+     
+    }, {
+      headers: getAuthHeaders(),
+    });
+    return res.data;
+  } catch (error: any) {
+    // לוג שגיאה מפורט
+    console.error("❌ respondToVolunteerCall error:", error.response?.data || error.message);
+    throw error;
   }
 }

@@ -87,8 +87,8 @@ export default function VolunteerActiveCallsPage() {
       )}
 
       {!isLoading &&
-        activeCalls.map((call) => (
-          <ActiveCallCard key={call.id} call={call} onStatusUpdate={updateVolunteerStatus} />
+        activeCalls.map((call, idx) => (
+          <ActiveCallCard key={call.id ?? idx} call={call} onStatusUpdate={updateVolunteerStatus} />
         ))}
     </BackgroundLayout>
   );

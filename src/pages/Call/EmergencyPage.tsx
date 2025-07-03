@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import BackgroundLayout from "../../layouts/BackgroundLayout";
 import { createCall } from "../../services/calls.service";
 import "../../style/emergency-styles.css"; // יבוא קובץ ה-CSS
+import type { CallResponse } from "../../types/call.types";
 
 export default function EmergencyPage() {
   const navigate = useNavigate();
@@ -26,17 +27,39 @@ export default function EmergencyPage() {
       return;
     }
 
-    const data = new FormData();
-    data.append("LocationX", location.x);
-    data.append("LocationY", location.y);
-    data.append("Status", "נפתח");
-    data.append("Description", "קריאת SOS");
+    // וידוא שהמיקום תקין
+    const lat = Number.parseFloat(location.x);
+    const lng = Number.parseFloat(location.y);
+    if (isNaN(lat) || isNaN(lng)) {
+      alert("📍 מיקום לא תקין - אנא נסה שוב");
+      return;
+    }
 
     try {
-      await createCall(data);
-      navigate("/call-confirmation");
-    } catch {
-      alert("❌ שגיאה בשליחת קריאה");
+      // שליחת קריאה עם כל השדות הנדרשים
+      const sosCallData = {
+        description: "קריאת SOS דחופה - נדרשת עזרה מיידית",
+        urgencyLevel: 4, // קריטית
+        locationX: lng, // longitude
+        locationY: lat, // latitude
+      };
+      const response = await createCall(sosCallData);
+      const callId = response.data.id;
+      navigate(`/call-confirmation/${callId}`, {
+        state: {
+          callId,
+          message: "קריאת SOS נשלחה בהצלחה!",
+          firstAidSuggestions: [],
+        },
+      });
+    } catch (error: any) {
+      let errorMessage = "שגיאה בשליחת קריאת SOS";
+      if (error.message && error.message.includes("Validation errors:")) {
+        errorMessage = `שגיאות אימות:\n${error.message.replace("Validation errors:\n", "")}`;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      alert(errorMessage);
     }
   };
 

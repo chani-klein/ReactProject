@@ -57,13 +57,16 @@ export default function CreateCallPage() {
     if (formData.fileImage) data.append("FileImage", formData.fileImage);
 
     try {
-      await createCall(data);
+      const response = await createCall(data);
+      // נוודא שה-id מגיע מהשרת
+      const callId = (response.data as any).id || (response.data as any).callId;
+      if (!callId) throw new Error("לא התקבל מזהה קריאה מהשרת");
       let guides = [];
       if (formData.description) {
-        const response = await getFirstAidSuggestions(formData.description);
-        guides = response.data;
+        const res = await getFirstAidSuggestions(formData.description);
+        guides = res.data;
       }
-      navigate("/call-confirmation", { state: { guides } });
+      navigate(`/call-confirmation/${callId}`, { state: { callId, description: formData.description, guides } });
     } catch {
       alert("❌ שגיאה בשליחה");
     } finally {

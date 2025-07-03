@@ -1,4 +1,3 @@
-
 import axios from "./axios"
 import type { AxiosResponse } from "axios"
 import type { Call, Volunteer } from "../types"
@@ -223,6 +222,9 @@ export const getActiveCalls = async (): Promise<AxiosResponse<Call[]>> => {
 
 // 🔧 קבלת מידע על מתנדבים בקריאה
 export const getCallVolunteersInfo = async (callId: number): Promise<AxiosResponse<any>> => {
+  if (!callId || typeof callId !== "number" || isNaN(callId)) {
+    throw new Error("callId לא תקין ב-getCallVolunteersInfo");
+  }
   try {
     console.log("👥 Getting volunteers info for call:", callId)
     const response = await axios.get(`/VolunteersCalls/${callId}/info`)
@@ -273,7 +275,7 @@ export const registerVolunteer = async (volunteer: any): Promise<AxiosResponse<a
     // 🔧 התאמה לשרת C# - שמות שדות עם אות גדולה
     const serverData = {
       FullName: volunteer.fullName,
-      Email: volunteer.email,
+      Gmail: volunteer.Gmail, // שינוי Email ל-Gmail
       Password: volunteer.password,
       PhoneNumber: volunteer.phoneNumber,
       Specialization: volunteer.specialization,
@@ -295,16 +297,9 @@ export const registerVolunteer = async (volunteer: any): Promise<AxiosResponse<a
       }
     }
 
-    return response
+    return response;
   } catch (error: any) {
-    console.error("❌ Volunteer registration failed:", error.response?.data || error.message)
-    throw error
+    console.error("❌ Volunteer registration failed:", error.response?.data || error.message);
+    throw error;
   }
-}
-
-
-// 🧐 פונקציה שבודקת אם מתנדב קיים לפי טלפון או אימייל (דוגמה)
-export const checkVolunteerExists = (gmail: string) =>
-  axios.get(`${API_BASE}/Volunteer/exists`, {
-    params: { gmail },
-  });
+};

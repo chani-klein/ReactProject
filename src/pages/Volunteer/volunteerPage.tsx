@@ -4,12 +4,8 @@ import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import BackgroundLayout from "../../layouts/BackgroundLayout"
 import AlertModal from "../../components/AlertModal"
-import {
-  getNearbyCalls,
-  respondToCall,
-  getVolunteerDetails,
-} from "../../services/volunteer.service"
-
+import {  getVolunteerDetails,} from "../../services/volunteer.service"
+import { getActiveVolunteerCalls,  respondToVolunteerCall } from "../../services/calls.service"
 export default function VolunteerMenu() {
   const [modalCall, setModalCall] = useState<any | null>(null)
   const [coords, setCoords] = useState<{ x: number; y: number } | null>(null)
@@ -77,38 +73,104 @@ export default function VolunteerMenu() {
       alert("שגיאה: חסרים נתונים לקבלת הקריאה")
       return
     }
-
+    if (!modalCall.id) {
+      alert("שגיאה: הקריאה אינה מכילה מזהה (id)")
+      return
+    }
     try {
-     await respondToCall(modalCall.id, "going")
-
-
-      // סוגר את המודל ומנקה כתובת
+      console.log("[DEBUG] acceptCall: modalCall.id=", modalCall.id, "volunteerId=", volunteerId, "status=going")
+      await respondToVolunteerCall(modalCall.id, volunteerId, "going")
       setModalCall(null)
       setAddress(null)
-
-      // ניווט לקריאות פעילות
       navigate("/volunteer/active-calls")
-    } catch (err) {
-      const error = err as any
-      alert(`שגיאה בקבלת קריאה: ${error.response?.data?.message || error.message}`)
+    } catch (err: any) {
+      if (err?.response?.data?.errors) {
+        alert("שגיאה בקבלת קריאה: " + JSON.stringify(err.response.data.errors))
+        console.error("[ERROR] acceptCall: ", err.response.data.errors)
+      } else {
+        alert("שגיאה בקבלת קריאה")
+        console.error("[ERROR] acceptCall: ", err)
+      }
     }
   }
 
   // מתנדב מסרב לקריאה
   const declineCall = async () => {
     if (!modalCall || !volunteerId) {
+      alert("שגיאה: חסרים נתונים לסירוב הקריאה")
       return
     }
-
+    if (!modalCall.id) {
+      alert("שגיאה: הקריאה אינה מכילה מזהה (id)")
+      return
+    }
     try {
-      await respondToCall(modalCall.id, "cant")
-
-
-      // סוגר את המודל ומנקה כתובת
+      console.log("[DEBUG] declineCall: modalCall.id=", modalCall.id, "volunteerId=", volunteerId, "status=cant")
+      await respondToVolunteerCall(modalCall.id, volunteerId, "cant")
       setModalCall(null)
       setAddress(null)
-    } catch (err) {
-      console.error("❌ שגיאה בסירוב קריאה:", err)
+    } catch (err: any) {
+      if (err?.response?.data?.errors) {
+        alert("שגיאה בסירוב קריאה: " + JSON.stringify(err.response.data.errors))
+        console.error("[ERROR] declineCall: ", err.response.data.errors)
+      } else {
+        alert("שגיאה בסירוב קריאה")
+        console.error("[ERROR] declineCall: ", err)
+      }
+    }
+  }
+
+  // מתנדב מעדכן שהגיע למקום
+  const arrivedCall = async () => {
+    if (!modalCall || !volunteerId) {
+      alert("שגיאה: חסרים נתונים לעדכון הגעה")
+      return
+    }
+    if (!modalCall.id) {
+      alert("שגיאה: הקריאה אינה מכילה מזהה (id)")
+      return
+    }
+    try {
+      console.log("[DEBUG] arrivedCall: modalCall.id=", modalCall.id, "volunteerId=", volunteerId, "status=arrived")
+      await respondToVolunteerCall(modalCall.id, volunteerId, "arrived")
+      setModalCall(null)
+      setAddress(null)
+      navigate("/volunteer/active-calls")
+    } catch (err: any) {
+      if (err?.response?.data?.errors) {
+        alert("שגיאה בעדכון הגעה: " + JSON.stringify(err.response.data.errors))
+        console.error("[ERROR] arrivedCall: ", err.response.data.errors)
+      } else {
+        alert("שגיאה בעדכון הגעה")
+        console.error("[ERROR] arrivedCall: ", err)
+      }
+    }
+  }
+
+  // מתנדב מסיים טיפול
+  const finishCall = async () => {
+    if (!modalCall || !volunteerId) {
+      alert("שגיאה: חסרים נתונים לסיום קריאה")
+      return
+    }
+    if (!modalCall.id) {
+      alert("שגיאה: הקריאה אינה מכילה מזהה (id)")
+      return
+    }
+    try {
+      console.log("[DEBUG] finishCall: modalCall.id=", modalCall.id, "volunteerId=", volunteerId, "status=finished")
+      await respondToVolunteerCall(modalCall.id, volunteerId, "finished")
+      setModalCall(null)
+      setAddress(null)
+      navigate("/volunteer/active-calls")
+    } catch (err: any) {
+      if (err?.response?.data?.errors) {
+        alert("שגיאה בסיום קריאה: " + JSON.stringify(err.response.data.errors))
+        console.error("[ERROR] finishCall: ", err.response.data.errors)
+      } else {
+        alert("שגיאה בסיום קריאה")
+        console.error("[ERROR] finishCall: ", err)
+      }
     }
   }
 
@@ -151,25 +213,48 @@ export default function VolunteerMenu() {
     initializeApp()
   }, [navigate])
 
-  // בדיקת קריאות קרובות כל 5 שניות
+  // בדיקת קריאות פעילות כל 2 שניות
   useEffect(() => {
     if (!coords || !volunteerId || isLoading) return
 
     const interval = setInterval(async () => {
       try {
-        const res = await getNearbyCalls()
+        // שליפת קריאות פעילות למתנדב בלבד (כולל פרטי קריאה מלאים)
+        const activeCalls = await getActiveVolunteerCalls(volunteerId)
 
-        // אם יש קריאה חדשה ועדיין אין מודל מוצג
-        if (res.data.length > 0 && !modalCall) {
-          const newCall = res.data[0]
-          const addr = await reverseGeocode(newCall.locationX, newCall.locationY)
-          setAddress(addr)
-          setModalCall(newCall)
+        if (activeCalls.length > 0 && !modalCall) {
+          let newCall = activeCalls[0];
+          // אם אין id (VolunteerCall) – נביא את הקריאה המלאה לפי callsId
+          if ((!newCall.id || !newCall.description || !newCall.urgencyLevel) && newCall.callsId) {
+            try {
+              const { data: fullCall } = await import("../../services/calls.service").then(m => m.getCallById(newCall.callsId));
+              newCall = { ...fullCall, ...newCall, id: fullCall.id };
+            } catch (err) {
+              alert("שגיאה: לא ניתן להביא פרטי קריאה מלאה מהשרת");
+              return;
+            }
+          }
+          // בדיקה שהמיקום קיים לפני קריאה ל-reverseGeocode
+          let addr = 'כתובת לא זמינה';
+          if (
+            typeof newCall.locationX === 'number' &&
+            typeof newCall.locationY === 'number' &&
+            !isNaN(newCall.locationX) &&
+            !isNaN(newCall.locationY)
+          ) {
+            addr = await reverseGeocode(newCall.locationX, newCall.locationY);
+          } else if (newCall.address) {
+            addr = newCall.address;
+          } else if (newCall.locationX && newCall.locationY) {
+            addr = `${newCall.locationX}, ${newCall.locationY}`;
+          }
+          setAddress(addr);
+          setModalCall(newCall);
         }
       } catch (err) {
         console.error("❌ שגיאה בחיפוש קריאות:", err)
       }
-    }, 5000)
+    }, 2000)
 
     return () => clearInterval(interval)
   }, [coords, volunteerId, modalCall, isLoading])
@@ -239,6 +324,8 @@ export default function VolunteerMenu() {
         address={address}
         onAccept={acceptCall}
         onDecline={declineCall}
+        onArrived={arrivedCall}
+        onFinish={finishCall}
         onClose={() => {
           setModalCall(null)
           setAddress(null)

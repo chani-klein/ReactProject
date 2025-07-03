@@ -20,7 +20,7 @@ export default function RegisterVolunteerPage() {
 
   const [volunteer, setVolunteer] = useState<VolunteerRegisterData>({
     fullName: "",
-    Gmail: "", // 🔧 שינוי מ-gmail ל-email
+    Gmail: "", // חזרה ל-Gmail לפי ההגדרה בטייפ
     password: "",
     phoneNumber: "",
     specialization: "",
@@ -89,7 +89,7 @@ export default function RegisterVolunteerPage() {
     switch (name) {
       case "fullName":
         return validateFullName(value)
-      case "email": // 🔧 שינוי מ-gmail ל-email
+      case "Gmail": // שינוי מ-email ל-Gmail
         return validateEmail(value)
       case "password":
         return validatePassword(value)
@@ -156,12 +156,10 @@ export default function RegisterVolunteerPage() {
       alert("נרשמת בהצלחה כמתנדב!")
       navigate(`/${Paths.volunteerHome}`)
     } catch (err: any) {
-      if (err.response) {
-        console.error("שגיאת שרת:", err.response.data)
-        alert("שגיאה: " + JSON.stringify(err.response.data))
+      if (err.response && err.response.data && err.response.data.errors) {
+        alert(JSON.stringify(err.response.data.errors, null, 2));
       } else {
-        console.error(err)
-        alert("שגיאה לא צפויה בהרשמה")
+        alert("❌ שגיאה בשליחה");
       }
     } finally {
       setIsSubmitting(false)
@@ -194,15 +192,15 @@ export default function RegisterVolunteerPage() {
 
           <div className="form-group">
             <input
-              name="Gmail" // 🔧 שינוי מ-gmail ל-email
+              name="Gmail"
               type="email"
-              placeholder="כתובת אימייל"
+              className={`form-input ${errors.Gmail ? "error" : ""}`}
               value={volunteer.Gmail}
               onChange={handleChange}
-              className={`form-input ${errors.email ? "error" : ""}`}
-              required
+              placeholder="כתובת אימייל"
+              autoComplete="email"
             />
-            {errors.email && <span className="error-message">{errors.email}</span>}
+            {errors.Gmail && <span className="error-message">{errors.Gmail}</span>}
           </div>
 
           <div className="form-group">
