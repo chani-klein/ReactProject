@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { getMyCalls } from "../../services/calls.service";
-import { getAddressFromCoords } from "../../services/firstAid.service";
 import "../../style/MyCallsPage.css"; // תיקון הנתיב לקובץ CSS
 
 interface Call {
@@ -16,7 +15,6 @@ interface Call {
 
 export default function MyCallsPage() {
   const [calls, setCalls] = useState<Call[]>([]);
-  const [addresses, setAddresses] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,14 +29,6 @@ export default function MyCallsPage() {
       try {
         const response = await getMyCalls();
         setCalls(response.data);
-        // המרת קואורדינטות לכתובת
-        const addressPromises = response.data.map((call: any) =>
-          call.locationX && call.locationY
-            ? getAddressFromCoords(call.locationY, call.locationX) // lat, lng
-            : Promise.resolve("כתובת לא זמינה")
-        );
-        const addresses = await Promise.all(addressPromises);
-        setAddresses(addresses);
       } catch (error) {
         console.error("שגיאה בקבלת הקריאות שלי", error);
       } finally {
@@ -78,7 +68,9 @@ export default function MyCallsPage() {
                   <td>{call.date?.split("T")[0] || "—"}</td>
                   <td>{call.urgencyLevel ?? "—"}</td>
                   <td>
-                    {addresses[index] || "כתובת לא זמינה"}
+                    {call.locationX !== 0 && call.locationY !== 0
+                      ? `כתובת: קו רוחב ${call.locationX.toFixed(5)}, קו אורך ${call.locationY.toFixed(5)}`
+                      : "כתובת לא זמינה"}
                   </td>
                 </tr>
               ))}
