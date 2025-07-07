@@ -287,24 +287,38 @@ export const getActiveVolunteerCalls = async (volunteerId: number) => {
   return res.data;
 }
 
-// שליחת תגובת מתנדב לקריאה (going/cant/arrived/finished)
-export const respondToVolunteerCall = async (callId: number, volunteerId: number, status: string) => {
+// עדכון סטטוס מתנדב (ללא summary)
+export const updateVolunteerStatus = async (callId: number, volunteerId: number, status: string) => {
   if (!callId || !volunteerId || !status) {
-    throw new Error(`Missing data for respondToVolunteerCall: callId=${callId}, volunteerId=${volunteerId}, status=${status}`);
+    throw new Error(`Missing data for updateVolunteerStatus: callId=${callId}, volunteerId=${volunteerId}, status=${status}`);
   }
-  console.log("🚑 Sending respondToVolunteerCall (via UpdateVolunteerStatus):", { callId, volunteerId, status });
   try {
-    // שלח שמות שדות בפורמט PascalCase + Authorization Header
     const res = await axios.put(`/VolunteersCalls/${callId}/${volunteerId}/status`, {
-      Status: status, // תואם ל-DTO החדש
-     
+      Status: status
     }, {
       headers: getAuthHeaders(),
     });
     return res.data;
   } catch (error: any) {
-    // לוג שגיאה מפורט
-    console.error("❌ respondToVolunteerCall error:", error.response?.data || error.message);
+    console.error("❌ updateVolunteerStatus error:", error.response?.data || error.message);
+    throw error;
+  }
+}
+
+// סיום טיפול (כולל summary)
+export const finishVolunteerCall = async (callId: number, volunteerId: number, summary: string) => {
+  if (!callId || !volunteerId || !summary) {
+    throw new Error(`Missing data for finishVolunteerCall: callId=${callId}, volunteerId=${volunteerId}, summary=${summary}`);
+  }
+  try {
+    const res = await axios.put(`/VolunteersCalls/${callId}/${volunteerId}/finish`, {
+      Summary: summary
+    }, {
+      headers: getAuthHeaders(),
+    });
+    return res.data;
+  } catch (error: any) {
+    console.error("❌ finishVolunteerCall error:", error.response?.data || error.message);
     throw error;
   }
 }

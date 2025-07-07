@@ -70,7 +70,7 @@ export default function AlertModal({ isOpen, call, address, onAccept, onDecline,
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay">
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <div className="modal-icon">🚨</div>

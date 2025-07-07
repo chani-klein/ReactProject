@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom"
 import BackgroundLayout from "../../layouts/BackgroundLayout"
 import AlertModal from "../../components/AlertModal"
 import {  getVolunteerDetails,} from "../../services/volunteer.service"
-import { getActiveVolunteerCalls,  respondToVolunteerCall } from "../../services/calls.service"
+import { getActiveVolunteerCalls, updateVolunteerStatus, finishVolunteerCall, completeCall } from "../../services/calls.service"
 export default function VolunteerMenu() {
   const [modalCall, setModalCall] = useState<any | null>(null)
   const [coords, setCoords] = useState<{ x: number; y: number } | null>(null)
@@ -79,7 +79,7 @@ export default function VolunteerMenu() {
     }
     try {
       console.log("[DEBUG] acceptCall: modalCall.id=", modalCall.id, "volunteerId=", volunteerId, "status=going")
-      await respondToVolunteerCall(modalCall.id, volunteerId, "going")
+      await updateVolunteerStatus(modalCall.id, volunteerId, "going")
       setModalCall(null)
       setAddress(null)
       navigate("/volunteer/active-calls")
@@ -106,7 +106,7 @@ export default function VolunteerMenu() {
     }
     try {
       console.log("[DEBUG] declineCall: modalCall.id=", modalCall.id, "volunteerId=", volunteerId, "status=cant")
-      await respondToVolunteerCall(modalCall.id, volunteerId, "cant")
+      await updateVolunteerStatus(modalCall.id, volunteerId, "cant")
       setModalCall(null)
       setAddress(null)
     } catch (err: any) {
@@ -132,7 +132,7 @@ export default function VolunteerMenu() {
     }
     try {
       console.log("[DEBUG] arrivedCall: modalCall.id=", modalCall.id, "volunteerId=", volunteerId, "status=arrived")
-      await respondToVolunteerCall(modalCall.id, volunteerId, "arrived")
+      await updateVolunteerStatus(modalCall.id, volunteerId, "arrived")
       setModalCall(null)
       setAddress(null)
       navigate("/volunteer/active-calls")
@@ -149,17 +149,18 @@ export default function VolunteerMenu() {
 
   // מתנדב מסיים טיפול
   const finishCall = async () => {
-    if (!modalCall || !volunteerId) {
+    if (!modalCall || !modalCall.id) {
       alert("שגיאה: חסרים נתונים לסיום קריאה")
       return
     }
-    if (!modalCall.id) {
-      alert("שגיאה: הקריאה אינה מכילה מזהה (id)")
-      return
-    }
     try {
-      console.log("[DEBUG] finishCall: modalCall.id=", modalCall.id, "volunteerId=", volunteerId, "status=finished")
-      await respondToVolunteerCall(modalCall.id, volunteerId, "finished")
+      console.log("[DEBUG] finishCall: modalCall.id=", modalCall.id, "status=finished")
+      const summary = window.prompt("נא להזין סיכום טיפול:")
+      if (!summary || summary.trim() === "") {
+        alert("סיכום טיפול הוא חובה לסיום קריאה!")
+        return
+      }
+      await completeCall(modalCall.id, summary)
       setModalCall(null)
       setAddress(null)
       navigate("/volunteer/active-calls")
