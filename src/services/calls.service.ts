@@ -321,3 +321,9 @@ export const finishVolunteerCall = async (
     throw error;
   }
 };
+
+// פונקציה חדשה לשליפת מתנדבים לקריאה ספציפית
+export const getVolunteersForCall = (callId: number) =>
+  axios.get(`${API_BASE}/Calls/${callId}/volunteers`, {
+    headers: getAuthHeaders(),
+  });

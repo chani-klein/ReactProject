@@ -2,6 +2,7 @@
 import { useLocation, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { getCallStatus } from "../../services/calls.service";
+import { getVolunteersForCall } from "../../services/calls.service"; // Ensure this function exists in the service
 import { getAIFirstAidGuide } from "../../services/firstAid.service";
 import BackgroundLayout from "../../layouts/BackgroundLayout";
 import "../../style/emergency-styles.css"; // יבוא קובץ ה-CSS
@@ -15,6 +16,8 @@ export default function CallConfirmationPage() {
   const [status, setStatus] = useState("נשלחה");
   const [guides, setGuides] = useState<{ title: string; description: string }[]>([]);
   const [isLoadingGuides, setIsLoadingGuides] = useState(false);
+  const [volunteers, setVolunteers] = useState<string[]>([]); // Add state for volunteers
+  const [isLoadingVolunteers, setIsLoadingVolunteers] = useState(false); // Add loading state for volunteers
 
   // סטטוס הקריאה כל 3 שניות
   useEffect(() => {
@@ -51,6 +54,23 @@ export default function CallConfirmationPage() {
 
     fetchGuideFromAI();
   }, [description]);
+
+  const fetchVolunteers = async () => {
+    if (!callId) {
+      console.error("Missing callId");
+      return;
+    }
+
+    setIsLoadingVolunteers(true);
+    try {
+      const response = await getVolunteersForCall(callId);
+      setVolunteers(response.data);
+    } catch (err) {
+      console.error("שגיאה בקבלת רשימת מתנדבים", err);
+    } finally {
+      setIsLoadingVolunteers(false);
+    }
+  };
 
   const getStatusColor = (currentStatus: string) => {
     switch (currentStatus) {
@@ -118,6 +138,9 @@ export default function CallConfirmationPage() {
           <button className="primary-btn" onClick={() => navigate("/my-calls")}>
             📋 הקריאות שלי
           </button>
+          <button className="secondary-btn" onClick={fetchVolunteers}>
+            📋 הצג רשימת מתנדבים
+          </button>
         </div>
 
         {/* הוראות עזרה ראשונה */}
@@ -142,6 +165,25 @@ export default function CallConfirmationPage() {
             )}
           </div>
         )}
+
+        {/* Display volunteers list */}
+        {isLoadingVolunteers ? (
+          <div className="loading-container">
+            <span className="loading-spinner"></span>
+            <span>טוען רשימת מתנדבים...</span>
+          </div>
+        ) : volunteers.length > 0 ? (
+          <div className="volunteers-list">
+            <h3 className="volunteers-title">רשימת מתנדבים</h3>
+            <ul>
+              {volunteers.map((volunteer: any, index) => (
+                <li key={index}>
+                  {volunteer.fullName} - {volunteer.phoneNumber} - {volunteer.city}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         {/* הודעת זהירות */}
         <div className="warning-note">

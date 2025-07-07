@@ -1,11 +1,25 @@
 import React, { useEffect } from 'react';
 import { useCallContext } from '../contexts/CallContext';
 import { getAssignedCalls } from '../services/calls.service';
+import { useLocation } from 'react-router-dom';
 
 const GlobalVolunteerCallWatcher: React.FC = () => {
   const { setPopupCall } = useCallContext();
+  const location = useLocation();
 
   useEffect(() => {
+    const allowedPaths = [
+      '/volunteer',
+      '/volunteer/VolunteerActiveCallsPage', // Updated route for active calls page
+      '/volunteer/VolunteerCallHistoryPage', // Updated route for call history page
+      '/volunteer/VolunteerUpdatePage', // Updated route for update page
+    ];
+
+    if (!allowedPaths.includes(location.pathname)) {
+      console.info('Polling stopped: Current path is not allowed for polling.');
+      return;
+    }
+
     const volunteerId = localStorage.getItem('volunteerId');
 
     if (!volunteerId) {
@@ -33,7 +47,7 @@ const GlobalVolunteerCallWatcher: React.FC = () => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [setPopupCall]);
+  }, [setPopupCall, location.pathname]);
 
   return null;
 };
