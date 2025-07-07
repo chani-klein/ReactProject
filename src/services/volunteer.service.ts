@@ -1,10 +1,8 @@
 import axios from "./axios"
 import type { AxiosResponse } from "axios"
 import type { Call, Volunteer } from "../types"
+import type { CompleteCallDto } from "../types/call.types"
 
-// import axios from './axios';
-// import type { AxiosResponse } from 'axios';
-// import type { Call } from '../types/call.types'; // התאם את הנתיב לממשק Call
 const API_BASE = 'https://localhost:7219/api';
 
 // // 🟢 התחברות או הרשמה (מתנדב)
@@ -286,3 +284,7 @@ export const registerVolunteer = async (volunteer: any): Promise<AxiosResponse<a
     throw error;
   }
 };
+
+// ✅ סיום קריאה
+export const completeCall = (callId: number, volunteerId: number, summary: CompleteCallDto) =>
+  axios.post(`${API_BASE}/VolunteersCalls/${callId}/${volunteerId}/complete`, summary);

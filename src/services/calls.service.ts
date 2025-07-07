@@ -252,8 +252,8 @@ export const getMyCalls = async (): Promise<AxiosResponse<Call[]>> => {
 }
 
 // הוספת פונקציה לשליפת קריאות מוקצות למתנדב
-export const getAssignedCalls = async (volunteerId: number) => {
-  const res = await axios.get(`/VolunteersCalls/by-volunteer/${volunteerId}`);
+export const getAssignedCalls = async (volunteerId: number, status: string) => {
+  const res = await axios.get(`/Volunteer/${volunteerId}/calls/by-status/${status}`);
   return res.data;
 };
 

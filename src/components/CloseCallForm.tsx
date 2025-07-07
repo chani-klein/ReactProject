@@ -1,23 +1,29 @@
 "use client";
 import type React from "react";
 import { useState } from "react";
+import type { CompleteCallDto } from "../types/call.types";
 
 interface CloseCallFormProps {
-  onSubmit: (summary: string) => void;
+  onSubmit: (summary: CompleteCallDto) => void;
   isLoading?: boolean;
+  onCancel?: () => void;
 }
 
-export default function CloseCallForm({ onSubmit, isLoading = false }: CloseCallFormProps) {
+export default function CloseCallForm({ onSubmit, isLoading = false, onCancel }: CloseCallFormProps) {
   const [summary, setSummary] = useState("");
+  const [sentToHospital, setSentToHospital] = useState(false);
+  const [hospitalName, setHospitalName] = useState("");
   const [charCount, setCharCount] = useState(0);
   const maxChars = 500;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (summary.trim() && summary.length >= 10) {
-      onSubmit(summary.trim());
+      onSubmit({ summary: summary.trim(), sentToHospital, hospitalName: sentToHospital ? hospitalName : undefined });
       setSummary("");
       setCharCount(0);
+      setHospitalName("");
+      setSentToHospital(false);
     }
   };
 
@@ -63,6 +69,27 @@ export default function CloseCallForm({ onSubmit, isLoading = false }: CloseCall
           {charCount}/{maxChars}
         </div>
       </div>
+      <div style={{ marginTop: "1rem" }}>
+        <label>
+          <input
+            type="checkbox"
+            checked={sentToHospital}
+            onChange={e => setSentToHospital(e.target.checked)}
+            disabled={isLoading}
+          />
+          נשלח לבית חולים
+        </label>
+        {sentToHospital && (
+          <input
+            type="text"
+            value={hospitalName}
+            onChange={e => setHospitalName(e.target.value)}
+            placeholder="שם בית החולים"
+            disabled={isLoading}
+            style={{ marginRight: "1rem", marginLeft: "1rem" }}
+          />
+        )}
+      </div>
       <button
         type="submit"
         className="btn btn-success"
@@ -75,6 +102,11 @@ export default function CloseCallForm({ onSubmit, isLoading = false }: CloseCall
       >
         {isLoading ? "🔄 שומר דו״ח..." : "✅ סיים קריאה"}
       </button>
+      {onCancel && (
+        <button type="button" className="btn btn-secondary" onClick={onCancel} style={{ marginRight: 8 }}>
+          ביטול
+        </button>
+      )}
       {summary.length > 0 && summary.length < 10 && (
         <p
           style={{

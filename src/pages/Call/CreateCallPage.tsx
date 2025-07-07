@@ -71,12 +71,12 @@ export default function CreateCallPage() {
       // נוודא שה-id מגיע מהשרת
       const callId = (response.data as any).id || (response.data as any).callId;
       if (!callId) throw new Error("לא התקבל מזהה קריאה מהשרת");
-      let guides = [];
-      if (formData.description) {
-        const res = await getFirstAidSuggestions(formData.description);
-        guides = res.data;
-      }
-      navigate(`/call-confirmation/${callId}`, { state: { callId, description: formData.description, guides } });
+    //  let guides = [];
+      // if (formData.description) {
+      //   const res = await getFirstAidSuggestions(formData.description);
+      //   guides = res.data;
+      // }
+      navigate(`/call-confirmation/${callId}`, { state: { callId, description: formData.description } });
     } catch {
       alert("❌ שגיאה בשליחה");
     } finally {

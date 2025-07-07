@@ -45,14 +45,16 @@ const VolunteerCallWatcher: React.FC = () => {
 
       try {
         // שליפת קריאות מוקצות למתנדב
-        const assignedCalls = await getAssignedCalls(volunteerId);
-        setCalls(assignedCalls);
+        const assignedCalls = await getAssignedCalls(volunteerId, 'notified');
+        // מיפוי id במקרה של callsId/callId
+        const callsWithId = assignedCalls.map((call: any) => ({ ...call, id: call.id || call.callId || call.callsId }));
+        setCalls(callsWithId);
         setError(null);
         // פופאפ קריאה חדשה לפי הקריאות המוקצות
-        if (assignedCalls && assignedCalls.length > 0) {
+        if (callsWithId && callsWithId.length > 0) {
           // מצא קריאה חדשה שלא הייתה קודם (id שלא קיים ב-calls)
-          const newCall = assignedCalls.find((call: Call) => !calls.some((c: Call) => c.id === call.id));
-          if (newCall) {
+          const newCall = callsWithId.find((call: Call) => !calls.some((c: Call) => c.id === call.id));
+          if (newCall && newCall.status === 'notified') {
             setPopupCall(newCall);
             setLastCallId(newCall.id);
           }
@@ -73,7 +75,7 @@ const VolunteerCallWatcher: React.FC = () => {
 
     if (isAuthenticated) {
       fetchCalls();
-      const interval = setInterval(fetchCalls, 5000); // עדכון כל 5 שניות
+      const interval = setInterval(fetchCalls, 2000); // עדכון כל 2 שניות
       return () => clearInterval(interval);
     }
   }, [isAuthenticated, lastCallId, setPopupCall]);

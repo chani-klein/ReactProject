@@ -24,7 +24,7 @@ export default function HistoryPage() {
     }
   };
 
-  const closeCall = async (id: number, summary: string) => {
+  const closeCall = async (id: number) => {
     try {
    
       await fetchCalls();
@@ -50,7 +50,7 @@ export default function HistoryPage() {
           {call.status === 'Closed' ? (
             <p>📝 דו״ח: {call.summary || 'לא נרשם דו"ח'}</p>
           ) : (
-            <CloseCallForm onSubmit={(summary) => closeCall(call.id, summary)} />
+            <CloseCallForm onSubmit={(summary) => closeCall(call.id)} />
           )}
         </div>
       ))}
