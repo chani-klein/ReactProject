@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import BackgroundLayout from '../../layouts/BackgroundLayout';
 import CloseCallForm from '../../components/CloseCallForm';
-import { getVolunteerHistory, completeCall } from '../../services/volunteer.service';
+import { getVolunteerHistory } from '../../services/volunteer.service';
 import { getVolunteerDetails } from '../../services/volunteer.service';
 import type { Call } from '../../types/call.types';
 export default function HistoryPage() {
@@ -26,7 +26,7 @@ export default function HistoryPage() {
 
   const closeCall = async (id: number, summary: string) => {
     try {
-      await completeCall(id, summary);
+   
       await fetchCalls();
     } catch (error) {
       console.error('Error closing call:', error);

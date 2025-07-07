@@ -7,6 +7,12 @@ export interface VolunteerCall {
   responseTime?: string
   // volunteer יוגדר בנפרד כדי למנוע circular imports
 }
+export interface CompleteCallDto {
+  summary: string;
+  sentToHospital: boolean;
+  hospitalName?: string;
+}
+
 
 export interface Call {
   id: number

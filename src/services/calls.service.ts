@@ -74,7 +74,7 @@
 //   });
 import axios from "./axios"
 import type { AxiosResponse } from "axios"
-import type { Call, CallResponse, CallCreateRequest } from "../types/call.types"
+import type { Call, CallResponse, CallCreateRequest,CompleteCallDto } from "../types/call.types"
 const API_BASE = "https://localhost:7219/api";
 
 // פונקציה ליצירת Axios עם Authorization Header
@@ -224,29 +224,6 @@ export const getAllCalls = async (): Promise<AxiosResponse<Call[]>> => {
   }
 }
 
-// 🔧 סיום קריאה
-export const completeCall = async (
-  callId: number,
-  summary: string,
-  sentToHospital = false,
-): Promise<AxiosResponse<any>> => {
-  try {
-    console.log("✅ Completing call:", { callId, summary, sentToHospital })
-
-    // 🔧 התאמה לשרת C# - שמות שדות עם אות גדולה
-    const serverData = {
-      Summary: summary,
-      SentToHospital: sentToHospital,
-    }
-
-    const response = await axios.put(`/Calls/${callId}/complete`, serverData)
-    console.log("✅ Call completed successfully")
-    return response
-  } catch (error: any) {
-    console.error("❌ Failed to complete call:", error.response?.data || error.message)
-    throw error
-  }
-}
 
 // 🔧 הצעות עזרה ראשונה - עדכון לנתיב הנכון לפי ה-Swagger
 export const getFirstAidSuggestions = async (description: string) => {
@@ -321,21 +298,26 @@ export const updateVolunteerStatus = async (callId: number, volunteerId: number,
     throw error;
   }
 }
-
-// סיום טיפול (כולל summary)
-export const finishVolunteerCall = async (callId: number, volunteerId: number, summary: string) => {
-  if (!callId || !volunteerId || !summary) {
-    throw new Error(`Missing data for finishVolunteerCall: callId=${callId}, volunteerId=${volunteerId}, summary=${summary}`);
+export const finishVolunteerCall = async (
+  callId: number,
+  volunteerId: number,
+  data: CompleteCallDto
+) => {
+  if (!callId || !volunteerId || !data.summary) {
+    throw new Error(`Missing data for finishVolunteerCall`);
   }
+
   try {
-    const res = await axios.put(`/VolunteersCalls/${callId}/${volunteerId}/finish`, {
-      Summary: summary
-    }, {
-      headers: getAuthHeaders(),
-    });
+    const res = await axios.put(
+      `/VolunteersCalls/${callId}/${volunteerId}/complete`,
+      data,
+      {
+        headers: getAuthHeaders(),
+      }
+    );
     return res.data;
   } catch (error: any) {
     console.error("❌ finishVolunteerCall error:", error.response?.data || error.message);
     throw error;
   }
-}
+};

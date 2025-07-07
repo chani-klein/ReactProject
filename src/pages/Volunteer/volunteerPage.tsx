@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom"
 import BackgroundLayout from "../../layouts/BackgroundLayout"
 import AlertModal from "../../components/AlertModal"
 import {  getVolunteerDetails,} from "../../services/volunteer.service"
-import { getActiveVolunteerCalls, updateVolunteerStatus, finishVolunteerCall, completeCall } from "../../services/calls.service"
+import { getActiveVolunteerCalls, updateVolunteerStatus, finishVolunteerCall } from "../../services/calls.service"
 export default function VolunteerMenu() {
   const [modalCall, setModalCall] = useState<any | null>(null)
   const [coords, setCoords] = useState<{ x: number; y: number } | null>(null)
@@ -160,7 +160,7 @@ export default function VolunteerMenu() {
         alert("סיכום טיפול הוא חובה לסיום קריאה!")
         return
       }
-      await completeCall(modalCall.id, summary)
+    
       setModalCall(null)
       setAddress(null)
       navigate("/volunteer/active-calls")

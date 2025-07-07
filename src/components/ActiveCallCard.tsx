@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import CloseCallForm from './CloseCallForm';
-import { updateVolunteerStatus, completeCall, getCallVolunteersInfo } from '../services/volunteer.service';
+import { updateVolunteerStatus, getCallVolunteersInfo } from '../services/volunteer.service';
 import { getVolunteerDetails } from '../services/volunteer.service';
 import { getAddressFromCoords } from '../services/firstAid.service';
 import type { Call, VolunteerStatus } from '../types/call.types';
@@ -116,7 +116,7 @@ export default function ActiveCallCard({ call, onStatusUpdate }: ActiveCallCardP
     try {
       const volunteerId = await getVolunteerDetails();
       if (!volunteerId) throw new Error('מתנדב לא מזוהה');
-      await completeCall(call.id, summary);
+    
       await handleStatusUpdate('finished');
       setShowCloseForm(false);
     } catch (error) {
@@ -192,19 +192,7 @@ export default function ActiveCallCard({ call, onStatusUpdate }: ActiveCallCardP
           </button>
         )}
 
-        {showCloseForm && (
-          <div style={{ marginTop: '1rem' }}>
-            <CloseCallForm onSubmit={handleCompleteCall} isLoading={isLoading} />
-            <button
-              className="btn btn-secondary"
-              onClick={() => setShowCloseForm(false)}
-              style={{ marginTop: '0.5rem' }}
-              disabled={isLoading}
-            >
-              ❌ ביטול
-            </button>
-          </div>
-        )}
+       
       </div>
     </div>
   );
