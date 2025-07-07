@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import CloseCallForm from './CloseCallForm';
 import { updateVolunteerStatus, completeCall, getCallVolunteersInfo } from '../services/volunteer.service';
 import { getVolunteerDetails } from '../services/volunteer.service';
+import { getAddressFromCoords } from '../services/firstAid.service';
 import type { Call, VolunteerStatus } from '../types/call.types';
 
 interface ActiveCallCardProps {
@@ -18,9 +19,9 @@ export default function ActiveCallCard({ call, onStatusUpdate }: ActiveCallCardP
   const [goingVolunteersCount, setGoingVolunteersCount] = useState<number>(call.goingVolunteersCount || 0);
 
   useEffect(() => {
-    if (!call.id) return; // אל תבצע קריאה אם אין id
+    if (!call.id) return;
     if (call.locationX && call.locationY) {
-      reverseGeocode(call.locationX, call.locationY)
+      getAddressFromCoords(call.locationY, call.locationX)
         .then(setAddress)
         .catch(() => setAddress('כתובת לא זמינה'));
     } else {
@@ -50,19 +51,6 @@ export default function ActiveCallCard({ call, onStatusUpdate }: ActiveCallCardP
     };
     fetchVolunteerStatus();
   }, [call.volunteersStatus]);
-
-  const reverseGeocode = async (lat: number, lon: number): Promise<string> => {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=he`
-      );
-      const data = await response.json();
-      return data.display_name || 'כתובת לא זמינה';
-    } catch (error) {
-      console.error('Geocoding error:', error);
-      return 'כתובת לא זמינה';
-    }
-  };
 
   const handleStatusUpdate = async (newStatus: 'going' | 'arrived' | 'finished') => {
     setIsLoading(true);

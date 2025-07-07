@@ -13,15 +13,24 @@ export default function CreateCallPage() {
     urgencyLevel: "", // יישמר כערך string, אבל יומר למספר
     status: "Open",
     fileImage: null as File | null,
+    address: "",
   });
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
-      (pos) =>
-        setLocation({
-          x: pos.coords.latitude.toString(),
-          y: pos.coords.longitude.toString(),
-        }),
+      async (pos) => {
+        // latitude = קו רוחב, longitude = קו אורך
+        const latitude = pos.coords.latitude.toString();
+        const longitude = pos.coords.longitude.toString();
+        setLocation({ x: latitude, y: longitude });
+        // המרת קואורדינטות לכתובת והצגה למשתמש
+        try {
+          const address = await import("../../services/firstAid.service").then(m => m.getAddressFromCoords(Number(latitude), Number(longitude)));
+          setFormData((prev) => ({ ...prev, address }));
+        } catch {
+          setFormData((prev) => ({ ...prev, address: "כתובת לא זמינה" }));
+        }
+      },
       () => alert("⚠️ לא הצלחנו לאתר מיקום")
     );
   }, []);
@@ -48,13 +57,14 @@ export default function CreateCallPage() {
     const data = new FormData();
 
     data.append("Status", formData.status);
-    data.append("LocationX", Number(location.x).toString());
-    data.append("LocationY", Number(location.y).toString());
+    data.append("LocationX", Number(location.y).toString()); // longitude
+    data.append("LocationY", Number(location.x).toString()); // latitude
     data.append("UrgencyLevel", Number(formData.urgencyLevel).toString());
     data.append("CreatedAt", new Date().toISOString());
 
     if (formData.description) data.append("Description", formData.description);
     if (formData.fileImage) data.append("FileImage", formData.fileImage);
+    if (formData.address) data.append("Address", formData.address);
 
     try {
       const response = await createCall(data);

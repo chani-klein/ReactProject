@@ -10,6 +10,7 @@ import { Paths } from "../../routes/paths"
 import type { VolunteerRegisterData } from "../../types"
 import { UserPlus, Heart } from "lucide-react"
 import "../register.css"
+import BackgroundLayout from "../../layouts/BackgroundLayout"
 
 interface ValidationErrors {
   [key: string]: string
@@ -167,118 +168,97 @@ export default function RegisterVolunteerPage() {
   }
 
   return (
-    <div className="volunteer-registration">
-      <div className="registration-container">
-        <div className="registration-header">
-          <div className="registration-icon">
-            <Heart />
-          </div>
-          <h1 className="registration-title">הצטרפות למתנדבים</h1>
-          <p className="registration-subtitle">הירשם והפוך לחלק מקהילת המתנדבים שלנו</p>
+    <BackgroundLayout>
+      <div className="content-wrapper">
+        <div className="form-layout">
+          <h2 className="form-title">טופס הרשמה למתנדבים</h2>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <input
+                name="fullName"
+                placeholder="שם מלא"
+                value={volunteer.fullName}
+                onChange={handleChange}
+                className={errors.fullName ? "error" : volunteer.fullName ? "success" : ""}
+                required
+              />
+              {errors.fullName && <div className="error-message show">{errors.fullName}</div>}
+            </div>
+            <div className="form-group">
+              <input
+                name="Gmail"
+                type="email"
+                placeholder="כתובת אימייל"
+                value={volunteer.Gmail}
+                onChange={handleChange}
+                className={errors.Gmail ? "error" : volunteer.Gmail ? "success" : ""}
+                autoComplete="email"
+                required
+              />
+              {errors.Gmail && <div className="error-message show">{errors.Gmail}</div>}
+            </div>
+            <div className="form-group">
+              <input
+                name="password"
+                type="password"
+                placeholder="סיסמה (לפחות 8 תווים)"
+                value={volunteer.password}
+                onChange={handleChange}
+                className={errors.password ? "error" : volunteer.password ? "success" : ""}
+                required
+              />
+              {errors.password && <div className="error-message show">{errors.password}</div>}
+            </div>
+            <div className="form-group">
+              <input
+                name="phoneNumber"
+                placeholder="מספר טלפון (050-1234567)"
+                value={volunteer.phoneNumber}
+                onChange={handleChange}
+                className={errors.phoneNumber ? "error" : volunteer.phoneNumber ? "success" : ""}
+                required
+              />
+              {errors.phoneNumber && <div className="error-message show">{errors.phoneNumber}</div>}
+            </div>
+            <div className="form-group">
+              <input
+                name="specialization"
+                placeholder="תחום התמחות (חובש, עזרה ראשונה, רפואה...)"
+                value={volunteer.specialization}
+                onChange={handleChange}
+                className={errors.specialization ? "error" : volunteer.specialization ? "success" : ""}
+                required
+              />
+              {errors.specialization && <div className="error-message show">{errors.specialization}</div>}
+            </div>
+            <div className="form-group">
+              <input
+                name="address"
+                placeholder="כתובת מלאה"
+                value={volunteer.address}
+                onChange={handleChange}
+                className={errors.address ? "error" : volunteer.address ? "success" : ""}
+                required
+              />
+              {errors.address && <div className="error-message show">{errors.address}</div>}
+            </div>
+            <div className="form-group">
+              <input
+                name="city"
+                placeholder="עיר מגורים"
+                value={volunteer.city}
+                onChange={handleChange}
+                className={errors.city ? "error" : volunteer.city ? "success" : ""}
+                required
+              />
+              {errors.city && <div className="error-message show">{errors.city}</div>}
+            </div>
+            <button type="submit" className="submit-button" disabled={isSubmitting}>
+              {isSubmitting ? "נרשם..." : "הירשם כמתנדב"}
+            </button>
+          </form>
         </div>
-
-        <form className="registration-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <input
-              name="fullName"
-              placeholder="שם מלא"
-              value={volunteer.fullName}
-              onChange={handleChange}
-              className={`form-input ${errors.fullName ? "error" : ""}`}
-              required
-            />
-            {errors.fullName && <span className="error-message">{errors.fullName}</span>}
-          </div>
-
-          <div className="form-group">
-            <input
-              name="Gmail"
-              type="email"
-              className={`form-input ${errors.Gmail ? "error" : ""}`}
-              value={volunteer.Gmail}
-              onChange={handleChange}
-              placeholder="כתובת אימייל"
-              autoComplete="email"
-            />
-            {errors.Gmail && <span className="error-message">{errors.Gmail}</span>}
-          </div>
-
-          <div className="form-group">
-            <input
-              name="password"
-              type="password"
-              placeholder="סיסמה (לפחות 8 תווים)"
-              value={volunteer.password}
-              onChange={handleChange}
-              className={`form-input ${errors.password ? "error" : ""}`}
-              required
-            />
-            {errors.password && <span className="error-message">{errors.password}</span>}
-          </div>
-
-          <div className="form-group">
-            <input
-              name="phoneNumber"
-              placeholder="מספר טלפון (050-1234567)"
-              value={volunteer.phoneNumber}
-              onChange={handleChange}
-              className={`form-input ${errors.phoneNumber ? "error" : ""}`}
-              required
-            />
-            {errors.phoneNumber && <span className="error-message">{errors.phoneNumber}</span>}
-          </div>
-
-          <div className="form-group">
-            <input
-              name="specialization"
-              placeholder="תחום התמחות (חובש, עזרה ראשונה, רפואה...)"
-              value={volunteer.specialization}
-              onChange={handleChange}
-              className={`form-input ${errors.specialization ? "error" : ""}`}
-              required
-            />
-            {errors.specialization && <span className="error-message">{errors.specialization}</span>}
-          </div>
-
-          <div className="form-group">
-            <input
-              name="address"
-              placeholder="כתובת מלאה"
-              value={volunteer.address}
-              onChange={handleChange}
-              className={`form-input ${errors.address ? "error" : ""}`}
-              required
-            />
-            {errors.address && <span className="error-message">{errors.address}</span>}
-          </div>
-
-          <div className="form-group">
-            <input
-              name="city"
-              placeholder="עיר מגורים"
-              value={volunteer.city}
-              onChange={handleChange}
-              className={`form-input ${errors.city ? "error" : ""}`}
-              required
-            />
-            {errors.city && <span className="error-message">{errors.city}</span>}
-          </div>
-
-          <button type="submit" disabled={isSubmitting} className={`submit-button ${isSubmitting ? "loading" : ""}`}>
-            {isSubmitting ? (
-              <>
-                נרשם...
-                <span className="loading-spinner"></span>
-              </>
-            ) : (
-              <>
-                <UserPlus size={20} />
-                הירשם כמתנדב
-              </>
-            )}
-          </button>
-        </form>
       </div>
-    </div>
+    </BackgroundLayout>
   )
 }
