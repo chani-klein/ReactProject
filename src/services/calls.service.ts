@@ -243,12 +243,11 @@ export const getFirstAidSuggestions = async (description: string) => {
 // 🔧 קבלת הקריאות שלי (למשתמש שיצר אותן)
 export const getMyCalls = async (): Promise<AxiosResponse<Call[]>> => {
   try {
-    // נניח שהשרת מחזיר קריאות לפי המשתמש המחובר
-    const response = await axios.get("/Calls/my-calls")
-    return response
+    const response = await axios.get("/Calls/by-user");
+    return response;
   } catch (error: any) {
-    console.error("❌ Failed to get my calls:", error.response?.data || error.message)
-    throw error
+    console.error("❌ Failed to get my calls:", error.response?.data || error.message);
+    throw error;
   }
 }
 

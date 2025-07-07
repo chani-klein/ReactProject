@@ -29,45 +29,31 @@ export const refreshTokenIfVolunteer = async () => {
 export const checkUserExists = (gmail: string) => {
   return axios.get(`/User/exists?gmail=${encodeURIComponent(gmail)}`);
 };
-export const registerUser = (user: any) => {
-  return axios.post("/User", user); // ודא שהשרת אכן מקבל כאן את הרישום
+// 🔧 הרשמת משתמש רגיל
+export const registerUser = async (user: any) => {
+  try {
+    // שמות שדות תואמים לשרת
+    const serverData = {
+      FirstName: user.firstName,
+      LastName: user.lastName,
+      PhoneNumber: user.phoneNumber,
+      Gmail: user.Gmail, // לפי ה-DTO שלך
+      Password: user.password,
+      Role: user.role,
+    };
+    const response = await axios.post("/User", serverData);
+    if (response.data.token) {
+      localStorage.setItem("token", response.data.token);
+      if (response.data.refreshToken) {
+        localStorage.setItem("refreshToken", response.data.refreshToken);
+      }
+    }
+    return response;
+  } catch (error: any) {
+    console.error("❌ User registration failed:", error.response?.data || error.message);
+    throw error;
+  }
 };
-//import axios from "./axios"
-// import axios from "./axios"
-// import type { AxiosResponse } from "axios"
-// import type { UserRegisterData, VolunteerRegisterData, LoginCredentials, AuthResponse } from "../types"
-
-// // 🔧 הרשמת משתמש רגיל
-// export const registerUser = async (user: UserRegisterData): Promise<AxiosResponse<AuthResponse>> => {
-//   try {
-//     console.log("🔐 Registering user:", { ...user, password: "[HIDDEN]" })
-
-//     // 🔧 התאמה לשרת C# - שמות שדות עם אות גדולה
-//     const serverData = {
-//       FirstName: user.firstName,
-//       LastName: user.lastName,
-//       PhoneNumber: user.phoneNumber,
-//       Email: user.email, // 🔧 שינוי ל-Email עם E גדולה
-//       Password: user.password,
-//       Role: user.role,
-//     }
-
-//     const response = await axios.post("/User", serverData)
-
-//     // שמירת טוקן אם התקבל
-//     if (response.data.token) {
-//       localStorage.setItem("token", response.data.token)
-//       if (response.data.refreshToken) {
-//         localStorage.setItem("refreshToken", response.data.refreshToken)
-//       }
-//     }
-
-//     return response
-//   } catch (error: any) {
-//     console.error("❌ User registration failed:", error.response?.data || error.message)
-//     throw error
-//   }
-// }
 
 // // 🔧 הרשמת מתנדב
 // export const registerVolunteer = async (volunteer: VolunteerRegisterData): Promise<AxiosResponse<AuthResponse>> => {

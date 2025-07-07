@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import CloseCallForm from './CloseCallForm';
 import { updateVolunteerStatus, getCallVolunteersInfo } from '../services/volunteer.service';
 import { getVolunteerDetails } from '../services/volunteer.service';
+import { getAddressFromCoords } from '../services/firstAid.service';
 import type { Call, VolunteerStatus } from '../types/call.types';
 
 interface ActiveCallCardProps {
@@ -18,9 +19,9 @@ export default function ActiveCallCard({ call, onStatusUpdate }: ActiveCallCardP
   const [goingVolunteersCount, setGoingVolunteersCount] = useState<number>(call.goingVolunteersCount || 0);
 
   useEffect(() => {
-    if (!call.id) return; // אל תבצע קריאה אם אין id
+    if (!call.id) return;
     if (call.locationX && call.locationY) {
-      reverseGeocode(call.locationX, call.locationY)
+      getAddressFromCoords(call.locationY, call.locationX)
         .then(setAddress)
         .catch(() => setAddress('כתובת לא זמינה'));
     } else {

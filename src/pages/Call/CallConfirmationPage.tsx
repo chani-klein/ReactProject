@@ -1,9 +1,9 @@
 // CallConfirmationPage.tsx - עמוד אישור קריאה עם עיצוב מודרני
 import { useLocation, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
-import axios from "axios";
-import BackgroundLayout from "../../layouts/BackgroundLayout";
 import { getCallStatus } from "../../services/calls.service";
+import { getAIFirstAidGuide } from "../../services/firstAid.service";
+import BackgroundLayout from "../../layouts/BackgroundLayout";
 import "../../style/emergency-styles.css"; // יבוא קובץ ה-CSS
 
 export default function CallConfirmationPage() {
@@ -39,10 +39,9 @@ export default function CallConfirmationPage() {
 
       setIsLoadingGuides(true);
       try {
-        const res = await axios.post("http://localhost:5000/api/firstaid/ai", description, {
-          headers: { "Content-Type": "application/json" },
-        });
-        setGuides([{ title: "הוראות עזרה ראשונה", description: res.data }]);
+        // שימוש בפונקציה מהשרת
+        const aiGuide = await getAIFirstAidGuide(description);
+        setGuides([{ title: "הוראות עזרה ראשונה", description: aiGuide }]);
       } catch (err) {
         console.error("שגיאה בקבלת הוראות AI", err);
       } finally {
@@ -83,10 +82,15 @@ export default function CallConfirmationPage() {
 
   return (
     <BackgroundLayout>
-      <div className="confirmation-container">
-        <h2 className="confirmation-title success-bounce">
-          ✔️ הקריאה נשלחה בהצלחה
-        </h2>
+      <div className="confirmation-container sos-confirmation">
+        <div className="sos-header">
+          <div className="sos-circle">
+            <span className="sos-text">SOS</span>
+          </div>
+          <h2 className="confirmation-title success-bounce">
+            ✔️ הקריאה נשלחה בהצלחה
+          </h2>
+        </div>
 
         <div className="alert-message">
           <div className="alert-message-text">
