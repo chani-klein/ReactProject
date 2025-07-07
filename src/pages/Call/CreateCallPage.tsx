@@ -6,11 +6,12 @@ import "../../style/emergency-styles.css";
 
 export default function CreateCallPage() {
   const navigate = useNavigate();
-  const [location, setLocation] = useState<{ x: string; y: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [location, setLocation] = useState<{ x: string; y: string } | null>(null);
+
   const [formData, setFormData] = useState({
     description: "",
-    urgencyLevel: "", // יישמר כערך string, אבל יומר למספר
+    urgencyLevel: "",
     status: "Open",
     fileImage: null as File | null,
     address: "",
@@ -19,23 +20,30 @@ export default function CreateCallPage() {
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        // latitude = קו רוחב, longitude = קו אורך
         const latitude = pos.coords.latitude.toString();
         const longitude = pos.coords.longitude.toString();
         setLocation({ x: latitude, y: longitude });
-        // המרת קואורדינטות לכתובת והצגה למשתמש
+
         try {
-          const address = await import("../../services/firstAid.service").then(m => m.getAddressFromCoords(Number(latitude), Number(longitude)));
+          const address = await import("../../services/firstAid.service").then((m) =>
+            m.getAddressFromCoords(Number(latitude), Number(longitude))
+          );
           setFormData((prev) => ({ ...prev, address }));
-        } catch {
+        } catch (err) {
+          console.error("שגיאה בזיהוי כתובת:", err);
           setFormData((prev) => ({ ...prev, address: "כתובת לא זמינה" }));
         }
       },
-      () => alert("⚠️ לא הצלחנו לאתר מיקום")
+      (err) => {
+        console.error("⚠️ שגיאה באיתור מיקום:", err);
+        alert("⚠️ לא הצלחנו לאתר את מיקומך, נסה שוב או הזן כתובת ידנית");
+      }
     );
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value, type } = e.target;
     if (type === "file") {
       const target = e.target as HTMLInputElement;
@@ -47,20 +55,20 @@ export default function CreateCallPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!location) {
-      alert("📍 אין מיקום זמין עדיין");
+      alert("📍 לא ניתן לשלוח קריאה ללא מיקום");
       return;
     }
 
     setIsLoading(true);
 
     const data = new FormData();
-
     data.append("Status", formData.status);
-    data.append("LocationX", Number(location.y).toString()); // longitude
-    data.append("LocationY", Number(location.x).toString()); // latitude
     data.append("UrgencyLevel", Number(formData.urgencyLevel).toString());
     data.append("CreatedAt", new Date().toISOString());
+    data.append("LocationX", location.y); // longitude
+    data.append("LocationY", location.x); // latitude
 
     if (formData.description) data.append("Description", formData.description);
     if (formData.fileImage) data.append("FileImage", formData.fileImage);
@@ -68,16 +76,24 @@ export default function CreateCallPage() {
 
     try {
       const response = await createCall(data);
-      // נוודא שה-id מגיע מהשרת
       const callId = (response.data as any).id || (response.data as any).callId;
       if (!callId) throw new Error("לא התקבל מזהה קריאה מהשרת");
+
       let guides = [];
       if (formData.description) {
         const res = await getFirstAidSuggestions(formData.description);
         guides = res.data;
       }
-      navigate(`/call-confirmation/${callId}`, { state: { callId, description: formData.description, guides } });
-    } catch {
+
+      navigate(`/call-confirmation/${callId}`, {
+        state: {
+          callId,
+          description: formData.description,
+          guides,
+        },
+      });
+    } catch (err) {
+      console.error("שגיאה בשליחת קריאה:", err);
       alert("❌ שגיאה בשליחה");
     } finally {
       setIsLoading(false);
@@ -99,7 +115,6 @@ export default function CreateCallPage() {
             className="form-textarea"
           />
 
-          {/* 🔽 קומבו־בוקס לרמת דחיפות */}
           <select
             name="urgencyLevel"
             value={formData.urgencyLevel}
@@ -131,7 +146,7 @@ export default function CreateCallPage() {
                 שולח קריאה...
               </>
             ) : (
-              "📤 שלח קריאה "
+              "📤 שלח קריאה"
             )}
           </button>
         </form>

@@ -1,6 +1,6 @@
 "use client"
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { registerUser } from "../../services/auth.service"
 import BackgroundLayout from "../../layouts/BackgroundLayout"
 import { useNavigate } from "react-router-dom"
@@ -26,6 +26,13 @@ export default function RegisterUserPage() {
 
   const [errors, setErrors] = useState<ValidationErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    // אם המשתמש כבר מחובר, נבצע redirect אוטומטי
+    if (localStorage.getItem("token")) {
+      navigate(`/${Paths.userHome}`)
+    }
+  }, [])
 
   // פונקציות אימות
   const validateName = (name: string): string => {
@@ -67,7 +74,7 @@ export default function RegisterUserPage() {
         return validateName(value)
       case "phoneNumber":
         return validatePhone(value)
-      case "email": // 🔧 שינוי מ-gmail ל-email
+      case "Gmail": // שינוי מ-email ל-Gmail
         return validateEmail(value)
       case "password":
         return validatePassword(value)
@@ -95,7 +102,7 @@ export default function RegisterUserPage() {
     newErrors.firstName = validateName(user.firstName)
     newErrors.lastName = validateName(user.lastName)
     newErrors.phoneNumber = validatePhone(user.phoneNumber)
-    newErrors.email = validateEmail(user.Gmail) // 🔧 שינוי מ-gmail ל-email
+    newErrors.Gmail = validateEmail(user.Gmail) // שינוי ל-Gmail
     newErrors.password = validatePassword(user.password)
 
     setErrors(newErrors)
@@ -125,12 +132,26 @@ export default function RegisterUserPage() {
         alert("❗לא התקבל טוקן מהשרת")
       }
     } catch (err: any) {
-      console.error(err)
       if (err.response?.data?.message) {
-        alert("שגיאה: " + err.response.data.message)
+        // בדיקת הודעת שגיאה על מייל קיים
+        if (
+          err.response.data.message.includes("exists") ||
+          err.response.data.message.includes("קיים") ||
+          err.response.data.message.includes("משתמש עם האימייל הזה כבר קיים")
+        ) {
+          alert("האימייל כבר קיים במערכת. אנא השתמש באימייל אחר.")
+        } else {
+          alert("שגיאה: " + err.response.data.message)
+        }
+      } else if (err.response?.data?.errors?.Gmail) {
+        // טיפול בשגיאת אימייל כפול תחת errors.Gmail
+        alert("האימייל כבר קיים במערכת. אנא השתמש באימייל אחר.")
+      } else if (err.response?.data?.errors) {
+        alert(JSON.stringify(err.response.data.errors, null, 2))
       } else {
         alert("שגיאה בהרשמה")
       }
+      console.error(err)
     } finally {
       setIsSubmitting(false)
     }
@@ -177,14 +198,14 @@ export default function RegisterUserPage() {
 
             <div className="form-group">
               <input
-                name="Gmail" // 🔧 שינוי מ-gmail ל-email
+                name="Gmail" // שינוי מ-gmail ל-email
                 type="email"
                 placeholder="אימייל"
                 value={user.Gmail}
                 onChange={handleChange}
-                className={errors.email ? "error" : user.Gmail ? "success" : ""}
+                className={errors.Gmail ? "error" : user.Gmail ? "success" : ""}
               />
-              {errors.email && <div className="error-message show">{errors.email}</div>}
+              {errors.Gmail && <div className="error-message show">{errors.Gmail}</div>}
             </div>
 
             <div className="form-group">

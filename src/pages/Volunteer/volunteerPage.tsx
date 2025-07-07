@@ -304,18 +304,7 @@ export default function VolunteerMenu() {
         </div>
 
         <div style={{ textAlign: "center", marginTop: "2rem" }}>
-          <button
-            onClick={() => {
-              console.log("🚨 volunteerId:", volunteerId)
-              console.log("🚨 coords:", coords)
-              console.log("🚨 modalCall:", modalCall)
-              console.log("🚨 isLoading:", isLoading)
-            }}
-            className="btn btn-warning"
-            style={{ padding: "0.5rem 1rem" }}
-          >
-            🔍 הצג מידע דיבוג
-          </button>
+          {/* כפתור debug הוסר לפי בקשת המשתמש */}
         </div>
       </div>
 

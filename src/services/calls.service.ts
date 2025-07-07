@@ -248,15 +248,33 @@ export const completeCall = async (
   }
 }
 
-// 🔧 הצעות עזרה ראשונה - תיקון הפורמט
+// 🔧 הצעות עזרה ראשונה - עדכון לנתיב הנכון לפי ה-Swagger
 export const getFirstAidSuggestions = async (description: string) => {
   if (!description || typeof description !== "string") return [];
 
   try {
-    const response = await axios.post(`${API_BASE}/FirstAid/suggest`, { description });
-    return response.data;
-  } catch (err) {
-    console.error("❌ getFirstAidSuggestions failed", err);
+    // ודא שהנתיב נכון לפי השרת שלך (ai או guides)
+    const response = await axios.post(`${API_BASE}/FirstAid/ai`, { description });
+    // טיפול בתשובה: אם יש שדה guides או instructions, החזר אותו, אחרת החזר את כל ה-data
+    if (Array.isArray(response.data)) {
+      return response.data;
+    } else if (response.data.guides && Array.isArray(response.data.guides)) {
+      return response.data.guides;
+    } else if (response.data.instructions && Array.isArray(response.data.instructions)) {
+      return response.data.instructions;
+    } else if (typeof response.data === "string") {
+      return [response.data];
+    } else {
+      // החזר מערך ריק אם לא נמצא מידע מתאים
+      return [];
+    }
+  } catch (err: any) {
+    // טיפול בשגיאת 400 או כל שגיאה אחרת
+    if (err.response && err.response.data && err.response.data.message) {
+      console.error("❌ getFirstAidSuggestions failed:", err.response.data.message);
+    } else {
+      console.error("❌ getFirstAidSuggestions failed", err);
+    }
     return [];
   }
 };

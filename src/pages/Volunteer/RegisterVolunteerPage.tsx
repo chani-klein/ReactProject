@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type React from "react"
 
  import {registerVolunteer} from "../../services/volunteer.service";
@@ -32,6 +32,13 @@ export default function RegisterVolunteerPage() {
 
   const [errors, setErrors] = useState<ValidationErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    // אם יש token, נבצע redirect לדף הבית של מתנדב
+    if (localStorage.getItem("token")) {
+      navigate(`/${Paths.volunteerHome}`);
+    }
+  }, []);
 
   // פונקציות אימות
   const validateFullName = (name: string): string => {
@@ -157,10 +164,33 @@ export default function RegisterVolunteerPage() {
       alert("נרשמת בהצלחה כמתנדב!")
       navigate(`/${Paths.volunteerHome}`)
     } catch (err: any) {
-      if (err.response && err.response.data && err.response.data.errors) {
-        alert(JSON.stringify(err.response.data.errors, null, 2));
+      // טיפול משופר בשגיאות הרשמה
+      console.error("Volunteer registration error:", err);
+      if (err.response && err.response.data) {
+        const data = err.response.data;
+        if (typeof data.message === "string") {
+          // בדיקת הודעת שגיאה על מייל קיים
+          if (
+            data.message.includes("exists") ||
+            data.message.includes("קיים") ||
+            data.message.includes("משתמש עם האימייל הזה כבר קיים")
+          ) {
+            alert("האימייל כבר קיים במערכת. אנא השתמש באימייל אחר.");
+          } 
+        } else if (data.errors) {
+          // טיפול בשגיאות ולידציה מרובות
+          if (typeof data.errors === "string") {
+            alert(data.errors);
+          } else {
+            alert(JSON.stringify(data.errors, null, 2));
+          }
+        } else {
+          alert("שגיאה לא ידועה בשרת: " + JSON.stringify(data));
+        }
+      } else if (typeof err === "string") {
+        alert("שגיאה: " + err);
       } else {
-        alert("❌ שגיאה בשליחה");
+        alert("❌ שגיאה כללית בשליחה. נסה שוב או פנה לתמיכה.");
       }
     } finally {
       setIsSubmitting(false)
