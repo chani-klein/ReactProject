@@ -26,6 +26,7 @@ export default function HomePage() {
           >
             הירשם כמתנדב
           </button>
+         
         </div>
         <p className="helper-text">האפליקציה זמינה עבור כל המכשירים</p>
       </div>
