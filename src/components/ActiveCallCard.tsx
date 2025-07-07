@@ -52,13 +52,57 @@ export default function ActiveCallCard({ call, onStatusUpdate }: ActiveCallCardP
     fetchVolunteerStatus();
   }, [call.volunteersStatus]);
 
+  const reverseGeocode = async (lat: number, lon: number): Promise<string> => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=he`
+      );
+      const data = await response.json();
+      return data.display_name || 'כתובת לא זמינה';
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      return 'כתובת לא זמינה';
+    }
+  };
+
+  // פונקציה לעדכון סטטוס קריאה (Open/InProgress/Closed)
+  const updateCallStatus = async (newStatus: 'Open' | 'InProgress' | 'Closed') => {
+    try {
+      await import('../services/calls.service').then(({ getCallById }) => getCallById(call.id)); // רענון נתונים
+      await fetch(`/api/Calls/${call.id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+    } catch (error) {
+      console.error('שגיאה בעדכון סטטוס קריאה:', error);
+    }
+  };
+
   const handleStatusUpdate = async (newStatus: 'going' | 'arrived' | 'finished') => {
     setIsLoading(true);
     try {
-      const volunteerId = await getVolunteerDetails();
-      if (!volunteerId) throw new Error('מתנדב לא מזוהה');
-      await onStatusUpdate(call.id, newStatus);
+      await updateVolunteerStatus(call.id, newStatus); // שימוש בגרסה הנכונה של הפונקציה
       setVolunteerStatus(newStatus);
+
+      // עדכון סטטוס קריאה לפי לוגיקה:
+      if (newStatus === 'arrived') {
+        // אם זו הפעם הראשונה שמישהו הגיע, עדכן ל-InProgress
+        const info = await getCallVolunteersInfo(call.id);
+        const anyArrived = info.data.volunteersStatus?.some((v: any) => v.response === 'arrived');
+        if (!call.status || call.status === 'Open') {
+          if (anyArrived) await updateCallStatus('InProgress');
+        }
+      }
+      if (newStatus === 'finished') {
+        // בדוק אם כל המתנדבים סיימו
+        const info = await getCallVolunteersInfo(call.id);
+        const allFinished = info.data.volunteersStatus?.every((v: any) => v.response === 'finished' || v.response === 'cant');
+        if (allFinished) await updateCallStatus('Closed');
+      }
     } catch (error) {
       console.error('שגיאה בעדכון סטטוס:', error);
       alert('שגיאה בעדכון הסטטוס, נסה שוב');
@@ -73,7 +117,7 @@ export default function ActiveCallCard({ call, onStatusUpdate }: ActiveCallCardP
       const volunteerId = await getVolunteerDetails();
       if (!volunteerId) throw new Error('מתנדב לא מזוהה');
       await completeCall(call.id, summary);
-      await onStatusUpdate(call.id, 'finished', summary);
+      await handleStatusUpdate('finished');
       setShowCloseForm(false);
     } catch (error) {
       console.error('שגיאה בסיום קריאה:', error);
