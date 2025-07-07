@@ -147,7 +147,7 @@ export const createCall = async (callData: FormData | CallCreateRequest): Promis
       }
     }
 
-    const response = await axios.post("/Calls", formData, {
+    const response = await axios.post(`${API_BASE}/Calls`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
