@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import ActiveCallCard from '../../components/ActiveCallCard';
 import BackgroundLayout from '../../layouts/BackgroundLayout';
-import { getActiveCalls, updateVolunteerStatus, completeCall } from '../../services/volunteer.service';
+import { getActiveCalls, updateVolunteerStatus,  } from '../../services/volunteer.service';
 import { getVolunteerDetails } from '../../services/volunteer.service';
 import type { Call } from '../../types/call.types';
 
@@ -37,7 +37,7 @@ export default function VolunteerActiveCallsPage() {
       if (!volunteerId) throw new Error('מתנדב לא מזוהה');
 
       if (newStatus === 'finished') {
-        await completeCall(callId, summary || '');
+      
         setActiveCalls((prev) => prev.filter((call) => call.id !== callId));
       } else {
         await updateVolunteerStatus(callId, newStatus);
