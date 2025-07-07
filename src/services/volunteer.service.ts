@@ -156,7 +156,7 @@ export const respondToCall = async (callId: number, response: "going" | "cant"):
 export const updateVolunteerStatus = async (
   callId: number,
   status: "going" | "arrived" | "finished",
-  summary?: string,
+ 
 ): Promise<AxiosResponse<any>> => {
   try {
     const volunteerId = getVolunteerIdFromStorage()
@@ -164,16 +164,14 @@ export const updateVolunteerStatus = async (
       throw new Error("Volunteer ID not found - please login again")
     }
 
-    console.log("📝 Updating volunteer status:", { callId, volunteerId, status, summary })
+    console.log("📝 Updating volunteer status:", { callId, volunteerId, status })
 
     // 🔧 התאמה לשרת C# - שמות שדות עם אות גדולה
     const serverData: any = {
       Status: status, // S גדולה
     }
 
-    if (summary) {
-      serverData.Summary = summary // S גדולה
-    }
+    
 
     const response = await axios.put(`/VolunteersCalls/${callId}/${volunteerId}/status`, serverData)
     console.log("✅ Status updated successfully")
@@ -251,21 +249,6 @@ export const getVolunteerDetails = async (): Promise<number | null> => {
   return getVolunteerIdFromStorage()
 }
 
-// 🔧 סיום קריאה (wrapper לשירות calls)
-export const completeCall = async (
-  callId: number,
-  summary: string,
-  sentToHospital = false,
-): Promise<AxiosResponse<any>> => {
-  try {
-    // Import calls service בתוך הפונקציה כדי למנוע circular imports
-    const { completeCall: completeCallService } = await import("./calls.service")
-    return await completeCallService(callId, summary, sentToHospital)
-  } catch (error: any) {
-    console.error("❌ Failed to complete call:", error.response?.data || error.message)
-    throw error
-  }
-}
 
 // 🔧 הרשמת מתנדב
 export const registerVolunteer = async (volunteer: any): Promise<AxiosResponse<any>> => {
