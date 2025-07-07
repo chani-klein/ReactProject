@@ -34,7 +34,7 @@ export default function MyCallsPage() {
         // המרת קואורדינטות לכתובת
         const addressPromises = response.data.map((call: any) =>
           call.locationX && call.locationY
-            ? getAddressFromCoords(call.locationX, call.locationY)
+            ? getAddressFromCoords(call.locationY, call.locationX) // lat, lng
             : Promise.resolve("כתובת לא זמינה")
         );
         const addresses = await Promise.all(addressPromises);
