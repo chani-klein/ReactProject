@@ -2,7 +2,7 @@
 import { useLocation, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { getCallStatus } from "../../services/calls.service";
-import { getVolunteersForCall } from "../../services/calls.service"; // Ensure this function exists in the service
+import { getVolunteersForCall, updateVolunteerStatus, finishVolunteerCall } from "../../services/calls.service";
 import { getAIFirstAidGuide } from "../../services/firstAid.service";
 import BackgroundLayout from "../../layouts/BackgroundLayout";
 import "../../style/emergency-styles.css"; // יבוא קובץ ה-CSS
@@ -71,6 +71,41 @@ export default function CallConfirmationPage() {
       setIsLoadingVolunteers(false);
     }
   };
+
+  const handleArrivedUpdate = async () => {
+    if (status !== 'נפתח') {
+        alert('לא ניתן לעדכן ל-"הגעתי" לפני שהסטטוס הוא "נפתח".');
+        return;
+    }
+
+    setIsLoadingVolunteers(true);
+    try {
+        console.log('🔄 Attempting to update status to arrived for call:', callId);
+        await updateVolunteerStatus(callId, 176, 'arrived'); // הוספת volunteerId
+        console.log('✅ Status updated to arrived successfully');
+        setStatus('בטיפול');
+    } catch (error) {
+        console.error('❌ Error updating status to arrived:', error);
+        alert('שגיאה בעדכון הסטטוס, נסה שוב');
+    } finally {
+        setIsLoadingVolunteers(false);
+    }
+};
+
+const handleCompleteCall = async (summary: { summary: string; sentToHospital: boolean; hospitalName?: string }) => {
+    setIsLoadingVolunteers(true);
+    try {
+        console.log('🔄 Completing call with summary:', summary);
+        await finishVolunteerCall(callId, 176, summary); // הוספת volunteerId
+        console.log('✅ Call completed successfully');
+        setStatus('נסגר');
+    } catch (error) {
+        console.error('❌ Error completing call:', error);
+        alert('שגיאה בסיום הקריאה, נסה שוב');
+    } finally {
+        setIsLoadingVolunteers(false);
+    }
+};
 
   const getStatusColor = (currentStatus: string) => {
     switch (currentStatus) {

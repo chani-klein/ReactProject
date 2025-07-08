@@ -51,7 +51,19 @@ export default function ActiveCallCard({ call, onStatusUpdate, showArrivedOnly }
     fetchVolunteerStatus();
   }, [call.volunteersStatus]);
 
+  useEffect(() => {
+    if (volunteerStatus === 'arrived') {
+        console.log('🔄 Volunteer status updated to arrived. Updating UI...');
+        // ניתן להוסיף לוגיקה נוספת אם נדרש
+    }
+  }, [volunteerStatus]);
+
   const handleArrivedUpdate = async () => {
+    if (!volunteerStatus || volunteerStatus !== 'going') {
+      alert('לא ניתן לעדכן ל-"הגעתי" לפני שהסטטוס הוא "בדרך".');
+      return;
+    }
+
     setIsLoading(true);
     try {
       console.log('🔄 Attempting to update status to arrived for call:', call.id);
@@ -72,10 +84,9 @@ export default function ActiveCallCard({ call, onStatusUpdate, showArrivedOnly }
     try {
       const volunteerId = await getVolunteerDetails();
       if (!volunteerId) throw new Error('מתנדב לא מזוהה');
-      
-      // שימוש בפונקציה הנכונה מהשירות המתאים
+
       await finishVolunteerCall(call.id, volunteerId, summary);
-      
+
       setShowCloseForm(false);
       setVolunteerStatus('finished');
       onStatusUpdate();
