@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import BackgroundLayout from "../../layouts/BackgroundLayout"
-import AlertModal from "../../components/AlertModal"
+// import AlertModal from "../../components/AlertModal"
 import {  getVolunteerDetails,} from "../../services/volunteer.service"
 import { getActiveVolunteerCalls, updateVolunteerStatus, finishVolunteerCall } from "../../services/calls.service"
 export default function VolunteerMenu() {
@@ -308,7 +308,7 @@ export default function VolunteerMenu() {
         </div>
       </div>
 
-      <AlertModal
+      {/* <AlertModal
         isOpen={!!modalCall}
         call={modalCall}
         address={address}
@@ -320,7 +320,7 @@ export default function VolunteerMenu() {
           setModalCall(null)
           setAddress(null)
         }}
-      />
+      /> */}
     </BackgroundLayout>
   )
 }

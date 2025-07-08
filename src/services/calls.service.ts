@@ -271,9 +271,23 @@ export const getMyCalls = async (): Promise<AxiosResponse<Call[]>> => {
 
 // הוספת פונקציה לשליפת קריאות מוקצות למתנדב
 export const getAssignedCalls = async (volunteerId: number, status: string) => {
-  const res = await axios.get(`/Volunteer/${volunteerId}/calls/by-status/${status}`);
+  try {
+    const res = await axios.get(`/Volunteer/${volunteerId}/calls/by-status/${status}`);
+    return res.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      console.info(`No calls found for volunteerId=${volunteerId} with status=${status}.`);
+      return []; // Return an empty array if no calls are found
+    }
+    console.error("Error in getAssignedCalls:", error.response?.data || error.message);
+    throw error; // Re-throw the error for other cases
+  }
+};
+export const getnotifiedAssignedCalls = async (volunteerId: number) => {
+  const res = await axios.get(`/VolunteersCalls/notified/${volunteerId}`);
   return res.data;
 };
+
 
 // שליפת קריאות פעילות למתנדב (כולל פרטי קריאה מלאים)
 export const getActiveVolunteerCalls = async (volunteerId: number) => {

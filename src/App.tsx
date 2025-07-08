@@ -1,16 +1,13 @@
 // App.jsx
-import VolunteerCallWatcher from "./components/VolunteerCallWatcher";
 import CallPopupModal from "./components/CallPopupModal";
 import { CallProvider } from "./contexts/CallContext";
 import AppRouter from "./routes/Router"; // הנתיב החדש שלך
-import GlobalVolunteerCallWatcher from "./components/GlobalVolunteerCallWatcher";
 
 
 function App() {
   return (
    
       <CallProvider>
-        {/* <GlobalVolunteerCallWatcher /> */}
         <CallPopupModal />
         <AppRouter />
       </CallProvider>

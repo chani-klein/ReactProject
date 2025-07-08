@@ -1,5 +1,5 @@
 // routes/Router.jsx
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/Volunteer/LoginPage";
 import RegisterUserPage from "../pages/User/RegisterUserPage";
@@ -15,6 +15,8 @@ import HistoryPage from "../pages/Volunteer/VolunteerCallHistoryPage";
 import AuthRedirector from "../components/AuthRedirector";
 import VolunteerMenu from "../pages/Volunteer/volunteerPage";
 import MyCallsPage from "../pages/Call/MyCallsPage";
+import UnifiedVolunteerCallWatcher from "../components/GlobalVolunteerCallWatcher";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -25,10 +27,9 @@ const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
-  path: "/login",
-  element: <LoginPage />,
-},
-
+    path: "/login",
+    element: <LoginPage />,
+  },
   {
     path: "/register-user",
     element: <RegisterUserPage />,
@@ -45,44 +46,42 @@ const router = createBrowserRouter([
     path: "/CreateCallPage",
     element: <CreateCallPage />,
   },
-  
   {
-  path: "/call-confirmation/:callId",
-  element: <CallConfirmationPage />,
-},
-
+    path: "/call-confirmation/:callId",
+    element: <CallConfirmationPage />,
+  },
   {
     path: "/volunteerPage",
-    element: <VolunteerPage />,
+    element: <><UnifiedVolunteerCallWatcher /><VolunteerPage /></>,
   },
   {
     path: "/VolunteerListPage",
-    element: <VolunteerListPage />,
+    element: <><UnifiedVolunteerCallWatcher /><VolunteerListPage /></>,
   },
   {
     path: "/volunteer/update-details",
-    element: <VolunteerUpdatePage />,
+    element: <><UnifiedVolunteerCallWatcher /><VolunteerUpdatePage /></>,
   },
   {
     path: "/volunteer/active-calls",
-    element: <ActiveCallsPage />,
+    element: <><UnifiedVolunteerCallWatcher /><ActiveCallsPage /></>,
   },
   {
     path: "/volunteer/history",
-    element: <HistoryPage />,
+    element: <><UnifiedVolunteerCallWatcher /><HistoryPage /></>,
   },
   {
     path: "/volunteer/menu",
-    element: <VolunteerMenu />,
+    element: <><UnifiedVolunteerCallWatcher /><VolunteerMenu /></>,
   },
   {
     path: "*",
     element: <h1>404 - Page Not Found</h1>,
   },
   {
-  path: "/my-calls",
-  element: <MyCallsPage />,
-},
+    path: "/my-calls",
+    element: <><UnifiedVolunteerCallWatcher /><MyCallsPage /></>,
+  },
 ]);
 
 export default function AppRouter() {

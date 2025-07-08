@@ -3,16 +3,19 @@ import { useCallContext } from '../contexts/CallContext';
 import { getAssignedCalls } from '../services/calls.service';
 import { useLocation } from 'react-router-dom';
 
-const GlobalVolunteerCallWatcher: React.FC = () => {
+const UnifiedVolunteerCallWatcher: React.FC = () => {
   const { setPopupCall } = useCallContext();
   const location = useLocation();
 
   useEffect(() => {
     const allowedPaths = [
-      '/volunteer',
-      '/volunteer/VolunteerActiveCallsPage', // Updated route for active calls page
-      '/volunteer/VolunteerCallHistoryPage', // Updated route for call history page
-      '/volunteer/VolunteerUpdatePage', // Updated route for update page
+      '/volunteerPage',
+      '/VolunteerListPage',
+      '/volunteer/update-details',
+      '/volunteer/active-calls',
+      '/volunteer/history',
+      '/volunteer/menu',
+      '/my-calls',
     ];
 
     if (!allowedPaths.includes(location.pathname)) {
@@ -27,24 +30,34 @@ const GlobalVolunteerCallWatcher: React.FC = () => {
       return;
     }
 
+    console.log('🔍 Current volunteerId:', volunteerId); // Debugging log
+    console.log('🔍 API Path:', `/Volunteer/${volunteerId}/calls/by-status/notified`); // Debugging log
+
     const interval = setInterval(async () => {
       try {
         const calls = await getAssignedCalls(Number(volunteerId), 'notified');
+        console.log('🔍 Calls fetched:', calls); // Debugging log
+
         if (calls && calls.length > 0) {
-          const notifiedCall = calls.find((call: any) => call.status === 'notified');
-          if (notifiedCall) {
-            setPopupCall(notifiedCall);
-          }
+          setPopupCall((prevPopupCall) => {
+            if (prevPopupCall?.id === calls[0].id) {
+              console.info('Popup already set for this call. Skipping.');
+              return prevPopupCall;
+            }
+            console.log('📢 popupCall updated successfully with:', calls[0]);
+            return calls[0];
+          });
+        } else {
+          console.info('No new calls available. Popup will remain unchanged.');
         }
       } catch (error: any) {
         if (error.response?.status === 404) {
-          // 404 is expected when no calls are assigned, suppress logging
-          console.info('No calls assigned to the volunteer.');
+          console.info('No calls assigned to the volunteer. Continuing polling.');
         } else {
-          console.error('GlobalVolunteerCallWatcher error', error);
+          console.error('UnifiedVolunteerCallWatcher error', error);
         }
       }
-    }, 5000);
+    }, 2000);
 
     return () => clearInterval(interval);
   }, [setPopupCall, location.pathname]);
@@ -52,4 +65,4 @@ const GlobalVolunteerCallWatcher: React.FC = () => {
   return null;
 };
 
-export default GlobalVolunteerCallWatcher;
+export default UnifiedVolunteerCallWatcher;

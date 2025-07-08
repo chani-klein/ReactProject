@@ -1,68 +1,9 @@
 import axios from "./axios"
 import type { AxiosResponse } from "axios"
 import type { Call, Volunteer } from "../types"
-import type { CompleteCallDto } from "../types/call.types"
+import { AxiosHeaders } from "axios";
 
 const API_BASE = 'https://localhost:7219/api';
-
-// // 🟢 התחברות או הרשמה (מתנדב)
-// export const registerVolunteer = (volunteer: any) =>
-//   axios.post(`${API_BASE}/Volunteer`, volunteer);
-
-// export const loginVolunteer = (credentials: any) =>
-//   axios.post(`${API_BASE}/VolunteerLogin`, credentials);
-
-// // 🔔 שליחת התראות למתנדבים
-// export const getNearbyCalls = (volunteerId: number): Promise<AxiosResponse<Call[]>> =>
-//   axios.get(`${API_BASE}/Volunteer/nearby-alerts`, {
-//     params: { id: volunteerId },
-//     headers: {
-//       Authorization: `Bearer ${localStorage.getItem('token')}` // טוקן JWT
-//     }
-//   }).catch((error) => {
-//     console.error('שגיאה באיתור קריאות:', error);
-//     throw error;
-//   });
-
-// // 📡 מידע על מתנדבים בקריאה
-// export const getCallVolunteersInfo = (callId: number) =>
-//   axios.get(`${API_BASE}/VolunteersCalls/${callId}/info`);
-
-// // 📋 היסטוריה וקריאות פעילות
-// export const getVolunteerHistory = (volunteerId: number) =>
-//   axios.get(`${API_BASE}/VolunteersCalls/history/${volunteerId}`);
-
-// export const getActiveCalls = (volunteerId: number) =>
-//   axios.get(`${API_BASE}/VolunteersCalls/active/${volunteerId}`);
-
-// // 🚑 תגובת מתנדב
-// export const respondToCall = (responseData: { callId: number; volunteerId: number; response: 'going' | 'cant' }) =>
-//   axios.post(`${API_BASE}/VolunteersCalls/respond`, responseData);
-
-// // ✅ עדכון סטטוס מתנדב
-// export const updateVolunteerStatus = (callId: number, volunteerId: number, status: 'going' | 'arrived' | 'finished', summary?: string) =>
-//   axios.put(`${API_BASE}/VolunteersCalls/${callId}/${volunteerId}/status`, { status, summary });
-
-// export const getAllVolunteers = () =>
-//   axios.get(`${API_BASE}/Volunteer`);
-// // ✅ סיום קריאה
-// export const completeCall = (callId: number, summary: string) =>
-//   axios.put(`${API_BASE}/Calls/${callId}/complete`, { summary, sentToHospital: false });
-
-// // ✅ פרטי מתנדב מה-JWT
-// export const getVolunteerDetails = async (): Promise<number | null> => {
-//   try {
-//     const token = localStorage.getItem('token');
-//     if (!token) return null;
-
-//     const payload = JSON.parse(atob(token.split('.')[1]));
-//     const id = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
-//     return id ? Number(id) : null;
-//   } catch {
-//     return null;
-//   }
-
-// };
 
 // 🔧 פונקציה מאוחדת לקבלת volunteer ID
 const getVolunteerIdFromStorage = (): number | null => {
@@ -127,26 +68,21 @@ export const getNearbyCalls = async (): Promise<AxiosResponse<Call[]>> => {
 // 🔧 תגובה לקריאה
 export const respondToCall = async (callId: number, response: "going" | "cant"): Promise<AxiosResponse<any>> => {
   try {
-    const volunteerId = getVolunteerIdFromStorage()
+    const volunteerId = getVolunteerIdFromStorage();
     if (!volunteerId) {
-      throw new Error("Volunteer ID not found - please login again")
+      throw new Error("Volunteer ID not found - please login again");
     }
 
-    console.log("🚑 Volunteer responding to call:", { callId, volunteerId, response })
+    console.log("🚑 Volunteer responding to call:", { callId, volunteerId, response });
 
-    // 🔧 התאמה לשרת C# - שמות שדות עם אות גדולה
-    const serverData = {
-      CallId: callId, // C גדולה
-      VolunteerId: volunteerId, // V גדולה
-      Response: response, // R גדולה
-    }
-
-    const apiResponse = await axios.post("/VolunteersCalls/respond", serverData)
-    console.log("✅ Response sent successfully")
-    return apiResponse
+    const apiResponse = await axios.put(`/VolunteersCalls/${callId}/${volunteerId}/status`, {
+      status: response,
+    });
+    console.log("✅ Response sent successfully");
+    return apiResponse;
   } catch (error: any) {
-    console.error("❌ Failed to respond to call:", error.response?.data || error.message)
-    throw error
+    console.error("❌ Failed to respond to call:", error.response?.data || error.message);
+    throw error;
   }
 }
 
@@ -154,7 +90,6 @@ export const respondToCall = async (callId: number, response: "going" | "cant"):
 export const updateVolunteerStatus = async (
   callId: number,
   status: "going" | "arrived" | "finished",
- 
 ): Promise<AxiosResponse<any>> => {
   try {
     const volunteerId = getVolunteerIdFromStorage()
@@ -168,8 +103,6 @@ export const updateVolunteerStatus = async (
     const serverData: any = {
       Status: status, // S גדולה
     }
-
-    
 
     const response = await axios.put(`/VolunteersCalls/${callId}/${volunteerId}/status`, serverData)
     console.log("✅ Status updated successfully")
@@ -216,6 +149,36 @@ export const getActiveCalls = async (): Promise<AxiosResponse<Call[]>> => {
   }
 }
 
+// 🔧 קבלת קריאות לפי סטטוס
+export const getCallsByStatus = async (status: string): Promise<AxiosResponse<Call[]>> => {
+  let volunteerId: number | null = null; // Define volunteerId outside the try block
+
+  try {
+    volunteerId = getVolunteerIdFromStorage();
+    if (!volunteerId) {
+      throw new Error("Volunteer ID not found - please login again");
+    }
+
+    console.log("📋 Getting calls by status:", { volunteerId, status });
+
+    const response = await axios.get(`/Volunteer/${volunteerId}/calls/by-status/${status}`);
+    return response;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      console.info(`No calls found for volunteerId=${volunteerId} with status=${status}`);
+      return {
+        data: [],
+        status: 200,
+        statusText: "OK",
+        headers: new AxiosHeaders(),
+        config: { headers: new AxiosHeaders() },
+      } as AxiosResponse<Call[]>;
+    }
+    console.error("❌ Failed to get calls by status:", error.response?.data || error.message)
+    throw error
+  }
+}
+
 // 🔧 קבלת מידע על מתנדבים בקריאה
 export const getCallVolunteersInfo = async (callId: number): Promise<AxiosResponse<any>> => {
   if (!callId || typeof callId !== "number" || isNaN(callId)) {
@@ -246,7 +209,6 @@ export const getAllVolunteers = async (): Promise<AxiosResponse<Volunteer[]>> =>
 export const getVolunteerDetails = async (): Promise<number | null> => {
   return getVolunteerIdFromStorage()
 }
-
 
 // 🔧 הרשמת מתנדב
 export const registerVolunteer = async (volunteer: any): Promise<AxiosResponse<any>> => {
@@ -285,6 +247,17 @@ export const registerVolunteer = async (volunteer: any): Promise<AxiosResponse<a
   }
 };
 
-// ✅ סיום קריאה
-export const completeCall = (callId: number, volunteerId: number, summary: CompleteCallDto) =>
-  axios.post(`${API_BASE}/VolunteersCalls/${callId}/${volunteerId}/complete`, summary);
+// 🔧 קבלת קריאות שהמתנדב התעדכן עליהן (עם טיפול בשגיאה 404)
+export const getNotifiedCalls = async (volunteerId: number): Promise<Call[]> => {
+  try {
+    const response = await axios.get(`/VolunteersCalls/notified/${volunteerId}`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      console.warn("אין קריאות פעילות כרגע");
+      return [];
+    }
+    console.error("❌ Failed to fetch notified calls:", error.response?.data || error.message);
+    throw error;
+  }
+};
