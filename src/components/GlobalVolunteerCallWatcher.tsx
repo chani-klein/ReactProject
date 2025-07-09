@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { useCallContext } from '../contexts/CallContext';
-import { getAssignedCalls } from '../services/calls.service';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect } from "react";
+import { useCallContext } from "../contexts/CallContext";
+import { getAssignedCalls } from "../services/calls.service";
+import { useLocation } from "react-router-dom";
 
 const UnifiedVolunteerCallWatcher: React.FC = () => {
   const { setPopupCall } = useCallContext();
@@ -9,52 +9,55 @@ const UnifiedVolunteerCallWatcher: React.FC = () => {
 
   useEffect(() => {
     const allowedPaths = [
-      '/volunteerPage',
-      '/VolunteerListPage',
-      '/volunteer/update-details',
-      '/volunteer/active-calls',
-      '/volunteer/history',
-      '/volunteer/menu',
-      '/my-calls',
+      "/volunteerPage",
+      "/VolunteerListPage",
+      "/volunteer/update-details",
+      "/volunteer/active-calls",
+      "/volunteer/history",
+      "/volunteer/menu",
+      "/my-calls",
     ];
 
     if (!allowedPaths.includes(location.pathname)) {
-      console.info('Polling stopped: Current path is not allowed for polling.');
+      console.info("Polling stopped: Current path is not allowed for polling.");
       return;
     }
 
-    const volunteerId = localStorage.getItem('volunteerId');
+    const volunteerId = localStorage.getItem("volunteerId");
 
     if (!volunteerId) {
-      console.warn('Polling stopped: No valid volunteerId.');
+      console.warn("Polling stopped: No valid volunteerId.");
       return;
     }
 
-    console.log('🔍 Current volunteerId:', volunteerId); // Debugging log
-    console.log('🔍 API Path:', `/Volunteer/${volunteerId}/calls/by-status/notified`); // Debugging log
+    console.log("🔍 Current volunteerId:", volunteerId);
+    console.log(
+      "🔍 API Path:",
+      `/Volunteer/${volunteerId}/calls/by-status/notified`
+    );
 
     const interval = setInterval(async () => {
       try {
-        const calls = await getAssignedCalls(Number(volunteerId), 'notified');
-        console.log('🔍 Calls fetched:', calls); // Debugging log
+        const calls = await getAssignedCalls(Number(volunteerId), "notified");
+        console.log("🔍 Calls fetched:", calls);
 
         if (calls && calls.length > 0) {
           setPopupCall((prevPopupCall) => {
             if (prevPopupCall?.id === calls[0].id) {
-              console.info('Popup already set for this call. Skipping.');
+              console.info("Popup already set for this call. Skipping.");
               return prevPopupCall;
             }
-            console.log('📢 popupCall updated successfully with:', calls[0]);
+            console.log("📢 popupCall updated successfully with:", calls[0]);
             return calls[0];
           });
         } else {
-          console.info('No new calls available. Popup will remain unchanged.');
+          console.info("No new calls available. Popup will remain unchanged.");
         }
       } catch (error: any) {
         if (error.response?.status === 404) {
-          console.info('No calls assigned to the volunteer. Continuing polling.');
+          console.info("No calls assigned to the volunteer. Continuing polling.");
         } else {
-          console.error('UnifiedVolunteerCallWatcher error', error);
+          console.error("UnifiedVolunteerCallWatcher error", error);
         }
       }
     }, 2000);

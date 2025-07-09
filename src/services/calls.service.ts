@@ -1,165 +1,164 @@
+import axios from "./axios";
+import type { AxiosResponse } from "axios";
+import type { Call, CallResponse, CallCreateRequest, CompleteCallDto } from "../types/call.types";
 
-import axios from "./axios"
-import type { AxiosResponse } from "axios"
-import type { Call, CallResponse, CallCreateRequest,CompleteCallDto } from "../types/call.types"
 const API_BASE = "https://localhost:7219/api";
 
-// פונקציה ליצירת Axios עם Authorization Header
+// פונקציה ליצירת Headers עם Authorization
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
-  return {
-    Authorization: `Bearer ${token}`,
-  };
+  return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-// 🔧 יצירת קריאה חדשה - תיקון הפורמט והוספת לוגים
-export const createCall = async (callData: FormData | CallCreateRequest): Promise<import("axios").AxiosResponse<CallResponse>> => {
+// יצירת קריאה חדשה עם Authorization ו-Content-Type מתאים
+export const createCall = async (
+  callData: FormData | CallCreateRequest
+): Promise<AxiosResponse<CallResponse>> => {
   try {
-    console.log("🚨 Creating emergency call:", callData)
+    console.log("🚨 Creating emergency call:", callData);
 
-    let formData: FormData
+    let formData: FormData;
 
     if (callData instanceof FormData) {
-      formData = callData
-
-      // 🔧 הוספת לוגים לראות מה נשלח - תיקון TypeScript
-      console.log("📋 FormData contents:")
+      formData = callData;
+      console.log("📋 FormData contents:");
       try {
-        // @ts-ignore - FormData.entries() קיים בדפדפנים מודרניים
+        // @ts-ignore
         for (const [key, value] of formData.entries()) {
-          console.log(`  ${key}:`, value)
+          console.log(`  ${key}:`, value);
         }
-      } catch (e) {
-        console.log("Cannot iterate FormData entries")
+      } catch {
+        console.log("Cannot iterate FormData entries");
       }
     } else {
-      formData = new FormData()
+      formData = new FormData();
 
-      // 🔧 וידוא שכל השדות הנדרשים קיימים
       if (!callData.description || callData.description.trim() === "") {
-        throw new Error("Description is required")
+        throw new Error("Description is required");
       }
-
       if (!callData.locationX || !callData.locationY) {
-        throw new Error("Location coordinates are required")
+        throw new Error("Location coordinates are required");
       }
-
       if (!callData.urgencyLevel || callData.urgencyLevel < 1 || callData.urgencyLevel > 4) {
-        throw new Error("Valid urgency level (1-4) is required")
+        throw new Error("Valid urgency level (1-4) is required");
       }
 
-      // 🔧 הוספת שדות עם שמות מדויקים כפי שהשרת מצפה
-      formData.append("Description", callData.description.trim())
-      formData.append("UrgencyLevel", callData.urgencyLevel.toString())
-      formData.append("LocationX", callData.locationX.toString())
-      formData.append("LocationY", callData.locationY.toString())
-
-      // 🔧 הוספת שדות נוספים שהשרת עשוי לצפות להם
-      formData.append("Status", "Open") // סטטוס ברירת מחדל
-      formData.append("CreatedAt", new Date().toISOString()) // תאריך יצירה
+      formData.append("Description", callData.description.trim());
+      formData.append("UrgencyLevel", callData.urgencyLevel.toString());
+      formData.append("LocationX", callData.locationX.toString());
+      formData.append("LocationY", callData.locationY.toString());
+      formData.append("Status", "Open");
+      formData.append("CreatedAt", new Date().toISOString());
 
       if (callData.fileImage) {
-        formData.append("FileImage", callData.fileImage)
+        formData.append("FileImage", callData.fileImage);
       }
 
-      // 🔧 הוספת לוגים לראות מה נשלח - תיקון TypeScript
-      console.log("📋 FormData contents:")
+      console.log("📋 FormData contents:");
       try {
-        // @ts-ignore - FormData.entries() קיים בדפדפנים מודרניים
+        // @ts-ignore
         for (const [key, value] of formData.entries()) {
-          console.log(`  ${key}:`, value)
+          console.log(`  ${key}:`, value);
         }
-      } catch (e) {
-        console.log("Cannot iterate FormData entries")
+      } catch {
+        console.log("Cannot iterate FormData entries");
       }
     }
 
     const response = await axios.post(`${API_BASE}/Calls`, formData, {
       headers: {
+        ...getAuthHeaders(),
         "Content-Type": "multipart/form-data",
       },
-    })
+    });
 
-    console.log("✅ Call created successfully:", response.data)
-    return response
+    console.log("✅ Call created successfully:", response.data);
+    return response;
   } catch (error: any) {
-    console.error("❌ Failed to create call:", error.response?.data || error.message)
+    console.error("❌ Failed to create call:", error.response?.data || error.message);
 
-    // 🔧 הוספת פירוט שגיאות validation
     if (error.response?.data?.errors) {
-      console.error("📋 Validation errors:", error.response.data.errors)
-
-      // יצירת הודעת שגיאה ברורה יותר
+      console.error("📋 Validation errors:", error.response.data.errors);
       const errorMessages = Object.entries(error.response.data.errors)
         .map(
-          ([field, messages]: [string, any]) => `${field}: ${Array.isArray(messages) ? messages.join(", ") : messages}`,
+          ([field, messages]: [string, any]) =>
+            `${field}: ${Array.isArray(messages) ? messages.join(", ") : messages}`
         )
-        .join("\n")
-
-      throw new Error(`Validation errors:\n${errorMessages}`)
+        .join("\n");
+      throw new Error(`Validation errors:\n${errorMessages}`);
     }
 
-    throw error
+    throw error;
   }
-}
+};
 
-// 🔧 שיוך מתנדבים קרובים
+// שיוך מתנדבים קרובים עם Authorization
 export const assignNearbyVolunteers = async (callId: number): Promise<AxiosResponse<any>> => {
   try {
-    console.log("👥 Assigning nearby volunteers to call:", callId)
-    const response = await axios.post(`/Calls/${callId}/assign-nearby`)
-    console.log("✅ Volunteers assigned successfully")
-    return response
+    console.log("👥 Assigning nearby volunteers to call:", callId);
+    const response = await axios.post(`${API_BASE}/Calls/${callId}/assign-nearby`, null, {
+      headers: getAuthHeaders(),
+    });
+    console.log("✅ Volunteers assigned successfully");
+    return response;
   } catch (error: any) {
-    console.error("❌ Failed to assign volunteers:", error.response?.data || error.message)
-    throw error
+    console.error("❌ Failed to assign volunteers:", error.response?.data || error.message);
+    throw error;
   }
-}
+};
 
-// 🔧 קבלת סטטוס קריאה
+// קבלת סטטוס קריאה עם Authorization
 export const getCallStatus = async (
-  callId: number,
+  callId: number
 ): Promise<AxiosResponse<{ status: string; volunteersCount?: number }>> => {
   try {
-    const response = await axios.get(`/Calls/status/${callId}`)
-    return response
+    const response = await axios.get(`${API_BASE}/Calls/status/${callId}`, {
+      headers: getAuthHeaders(),
+    });
+    return response;
   } catch (error: any) {
-    console.error("❌ Failed to get call status:", error.response?.data || error.message)
-    throw error
+    console.error("❌ Failed to get call status:", error.response?.data || error.message);
+    throw error;
   }
-}
+};
 
-// 🔧 קבלת פרטי קריאה
+// קבלת פרטי קריאה עם Authorization
 export const getCallById = async (callId: number): Promise<AxiosResponse<Call>> => {
   try {
-    const response = await axios.get(`/Calls/${callId}`)
-    return response
+    const response = await axios.get(`${API_BASE}/Calls/${callId}`, {
+      headers: getAuthHeaders(),
+    });
+    return response;
   } catch (error: any) {
-    console.error("❌ Failed to get call details:", error.response?.data || error.message)
-    throw error
+    console.error("❌ Failed to get call details:", error.response?.data || error.message);
+    throw error;
   }
-}
+};
 
-// 🔧 קבלת כל הקריאות (למנהלים)
+// קבלת כל הקריאות (למנהלים) עם Authorization
 export const getAllCalls = async (): Promise<AxiosResponse<Call[]>> => {
   try {
-    const response = await axios.get("/Calls")
-    return response
+    const response = await axios.get(`${API_BASE}/Calls`, {
+      headers: getAuthHeaders(),
+    });
+    return response;
   } catch (error: any) {
-    console.error("❌ Failed to get all calls:", error.response?.data || error.message)
-    throw error
+    console.error("❌ Failed to get all calls:", error.response?.data || error.message);
+    throw error;
   }
-}
+};
 
-
-// 🔧 הצעות עזרה ראשונה - עדכון לנתיב הנכון לפי ה-Swagger
+// הצעות עזרה ראשונה
 export const getFirstAidSuggestions = async (description: string) => {
   if (!description || typeof description !== "string") return [];
 
   try {
-    // ודא שהנתיב נכון לפי השרת שלך (ai או guides)
-    const response = await axios.post(`${API_BASE}/FirstAid/ai`, { description });
-    // טיפול בתשובה: אם יש שדה guides או instructions, החזר אותו, אחרת החזר את כל ה-data
+    const response = await axios.post(
+      `${API_BASE}/FirstAid/ai`,
+      { description },
+      { headers: getAuthHeaders() }
+    );
+
     if (Array.isArray(response.data)) {
       return response.data;
     } else if (response.data.guides && Array.isArray(response.data.guides)) {
@@ -169,11 +168,9 @@ export const getFirstAidSuggestions = async (description: string) => {
     } else if (typeof response.data === "string") {
       return [response.data];
     } else {
-      // החזר מערך ריק אם לא נמצא מידע מתאים
       return [];
     }
   } catch (err: any) {
-    // טיפול בשגיאת 400 או כל שגיאה אחרת
     if (err.response && err.response.data && err.response.data.message) {
       console.error("❌ getFirstAidSuggestions failed:", err.response.data.message);
     } else {
@@ -183,67 +180,87 @@ export const getFirstAidSuggestions = async (description: string) => {
   }
 };
 
-
-
-// 🔧 קבלת הקריאות שלי (למשתמש שיצר אותן)
+// קבלת הקריאות שלי עם Authorization
 export const getMyCalls = async (): Promise<AxiosResponse<Call[]>> => {
   try {
-    const response = await axios.get("/Calls/by-user");
+    const response = await axios.get(`${API_BASE}/Calls/by-user`, {
+      headers: getAuthHeaders(),
+    });
     return response;
   } catch (error: any) {
     console.error("❌ Failed to get my calls:", error.response?.data || error.message);
     throw error;
   }
-}
+};
 
-// הוספת פונקציה לשליפת קריאות מוקצות למתנדב
+// שליפת קריאות מוקצות למתנדב עם Authorization
 export const getAssignedCalls = async (volunteerId: number, status: string) => {
   try {
-    const res = await axios.get(`/Volunteer/${volunteerId}/calls/by-status/${status}`);
+    const res = await axios.get(`${API_BASE}/Volunteer/${volunteerId}/calls/by-status/${status}`, {
+      headers: getAuthHeaders(),
+    });
     return res.data;
   } catch (error: any) {
     if (error.response?.status === 404) {
       console.info(`No calls found for volunteerId=${volunteerId} with status=${status}.`);
-      return []; // Return an empty array if no calls are found
+      return [];
     }
     console.error("Error in getAssignedCalls:", error.response?.data || error.message);
-    throw error; // Re-throw the error for other cases
+    throw error;
   }
 };
+
 export const getnotifiedAssignedCalls = async (volunteerId: number) => {
-  const res = await axios.get(`/VolunteersCalls/notified/${volunteerId}`);
+  const res = await axios.get(`${API_BASE}/VolunteersCalls/notified/${volunteerId}`, {
+    headers: getAuthHeaders(),
+  });
   return res.data;
 };
 
-
-// שליפת קריאות פעילות למתנדב (כולל פרטי קריאה מלאים)
+// שליפת קריאות פעילות למתנדב (כולל פרטי קריאה מלאים) עם Authorization
 export const getActiveVolunteerCalls = async (volunteerId: number) => {
-  const res = await axios.get(`/VolunteersCalls/active/${volunteerId}`)
+  const res = await axios.get(`${API_BASE}/VolunteersCalls/active/${volunteerId}`, {
+    headers: getAuthHeaders(),
+  });
   return res.data;
-}
+};
 
-// שליפת הסטוריית קריאות פעילות למתנדב (כולל פרטי קריאה מלאים)
+// שליפת הסטוריית קריאות פעילות למתנדב עם Authorization
 export const getVolunteerCallHistory = async (volunteerId: number) => {
-  const res = await axios.get(`/VolunteersCalls/history/${volunteerId}`)
+  const res = await axios.get(`${API_BASE}/VolunteersCalls/history/${volunteerId}`, {
+    headers: getAuthHeaders(),
+  });
   return res.data;
-}
-// עדכון סטטוס מתנדב (ללא summary)
-export const updateVolunteerStatus = async (callId: number, volunteerId: number, status: string) => {
+};
+
+// עדכון סטטוס מתנדב עם Authorization
+export const updateVolunteerStatus = async (
+  callId: number,
+  volunteerId: number,
+  status: string
+) => {
   if (!callId || !volunteerId || !status) {
-    throw new Error(`Missing data for updateVolunteerStatus: callId=${callId}, volunteerId=${volunteerId}, status=${status}`);
+    throw new Error(
+      `Missing data for updateVolunteerStatus: callId=${callId}, volunteerId=${volunteerId}, status=${status}`
+    );
   }
   try {
-    const res = await axios.put(`/VolunteersCalls/${callId}/${volunteerId}/status`, {
-      Status: status
-    }, {
-      headers: getAuthHeaders(),
-    });
+    const res = await axios.put(
+      `${API_BASE}/VolunteersCalls/${callId}/${volunteerId}/status`,
+      {
+        Status: status,
+      },
+      {
+        headers: getAuthHeaders(),
+      }
+    );
     return res.data;
   } catch (error: any) {
     console.error("❌ updateVolunteerStatus error:", error.response?.data || error.message);
     throw error;
   }
-}
+};
+
 export const finishVolunteerCall = async (
   callId: number,
   volunteerId: number,
@@ -255,7 +272,7 @@ export const finishVolunteerCall = async (
 
   try {
     const res = await axios.put(
-      `/VolunteersCalls/${callId}/${volunteerId}/complete`,
+      `${API_BASE}/VolunteersCalls/${callId}/${volunteerId}/complete`,
       data,
       {
         headers: getAuthHeaders(),
@@ -268,7 +285,7 @@ export const finishVolunteerCall = async (
   }
 };
 
-// פונקציה חדשה לשליפת מתנדבים לקריאה ספציפית
+// שליפת מתנדבים לקריאה ספציפית עם Authorization
 export const getVolunteersForCall = (callId: number) =>
   axios.get(`${API_BASE}/Calls/${callId}/volunteers`, {
     headers: getAuthHeaders(),
