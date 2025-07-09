@@ -30,6 +30,9 @@ export interface Call {
   numVolanteer?: number // מספר מתנדבים
   sentToHospital?: boolean // האם נשלח לבית חולים
   hospitalName?: string // שם בית החולים
+  address?: string // נוספה כתובת
+  priority?: string // נוספה עדיפות
+  type?: string // נוספה סוג קריאה
 }
 
 export interface VolunteerStatus {

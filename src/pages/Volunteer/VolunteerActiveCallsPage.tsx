@@ -63,11 +63,19 @@ export default function VolunteerActiveCallsPage() {
             const volunteerStatus = call.volunteersStatus?.[0]?.response || 'לא זמין';
             const volunteerId = call.volunteersStatus?.[0]?.volunteerId || 0;
 
+            const mappedCall = {
+              ...call,
+              address: call.address || 'כתובת לא זמינה',
+              priority: call.priority || 'נמוך',
+              timestamp: call.createdAt || new Date().toISOString(),
+              type: call.type || 'חירום',
+            };
+
             return (
               <ActiveCallCard
                 key={call.id}
                 volunteerCall={{
-                  call,
+                  call: mappedCall,
                   callsId: call.id,
                   volunteerId,
                   volunteerStatus,
