@@ -18,7 +18,7 @@ export default function CloseCallForm({ onSubmit, isLoading = false, onCancel }:
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (summary.trim() && summary.length >= 10) {
+    if (summary.trim() && summary.length >= 8) {
       onSubmit({ 
         summary: summary.trim(), 
         sentToHospital, 

@@ -1,263 +1,292 @@
-import { useState, useEffect } from 'react';
-import CloseCallForm from './CloseCallForm';
-import { updateVolunteerStatus, getCallVolunteersInfo, getVolunteerDetails } from '../services/volunteer.service';
-import { finishVolunteerCall } from '../services/calls.service';
-import { getAddressFromCoords } from '../services/firstAid.service';
-import type { Call, VolunteerStatus } from '../types/call.types';
+import React, { useState } from 'react';
+import { Phone, MapPin, Clock, Users, AlertCircle, CheckCircle, User } from 'lucide-react';
 
-interface ActiveCallCardProps {
+// Types
+interface Call {
+  id: number;
+  address: string;
+  description: string;
+  priority: string;
+  timestamp: string;
+  status: string;
+  type: string;
+}
+
+interface VolunteerCall {
+  callsId: number;
+  volunteerId: number;
+  volunteerStatus?: string;
+  responseTime?: string;
   call: Call;
+  goingVolunteersCount: number;
+}
+
+// Mock service function
+const updateVolunteerStatus = async (callId: number, volunteerId: number, status: string) => {
+  console.log(`Updating volunteer status: callId=${callId}, volunteerId=${volunteerId}, status=${status}`);
+  // Simulate API call
+  return new Promise((resolve) => {
+    setTimeout(() => resolve({ success: true }), 1000);
+  });
+};
+
+// Background Layout Component
+const BackgroundLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="max-w-4xl mx-auto">
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// Close Call Page Component (mock)
+const CloseCallPage: React.FC<{ callId: number; volunteerId: number; onClose: () => void }> = ({ 
+  callId, 
+  volunteerId, 
+  onClose 
+}) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h2 className="text-xl font-bold mb-4 text-gray-800">סגירת קריאה</h2>
+        <p className="text-gray-600 mb-6">
+          האם אתה בטוח שברצונך לסגור את הקריאה מספר {callId}?
+        </p>
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            ביטול
+          </button>
+          <button
+            onClick={() => {
+              console.log(`Closing call ${callId} by volunteer ${volunteerId}`);
+              onClose();
+            }}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+          >
+            סגור קריאה
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Active Call Card Component
+export interface ActiveCallCardProps {
+  volunteerCall: VolunteerCall;
   onStatusUpdate: () => void;
   showArrivedOnly?: boolean;
 }
 
-export default function ActiveCallCard({ call, onStatusUpdate, showArrivedOnly }: ActiveCallCardProps) {
-  const [address, setAddress] = useState<string>('');
-  const [showCloseForm, setShowCloseForm] = useState(false);
+const ActiveCallCard: React.FC<ActiveCallCardProps> = ({ volunteerCall, onStatusUpdate, showArrivedOnly }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [volunteerStatus, setVolunteerStatus] = useState<string>('going');
-  const [goingVolunteersCount, setGoingVolunteersCount] = useState<number>(call.goingVolunteersCount || 0);
-  const [showMap, setShowMap] = useState(true);
+  const [showCloseCallPage, setShowCloseCallPage] = useState(false);
+  const [currentVolunteerStatus, setCurrentVolunteerStatus] = useState(volunteerCall.volunteerStatus);
 
-  useEffect(() => {
-    if (call.locationX && call.locationY) {
-      getAddressFromCoords(call.locationY, call.locationX)
-        .then(setAddress)
-        .catch(() => setAddress('כתובת לא זמינה'));
-    } else {
-      setAddress('כתובת לא זמינה');
-    }
-    
-    const fetchGoingCount = async () => {
-      try {
-        const info = await getCallVolunteersInfo(call.id);
-        setGoingVolunteersCount(info.data.goingVolunteersCount);
-      } catch (err) {
-        setGoingVolunteersCount(0);
-      }
-    };
-    fetchGoingCount();
-  }, [call]);
+  const { call, callsId, volunteerId, responseTime, goingVolunteersCount } = volunteerCall;
 
-  useEffect(() => {
-    const fetchVolunteerStatus = async () => {
-      const volunteerId = await getVolunteerDetails();
-      if (!volunteerId) return;
-      const statusObj = call.volunteersStatus?.find((v: VolunteerStatus) => v.volunteerId === volunteerId);
-      if (statusObj) {
-        setVolunteerStatus(statusObj.response);
-      }
-    };
-    fetchVolunteerStatus();
-  }, [call.volunteersStatus]);
-
-  useEffect(() => {
-    if (volunteerStatus === 'arrived') {
-        console.log('🔄 Volunteer status updated to arrived. Updating UI...');
-        // ניתן להוסיף לוגיקה נוספת אם נדרש
-    }
-  }, [volunteerStatus]);
-
-  const handleArrivedUpdate = async () => {
-    if (!volunteerStatus || volunteerStatus !== 'going') {
-      alert('לא ניתן לעדכן ל-"הגעתי" לפני שהסטטוס הוא "בדרך".');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      console.log('🔄 Attempting to update status to arrived for call:', call.id);
-      await updateVolunteerStatus(call.id, 'arrived');
-      console.log('✅ Status updated to arrived successfully');
-      setVolunteerStatus('arrived');
-      onStatusUpdate();
-    } catch (error) {
-      console.error('❌ Error updating status to arrived:', error);
-      alert('שגיאה בעדכון הסטטוס, נסה שוב');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCompleteCall = async (summary: { summary: string; sentToHospital: boolean; hospitalName?: string }) => {
-    setIsLoading(true);
-    try {
-      const volunteerId = await getVolunteerDetails();
-      if (!volunteerId) throw new Error('מתנדב לא מזוהה');
-
-      await finishVolunteerCall(call.id, volunteerId, summary);
-
-      setShowCloseForm(false);
-      setVolunteerStatus('finished');
-      onStatusUpdate();
-    } catch (error) {
-      console.error('שגיאה בסיום הקריאה:', error);
-      alert('שגיאה בסיום הקריאה, נסה שוב');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getStatusBadge = () => {
-    switch (volunteerStatus) {
-      case 'going':
-        return { text: 'בדרך', color: '#2196F3' };
-      case 'arrived':
-        return { text: 'הגעתי', color: '#FF9800' };
-      case 'finished':
-        return { text: 'הושלם', color: '#4CAF50' };
+  // Priority color mapping
+  const getPriorityColor = (priority: string) => {
+    switch (priority?.toLowerCase()) {
+      case 'high':
+      case 'גבוה':
+        return 'bg-red-500';
+      case 'medium':
+      case 'בינוני':
+        return 'bg-yellow-500';
+      case 'low':
+      case 'נמוך':
+        return 'bg-green-500';
       default:
-        return { text: 'בדרך', color: '#2196F3' };
+        return 'bg-gray-500';
     }
   };
 
-  const badge = getStatusBadge();
+  // Status color mapping
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'going':
+      case 'בדרך':
+        return 'text-blue-600 bg-blue-100';
+      case 'arrived':
+      case 'הגיע':
+        return 'text-green-600 bg-green-100';
+      case 'completed':
+      case 'הושלם':
+        return 'text-gray-600 bg-gray-100';
+      default:
+        return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  // Handle arrived button click
+  const handleArrivedClick = async () => {
+    setIsLoading(true);
+    try {
+      await updateVolunteerStatus(callsId, volunteerId, 'arrived');
+      setCurrentVolunteerStatus('arrived');
+    } catch (error) {
+      console.error('Error updating volunteer status:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle close call page
+  const handleCloseCallPage = () => {
+    setShowCloseCallPage(false);
+  };
+
+  // Show close call page if status is arrived
+  if (currentVolunteerStatus === 'arrived') {
+    return (
+      <>
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-4">
+          <div className="text-center">
+            <CheckCircle className="mx-auto h-12 w-12 text-green-500 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">הגעת לזירה</h3>
+            <p className="text-gray-600 mb-4">כעת תוכל לסגור את הקריאה</p>
+            <button
+              onClick={() => setShowCloseCallPage(true)}
+              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            >
+              סגור קריאה
+            </button>
+          </div>
+        </div>
+        
+        {showCloseCallPage && (
+          <CloseCallPage 
+            callId={callsId} 
+            volunteerId={volunteerId} 
+            onClose={handleCloseCallPage} 
+          />
+        )}
+      </>
+    );
+  }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', direction: 'rtl' }}>
-      {/* פאנל פרטי הקריאה */}
-      <div style={{ 
-        width: showMap ? '40%' : '100%', 
-        padding: '1rem', 
-        backgroundColor: '#f8f9fa',
-        overflowY: 'auto',
-        borderLeft: showMap ? '2px solid #ddd' : 'none'
-      }}>
-        <div className="card" style={{ marginBottom: '1rem' }}>
-          <div className="card-header">
-            <h3 style={{ margin: 0 }}>{call.description}</h3>
-            <span
-              style={{
-                backgroundColor: badge.color,
-                color: 'white',
-                padding: '0.25rem 0.5rem',
-                borderRadius: '4px',
-                fontSize: '0.8rem',
-              }}
-            >
-              {badge.text}
-            </span>
+    <div className="bg-white rounded-lg shadow-lg p-6 mb-4">
+      {/* Header */}
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Phone className="h-5 w-5 text-blue-600" />
+            <span className="text-lg font-semibold text-gray-800">קריאה #{call.id}</span>
           </div>
-          
-          <div className="card-body">
-            <p><strong>🚨 דחיפות:</strong> {call.urgencyLevel ?? "לא זמין"}</p>
-            <p><strong>📍 כתובת:</strong> {address || "לא זמין"}</p>
-            <p><strong>⏰ זמן:</strong> {call.createdAt ? new Date(call.createdAt).toLocaleString('he-IL') : "לא זמין"}</p>
-            <p><strong>🚗 מתנדבים בדרך:</strong> {goingVolunteersCount ?? 0}</p>
-            
-            {call.imageUrl && (
-              <div style={{ margin: '1rem 0' }}>
-                <img src={call.imageUrl} alt="תמונת הקריאה" style={{ maxWidth: '100%', borderRadius: '4px' }} />
-              </div>
-            )}
+          <div className={`px-3 py-1 rounded-full text-xs font-medium text-white ${getPriorityColor(call.priority)}`}>
+            {call.priority}
           </div>
+        </div>
+        <div className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(call.status)}`}>
+          {call.status}
+        </div>
+      </div>
 
-          {/* כפתורי פעולה דינאמיים */}
-          <div className="card-actions">
-            {volunteerStatus === 'going' && (
-              <button 
-                className="btn btn-warning" 
-                onClick={handleArrivedUpdate} 
-                disabled={isLoading}
-                style={{ width: '100%', marginBottom: '0.5rem' }}
-              >
-                {isLoading ? 'מעדכן...' : '🏃‍♂️ הגעתי לזירה'}
-              </button>
-            )}
-            
-            {volunteerStatus === 'arrived' && !showCloseForm && (
-              <button 
-                className="btn btn-info" 
-                onClick={() => setShowCloseForm(true)} 
-                disabled={isLoading}
-                style={{ width: '100%', marginBottom: '0.5rem' }}
-              >
-                📝 סגור פניה
-              </button>
-            )}
-            
-            {volunteerStatus === 'finished' && (
-              <div style={{ textAlign: 'center', color: '#4CAF50', fontWeight: 'bold' }}>
-                ✔️ הקריאה נסגרה בהצלחה
-              </div>
-            )}
+      {/* Call Details */}
+      <div className="space-y-3 mb-4">
+        <div className="flex items-start gap-3">
+          <MapPin className="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
+          <div>
+            <span className="font-medium text-gray-700">כתובת:</span>
+            <p className="text-gray-600">{call.address}</p>
           </div>
         </div>
 
-        {/* טופס סגירת קריאה */}
-        {showCloseForm && (
-          <CloseCallForm
-            onSubmit={handleCompleteCall}
-            onCancel={() => setShowCloseForm(false)}
-            isLoading={isLoading}
-          />
+        <div className="flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
+          <div>
+            <span className="font-medium text-gray-700">תיאור:</span>
+            <p className="text-gray-600">{call.description}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Clock className="h-5 w-5 text-gray-500 flex-shrink-0" />
+          <span className="font-medium text-gray-700">זמן קריאה:</span>
+          <span className="text-gray-600">{new Date(call.timestamp).toLocaleString('he-IL')}</span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Users className="h-5 w-5 text-gray-500 flex-shrink-0" />
+          <span className="font-medium text-gray-700">מתנדבים בדרך:</span>
+          <span className="text-gray-600">{goingVolunteersCount}</span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <User className="h-5 w-5 text-gray-500 flex-shrink-0" />
+          <span className="font-medium text-gray-700">סטטוס המתנדב:</span>
+          <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(currentVolunteerStatus || 'לא זמין')}`}>
+            {currentVolunteerStatus || 'לא זמין'}
+          </span>
+        </div>
+
+        {responseTime && (
+          <div className="flex items-center gap-3">
+            <Clock className="h-5 w-5 text-gray-500 flex-shrink-0" />
+            <span className="font-medium text-gray-700">זמן תגובה:</span>
+            <span className="text-gray-600">{responseTime}</span>
+          </div>
         )}
       </div>
 
-      {/* מפה */}
-      {showMap && (
-        <div style={{ width: '60%', position: 'relative' }}>
-          <div style={{ 
-            position: 'absolute', 
-            top: '10px', 
-            right: '10px', 
-            zIndex: 1000,
-            backgroundColor: 'white',
-            borderRadius: '4px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-          }}>
-            <button 
-              onClick={() => setShowMap(false)}
-              style={{
-                border: 'none',
-                background: 'none',
-                fontSize: '1.5rem',
-                cursor: 'pointer',
-                padding: '8px 12px',
-                color: '#666'
-              }}
-              title="סגור מפה"
-            >
-              ✕
-            </button>
-          </div>
-          
-          <iframe
-            src={`https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${call.locationX},${call.locationY}&zoom=15`}
-            width="100%"
-            height="100%"
-            style={{ border: 0 }}
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          ></iframe>
-        </div>
-      )}
-
-      {/* כפתור פתיחת מפה כשהיא סגורה */}
-      {!showMap && (
-        <div style={{ 
-          position: 'fixed', 
-          bottom: '20px', 
-          right: '20px',
-          zIndex: 1000 
-        }}>
-          <button 
-            onClick={() => setShowMap(true)}
-            className="btn btn-primary"
-            style={{
-              borderRadius: '50%',
-              width: '60px',
-              height: '60px',
-              fontSize: '1.5rem',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-            }}
-            title="פתח מפה"
+      {/* Action Button */}
+      {currentVolunteerStatus === 'going' && (
+        <div className="border-t pt-4">
+          <button
+            onClick={handleArrivedClick}
+            disabled={isLoading}
+            className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+              isLoading
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-green-500 text-white hover:bg-green-600'
+            }`}
           >
-            🗺️
+            {isLoading ? 'מעדכן...' : 'הגעתי לזירה'}
           </button>
         </div>
       )}
     </div>
   );
-}
+};
+
+// Demo Component
+const Demo: React.FC = () => {
+  const mockCall: Call = {
+    id: 12345,
+    address: "רחוב הרצל 45, תל אביב",
+    description: "דיווח על אירוע חירום בבניין מגורים - עשן יוצא מהחלון בקומה השנייה",
+    priority: "גבוה",
+    timestamp: "2024-07-09T10:30:00Z",
+    status: "פעיל",
+    type: "חירום"
+  };
+
+  const mockVolunteerCall: VolunteerCall = {
+    callsId: 12345,
+    volunteerId: 67890,
+    volunteerStatus: "going",
+    responseTime: "2 דקות",
+    call: mockCall,
+    goingVolunteersCount: 3
+  };
+
+  return (
+    <BackgroundLayout>
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-gray-800 text-center mb-6">
+          כרטיס קריאה פעילה
+        </h1>
+        <ActiveCallCard volunteerCall={mockVolunteerCall} onStatusUpdate={() => {}} />
+      </div>
+    </BackgroundLayout>
+  );
+};
+
+export default Demo;

@@ -59,14 +59,26 @@ export default function VolunteerActiveCallsPage() {
         {activeCalls.length === 0 ? (
           <div>אין קריאות פעילות כרגע</div>
         ) : (
-          activeCalls.map((call) => (
-            <ActiveCallCard
-              key={call.id}
-              call={call}
-              onStatusUpdate={handleStatusUpdate}
-              showArrivedOnly={call.volunteersStatus?.some(v => v.response === 'going')}
-            />
-          ))
+          activeCalls.map((call) => {
+            const volunteerStatus = call.volunteersStatus?.[0]?.response || 'לא זמין';
+            const volunteerId = call.volunteersStatus?.[0]?.volunteerId || 0;
+
+            return (
+              <ActiveCallCard
+                key={call.id}
+                volunteerCall={{
+                  call,
+                  callsId: call.id,
+                  volunteerId,
+                  volunteerStatus,
+                  responseTime: call.createdAt,
+                  goingVolunteersCount: call.goingVolunteersCount || 0,
+                }}
+                onStatusUpdate={handleStatusUpdate}
+                showArrivedOnly={volunteerStatus === 'going'}
+              />
+            );
+          })
         )}
       </div>
     </BackgroundLayout>

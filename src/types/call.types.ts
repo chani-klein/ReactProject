@@ -26,6 +26,10 @@ export interface Call {
   summary?: string
   volunteersStatus?: VolunteerStatus[]
   goingVolunteersCount?: number
+  date?: string // תאריך הקריאה
+  numVolanteer?: number // מספר מתנדבים
+  sentToHospital?: boolean // האם נשלח לבית חולים
+  hospitalName?: string // שם בית החולים
 }
 
 export interface VolunteerStatus {

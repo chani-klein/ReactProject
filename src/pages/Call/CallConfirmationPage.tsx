@@ -109,7 +109,7 @@ const handleCompleteCall = async (summary: { summary: string; sentToHospital: bo
 
   const getStatusColor = (currentStatus: string) => {
     switch (currentStatus) {
-      case "נשלחה":
+      
       case "נפתח":
         return "var(--warning-orange)";
       case "בטיפול":
@@ -123,7 +123,7 @@ const handleCompleteCall = async (summary: { summary: string; sentToHospital: bo
 
   const getStatusIcon = (currentStatus: string) => {
     switch (currentStatus) {
-      case "נשלחה":
+     
       case "נפתח":
         return "🚨";
       case "בטיפול":
