@@ -2,27 +2,9 @@ import React, { useState } from 'react';
 import { Phone, MapPin, Clock, Users, AlertCircle, CheckCircle, User } from 'lucide-react';
 import { updateVolunteerStatus } from '../services/volunteer.service';
 import CloseCallPage from './CloseCallForm';
+import type { VolunteerCall } from '../types/volunteerCall.types';
 import '../style/emergency-styles.css';
-
-// Types
-interface Call {
-  id: number;
-  address: string;
-  description: string;
-  priority: string;
-  timestamp: string;
-  status: string;
-  type: string;
-}
-
-interface VolunteerCall {
-  callsId: number;
-  volunteerId: number;
-  volunteerStatus?: string;
-  responseTime?: string;
-  call: Call;
-  goingVolunteersCount: number;
-}
+import '../style/ActiveCallCard.css';
 
 // Background Layout Component
 const BackgroundLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -67,11 +49,26 @@ const ActiveCallCard: React.FC<ActiveCallCardProps> = ({ volunteerCall, onStatus
     setShowCloseCallPage(false);
   };
 
-  // Handle open map (Google Maps only)
+  // Handle open map
   const handleOpenMap = () => {
-    const address = encodeURIComponent(call.address);
+    const address = encodeURIComponent(call.address || 'כתובת לא זמינה');
     const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${address}`;
     window.open(googleMapsUrl, '_blank');
+  };
+
+  // Handle open Waze
+  const handleOpenWaze = () => {
+    const address = encodeURIComponent(call.address || 'כתובת לא זמינה');
+    const wazeUrl = `https://www.waze.com/ul?q=${address}&navigate=yes`;
+    window.open(wazeUrl, '_blank');
+  };
+
+  // Handle share location
+  const handleShareLocation = () => {
+    const address = call.address || 'כתובת לא זמינה';
+    const message = `🚨 קריאת חירום - ${call.description}\n📍 כתובת: ${address}\n🔗 Google Maps: https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -108,16 +105,25 @@ const ActiveCallCard: React.FC<ActiveCallCardProps> = ({ volunteerCall, onStatus
             </div>
             <div className="detail-content">
               <span className="detail-label">כתובת</span>
-              <div className="address-with-map">
-                <p className="detail-value">{call.address}</p>
-                <button 
-                  className="map-icon-btn"
-                  onClick={handleOpenMap}
-                  title="פתח במפות גוגל"
-                >
-                  <MapPin className="h-4 w-4" />
-                </button>
-              </div>
+              <p className="detail-value">{call.address}</p>
+            </div>
+            <div className="map-buttons">
+              <button 
+                className="map-btn google-maps"
+                onClick={handleOpenMap}
+                title="פתח במפות גוגל"
+              >
+                <MapPin className="h-4 w-4" />
+                <span>Maps</span>
+              </button>
+              <button 
+                className="map-btn waze"
+                onClick={handleOpenWaze}
+                title="פתח בWaze לניווט"
+              >
+                <MapPin className="h-4 w-4" />
+                <span>Waze</span>
+              </button>
             </div>
           </div>
 
@@ -126,24 +132,16 @@ const ActiveCallCard: React.FC<ActiveCallCardProps> = ({ volunteerCall, onStatus
               <AlertCircle className="h-5 w-5" />
             </div>
             <div className="detail-content">
-              <span className="detail-label">תיאור המקרה</span>
+              <span className="detail-label">תיאור</span>
               <p className="detail-value">{call.description}</p>
             </div>
           </div>
 
           <div className="details-grid">
             <div className="detail-item">
-              <Clock className="h-4 w-4" />
-              <div>
-                <span className="item-label">זמן קריאה</span>
-                <span className="item-value">{new Date(call.timestamp).toLocaleString('he-IL')}</span>
-              </div>
-            </div>
-
-            <div className="detail-item">
               <Users className="h-4 w-4" />
               <div>
-                <span className="item-label">מתנדבים בדרך</span>
+                <span className="item-label">מתנדבים</span>
                 <span className="item-value volunteers-count">{goingVolunteersCount}</span>
               </div>
             </div>
@@ -153,20 +151,22 @@ const ActiveCallCard: React.FC<ActiveCallCardProps> = ({ volunteerCall, onStatus
               <div>
                 <span className="item-label">הסטטוס שלי</span>
                 <span className={`item-value status-pill status-${currentVolunteerStatus?.toLowerCase() || 'unknown'}`}>
-                  {currentVolunteerStatus || 'לא זמין'}
+                  {currentVolunteerStatus === 'going' ? 'בדרך' : 
+                   currentVolunteerStatus === 'arrived' ? 'הגעתי' :
+                   currentVolunteerStatus === 'notified' ? 'התקבל' :
+                   currentVolunteerStatus === 'cant' ? 'לא יכול' :
+                   currentVolunteerStatus === 'finished' ? 'הסתיים' : 'לא זמין'}
                 </span>
               </div>
             </div>
 
-            {responseTime && (
-              <div className="detail-item">
-                <Clock className="h-4 w-4" />
-                <div>
-                  <span className="item-label">זמן תגובה</span>
-                  <span className="item-value response-time">{responseTime}</span>
-                </div>
+            <div className="detail-item">
+              <Clock className="h-4 w-4" />
+              <div>
+                <span className="item-label">זמן</span>
+                <span className="item-value">{new Date(call.timestamp || new Date()).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
-            )}
+            </div>
           </div>
         </div>
 
@@ -214,39 +214,6 @@ const ActiveCallCard: React.FC<ActiveCallCardProps> = ({ volunteerCall, onStatus
         />
       )}
     </>
-  );
-};
-
-// Demo Component
-const Demo: React.FC = () => {
-  const mockCall: Call = {
-    id: 12345,
-    address: "רחוב הרצל 45, תל אביב",
-    description: "דיווח על אירוע חירום בבניין מגורים - עשן יוצא מהחלון בקומה השנייה",
-    priority: "גבוה",
-    timestamp: "2024-07-09T10:30:00Z",
-    status: "פעיל",
-    type: "חירום"
-  };
-
-  const mockVolunteerCall: VolunteerCall = {
-    callsId: 12345,
-    volunteerId: 67890,
-    volunteerStatus: "going",
-    responseTime: "2 דקות",
-    call: mockCall,
-    goingVolunteersCount: 3
-  };
-
-  return (
-    <BackgroundLayout>
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-800 text-center mb-6">
-          כרטיס קריאה פעילה
-        </h1>
-        <ActiveCallCard volunteerCall={mockVolunteerCall} onStatusUpdate={() => {}} />
-      </div>
-    </BackgroundLayout>
   );
 };
 

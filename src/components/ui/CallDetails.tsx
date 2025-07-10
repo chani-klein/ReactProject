@@ -57,7 +57,7 @@ export const CallDetails: React.FC<CallDetailsProps> = ({
       <div className="flex items-center gap-3">
         <Clock className="h-5 w-5 text-gray-500 flex-shrink-0" />
         <span className="font-medium text-gray-700">זמן קריאה:</span>
-        <span className="text-gray-600">{formatDateTime(call.timestamp)}</span>
+        <span className="text-gray-600">{formatDateTime(call.timestamp || call.date)}</span>
       </div>
 
       <div className="flex items-center gap-3">

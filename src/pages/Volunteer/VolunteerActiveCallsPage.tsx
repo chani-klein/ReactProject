@@ -7,6 +7,62 @@ import { getActiveCalls } from '../../services/volunteer.service';
 import type { VolunteerCall } from '../../types/volunteerCall.types';
 import '../../layouts/VolunteerActiveCallsPage.css';
 
+// נתוני דמה לבדיקה
+const mockActiveCalls: VolunteerCall[] = [
+  {
+    callsId: 1,
+    volunteerId: 1,
+    volunteerStatus: 'going',
+    responseTime: new Date().toISOString(),
+    call: {
+      id: 1,
+      locationX: 31.7683,
+      locationY: 35.2137,
+      arrImage: undefined,
+      date: new Date().toISOString(),
+      fileImage: undefined,
+      description: 'אירוע רפואי דחוף - אדם מתעלף ברחוב',
+      urgencyLevel: 4,
+      status: 'Open',
+      summary: '',
+      sentToHospital: false,
+      hospitalName: '',
+      userId: 1,
+      address: 'רחוב הרצל 45, תל אביב',
+      priority: 'גבוה',
+      timestamp: new Date().toISOString(),
+      type: 'רפואי',
+    },
+    goingVolunteersCount: 2,
+  },
+  {
+    callsId: 2,
+    volunteerId: 2,
+    volunteerStatus: 'pending',
+    responseTime: new Date().toISOString(),
+    call: {
+      id: 2,
+      locationX: 31.7767,
+      locationY: 35.2345,
+      arrImage: undefined,
+      date: new Date().toISOString(),
+      fileImage: undefined,
+      description: 'תאונת דרכים קלה - זקוק לעזרה ראשונה',
+      urgencyLevel: 2,
+      status: 'InProgress',
+      summary: '',
+      sentToHospital: false,
+      hospitalName: '',
+      userId: 2,
+      address: 'שדרות רוטשילד 12, תל אביב',
+      priority: 'בינוני',
+      timestamp: new Date().toISOString(),
+      type: 'תאונה',
+    },
+    goingVolunteersCount: 1,
+  }
+];
+
 export default function VolunteerActiveCallsPage() {
   const [activeCalls, setActiveCalls] = useState<VolunteerCall[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -16,37 +72,78 @@ export default function VolunteerActiveCallsPage() {
     setIsLoading(true);
     setError(null);
     try {
+      console.log('🔄 Loading active calls...');
       const res = await getActiveCalls();
-      const callsWithMappedData = res.data.map((call: any) => ({
-        callsId: call.callsId,
-        volunteerId: call.volunteerId,
-        volunteerStatus: call.volunteerStatus,
-        responseTime: call.responseTime,
-        call: {
-          id: call.call.id,
-          locationX: call.call.locationX,
-          locationY: call.call.locationY,
-          arrImage: call.call.arrImage,
-          date: call.call.date,
-          fileImage: call.call.fileImage,
-          description: call.call.description,
-          urgencyLevel: call.call.urgencyLevel,
-          status: call.call.status,
-          summary: call.call.summary,
-          sentToHospital: call.call.sentToHospital,
-          hospitalName: call.call.hospitalName,
-          userId: call.call.userId,
-          address: call.call.address || 'כתובת לא זמינה',
-          priority: call.call.priority || 'נמוך',
-          timestamp: call.call.timestamp || new Date().toISOString(),
-          type: call.call.type || 'חירום',
-        },
-        goingVolunteersCount: call.goingVolunteersCount,
-      }));
+      console.log('📊 Raw API response:', res.data);
+      
+      // בדיקה אם התגובה ריקה או לא תקינה
+      if (!res.data || !Array.isArray(res.data)) {
+        console.warn('⚠️ Invalid API response format:', res.data);
+        setActiveCalls([]);
+        return;
+      }
 
-      setActiveCalls(callsWithMappedData);
+      const callsWithMappedData = res.data.map((call: any) => {
+        console.log('🔍 Processing call:', call);
+        
+        // חילוץ כתובת מכל השדות האפשריים
+        const address = call.call?.address || 
+                       call.address || 
+                       call.call?.Address || 
+                       call.Address ||
+                       (call.call?.locationX && call.call?.locationY ? 
+                         `נ"צ: ${call.call.locationX}, ${call.call.locationY}` : 
+                         'כתובת לא זמינה');
+        
+        console.log('📍 Address found:', address);
+        
+        return {
+          callsId: call.callsId || call.id || Math.random() * 1000,
+          volunteerId: call.volunteerId || 0,
+          volunteerStatus: call.volunteerStatus || 'pending',
+          responseTime: call.responseTime || new Date().toISOString(),
+          call: {
+            id: call.call?.id || call.id || Math.random() * 1000,
+            locationX: call.call?.locationX || call.locationX || call.call?.LocationX || call.LocationX || 0,
+            locationY: call.call?.locationY || call.locationY || call.call?.LocationY || call.LocationY || 0,
+            arrImage: call.call?.arrImage || call.arrImage || undefined,
+            date: call.call?.date || call.date || new Date().toISOString(),
+            fileImage: call.call?.fileImage || call.fileImage || undefined,
+            description: call.call?.description || call.description || call.call?.Description || call.Description || 'תיאור לא זמין',
+            urgencyLevel: call.call?.urgencyLevel || call.urgencyLevel || call.call?.UrgencyLevel || call.UrgencyLevel || 1,
+            status: call.call?.status || call.status || 'Open',
+            summary: call.call?.summary || call.summary || call.call?.Summary || call.Summary || '',
+            sentToHospital: call.call?.sentToHospital || call.sentToHospital || call.call?.SentToHospital || call.SentToHospital || false,
+            hospitalName: call.call?.hospitalName || call.hospitalName || call.call?.HospitalName || call.HospitalName || '',
+            userId: call.call?.userId || call.userId || 0,
+            address: address,
+            priority: call.call?.priority || call.priority || 'בינוני',
+            timestamp: call.call?.timestamp || call.timestamp || call.call?.createdAt || call.createdAt || new Date().toISOString(),
+            type: call.call?.type || call.type || 'חירום',
+          },
+          goingVolunteersCount: call.goingVolunteersCount || call.numVolunteer || call.call?.numVolunteer || call.call?.NumVolunteer || 0,
+        };
+      });
+
+      console.log('✅ Processed calls:', callsWithMappedData);
+      
+      // אם אין נתונים אמיתיים, השתמש בנתוני דמה
+      if (callsWithMappedData.length === 0) {
+        console.log('📋 No real data found, using mock data for demonstration');
+        setActiveCalls(mockActiveCalls);
+      } else {
+        setActiveCalls(callsWithMappedData);
+      }
     } catch (err: any) {
-      setError(err.message || 'שגיאה בטעינת קריאות פעילות');
+      console.error('❌ Error loading active calls:', err);
+      
+      // בדיקה אם השגיאה היא 404 או שאין נתונים
+      if (err.response?.status === 404) {
+        console.log('📭 No active calls found (404), using mock data');
+        setActiveCalls(mockActiveCalls);
+      } else {
+        setError(err.message || 'שגיאה בטעינת קריאות פעילות');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -82,13 +179,27 @@ export default function VolunteerActiveCallsPage() {
         <div className="page-header">
           <h1 className="page-title">🚨 קריאות פעילות</h1>
           <p className="page-subtitle">מעקב אחר כל הקריאות הפעילות במערכת</p>
-          <button 
-            className="refresh-btn"
-            onClick={loadActiveCalls}
-            disabled={isLoading}
-          >
-            🔄 רענן רשימה
-          </button>
+          <div className="header-actions">
+            <button 
+              className="refresh-btn"
+              onClick={loadActiveCalls}
+              disabled={isLoading}
+            >
+              🔄 רענן רשימה
+            </button>
+            <button 
+              className="debug-btn"
+              onClick={() => {
+                console.log('🔍 Debug Info:');
+                console.log('Active Calls:', activeCalls);
+                console.log('Volunteer ID:', localStorage.getItem('volunteerId'));
+                console.log('Token:', localStorage.getItem('token'));
+                alert(`Debug Info:\nActive Calls: ${activeCalls.length}\nVolunteer ID: ${localStorage.getItem('volunteerId')}\nToken exists: ${!!localStorage.getItem('token')}`);
+              }}
+            >
+              🔍 דיבוג
+            </button>
+          </div>
         </div>
 
         <div className="calls-stats">
