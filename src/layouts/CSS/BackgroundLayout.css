@@ -899,16 +899,16 @@ html, body {
 
 
 :root {
-  --primary-color: #3b82f6;
-  --secondary-color: #8b5cf6;
+  --primary-color: #ef4444;
+  --secondary-color: #f97316;
   --success-color: #10b981;
-  --warning-color: #f50b0b;
-  --danger-color: #ef4444;
-  --bg-primary: #f8fafc;
+  --warning-color: #f59e0b;
+  --danger-color: #dc2626;
+  --bg-primary: #fef2f2;
   --bg-secondary: #ffffff;
   --text-primary: #1f2937;
   --text-secondary: #6b7280;
-  --border-color: #e5e7eb;
+  --border-color: #fee2e2;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -920,7 +920,7 @@ html, body {
 /* Page Layout */
 .volunteer-calls-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ea6666 0%, #c92626 100%);
   padding: 2rem 1rem;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -1019,7 +1019,7 @@ html, body {
 }
 
 .stat-icon.active {
-  background: linear-gradient(135deg, var(--primary-color), #1d4ed8);
+  background: linear-gradient(135deg, var(--primary-color), #dc2626);
 }
 
 .stat-icon.progress {
@@ -1201,7 +1201,7 @@ html, body {
 }
 
 .btn-primary:hover {
-  background: #2563eb;
+  background: #dc2626;
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }

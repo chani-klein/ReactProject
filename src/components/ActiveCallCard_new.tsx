@@ -67,16 +67,9 @@ const ActiveCallCard: React.FC<ActiveCallCardProps> = ({ volunteerCall, onStatus
     setShowCloseCallPage(false);
   };
 
-  // Handle open map (Google Maps only)
-  const handleOpenMap = () => {
-    const address = encodeURIComponent(call.address);
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${address}`;
-    window.open(googleMapsUrl, '_blank');
-  };
-
   return (
     <>
-      <div className={`active-call-card ${call.priority?.toLowerCase() === 'גבוה' || call.priority?.toLowerCase() === 'high' ? 'urgent' : ''}`}>
+      <div className="active-call-card">
         {/* Header with gradient background */}
         <div className="call-card-header">
           <div className="call-header-left">
@@ -108,17 +101,16 @@ const ActiveCallCard: React.FC<ActiveCallCardProps> = ({ volunteerCall, onStatus
             </div>
             <div className="detail-content">
               <span className="detail-label">כתובת</span>
-              <div className="address-with-map">
-                <p className="detail-value">{call.address}</p>
-                <button 
-                  className="map-icon-btn"
-                  onClick={handleOpenMap}
-                  title="פתח במפות גוגל"
-                >
-                  <MapPin className="h-4 w-4" />
-                </button>
-              </div>
+              <p className="detail-value">{call.address}</p>
             </div>
+            <button
+              className="map-button"
+              onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(call.address)}`, '_blank')}
+              title="פתח מפה"
+            >
+              <MapPin className="h-4 w-4" />
+              <span>פתח מפה</span>
+            </button>
           </div>
 
           <div className="detail-row">

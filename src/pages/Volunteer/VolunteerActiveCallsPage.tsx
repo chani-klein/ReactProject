@@ -78,19 +78,54 @@ export default function VolunteerActiveCallsPage() {
 
   return (
     <BackgroundLayout>
-      <div className="calls-container">
-        {activeCalls.length === 0 ? (
-          <div className="no-calls-message">אין קריאות פעילות כרגע</div>
-        ) : (
-          activeCalls.map((call) => (
-            <ActiveCallCard
-              key={call.callsId}
-              volunteerCall={call}
-              onStatusUpdate={handleStatusUpdate}
-              showArrivedOnly={call.volunteerStatus === 'going'}
-            />
-          ))
-        )}
+      <div className="active-calls-page">
+        <div className="page-header">
+          <h1 className="page-title">🚨 קריאות פעילות</h1>
+          <p className="page-subtitle">מעקב אחר כל הקריאות הפעילות במערכת</p>
+          <button 
+            className="refresh-btn"
+            onClick={loadActiveCalls}
+            disabled={isLoading}
+          >
+            🔄 רענן רשימה
+          </button>
+        </div>
+
+        <div className="calls-stats">
+          <div className="stat-card">
+            <div className="stat-number">{activeCalls.length}</div>
+            <div className="stat-label">קריאות פעילות</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-number">{activeCalls.filter(call => call.volunteerStatus === 'going').length}</div>
+            <div className="stat-label">מתנדבים בדרך</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-number">{activeCalls.filter(call => call.call.urgencyLevel >= 3).length}</div>
+            <div className="stat-label">דחופות</div>
+          </div>
+        </div>
+
+        <div className="calls-container-modern">
+          {activeCalls.length === 0 ? (
+            <div className="no-calls-message-modern">
+              <div className="no-calls-icon">📋</div>
+              <h3>אין קריאות פעילות כרגע</h3>
+              <p>כל הקריאות טופלו או שאין קריאות חדשות</p>
+            </div>
+          ) : (
+            <div className="calls-grid-modern">
+              {activeCalls.map((call) => (
+                <ActiveCallCard
+                  key={call.callsId}
+                  volunteerCall={call}
+                  onStatusUpdate={handleStatusUpdate}
+                  showArrivedOnly={call.volunteerStatus === 'going'}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </BackgroundLayout>
   );

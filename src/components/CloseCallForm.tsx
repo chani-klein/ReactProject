@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import type { CompleteCallDto } from '../types/call.types';
 import { useNavigate } from 'react-router-dom';
 import { finishVolunteerCall } from '../services/calls.service';
-import { getVolunteerCallHistory } from '../services/calls.service'; // תיקון הייבוא  
+import { getVolunteerCallHistory } from '../services/calls.service';
+import { X, FileText, Hospital, MapPin, Clock, AlertCircle, CheckCircle, Send, XCircle } from 'lucide-react';
+import '../style/emergency-styles.css';  
 
 interface CloseCallFormProps {
   onSubmit?: (summary: CompleteCallDto) => void; // עכשיו אופציונלי
@@ -118,146 +120,212 @@ export default function CloseCallForm({
   // אם עדיין טוען היסטוריה
   if (loadingHistory) {
     return (
-      <div className="card" style={{ marginTop: '1rem' }}>
-        <div className="card-body" style={{ textAlign: 'center', padding: '2rem' }}>
-          <div>🔄 טוען פרטי קריאה...</div>
+      <div className="close-call-modal">
+        <div className="close-call-overlay" onClick={onClose}></div>
+        <div className="close-call-container">
+          <div className="loading-section">
+            <div className="loading-spinner"></div>
+            <h3>טוען פרטי קריאה...</h3>
+            <p>אנא המתן בזמן שאנו טוענים את המידע</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="card" style={{ marginTop: '1rem' }}>
-      <div className="card-header">
-        <h3 style={{ margin: 0 }}>📝 דוח סיום קריאה</h3>
-      </div>
-      
-      {/* הצגת פרטי הקריאה */}
-      {currentCall && (
-        <div style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderBottom: '1px solid #ddd' }}>
-          <h4 style={{ margin: '0 0 1rem 0', color: '#495057' }}>📋 פרטי הקריאה</h4>
-          <div style={{ display: 'grid', gap: '0.5rem' }}>
-            <div><strong>תיאור:</strong> {currentCall.call?.description || currentCall.description || 'לא זמין'}</div>
-            <div><strong>כתובת:</strong> {currentCall.call?.address || currentCall.address || 'לא צוין'}</div>
-            <div><strong>סטטוס:</strong> {currentCall.volunteerStatus || currentCall.status || 'לא זמין'}</div>
-            <div><strong>זמן יצירה:</strong> {
-              currentCall.call?.createdAt ? new Date(currentCall.call.createdAt).toLocaleString('he-IL') :
-              currentCall.createdAt ? new Date(currentCall.createdAt).toLocaleString('he-IL') : 'לא זמין'
-            }</div>
-          </div>
-        </div>
-      )}
-      
-      <form onSubmit={handleSubmit} className="card-body">
-        {/* שדה סיכום */}
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-            סיכום הטיפול:
-          </label>
-          <div style={{ position: 'relative' }}>
-            <textarea
-              value={summary}
-              onChange={handleSummaryChange}
-              placeholder="אנא פרט את הפעולות שבוצעו, המצב הסופי, והערות רלוונטיות נוספות..."
-              required
-              minLength={10}
-              disabled={finalIsLoading}
-              style={{
-                width: '100%',
-                minHeight: '120px',
-                padding: '1rem',
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                fontSize: '1rem',
-                fontFamily: 'inherit',
-                resize: 'vertical',
-                paddingBottom: '2rem'
-              }}
-            />
-            <div
-              style={{
-                position: 'absolute',
-                bottom: '0.5rem',
-                left: '1rem',
-                fontSize: '0.8rem',
-                color: charCount > maxChars * 0.8 ? '#ff6b6b' : '#666',
-              }}
-            >
-              {charCount}/{maxChars}
+    <div className="close-call-modal">
+      <div className="close-call-overlay" onClick={onClose}></div>
+      <div className="close-call-container">
+        {/* Header */}
+        <div className="close-call-header">
+          <div className="header-content">
+            <div className="header-icon">
+              <FileText className="h-6 w-6" />
+            </div>
+            <div className="header-text">
+              <h2>דוח סיום קריאה</h2>
+              <p>מלא את הפרטים הנדרשים לסיום הטיפול</p>
             </div>
           </div>
-          {summary.length > 0 && summary.length < 10 && (
-            <p style={{ color: '#ff6b6b', fontSize: '0.9rem', marginTop: '0.5rem' }}>
-              נדרשים לפחות 10 תווים לדוח
-            </p>
-          )}
+          <button className="close-btn" onClick={onClose}>
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
-        {/* שדה שליחה לבית חולים */}
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={sentToHospital}
-              onChange={(e) => setSentToHospital(e.target.checked)}
-              disabled={finalIsLoading}
-              style={{ marginLeft: '0.5rem' }}
-            />
-            <span style={{ fontWeight: 'bold' }}>🏥 נשלח לבית חולים</span>
-          </label>
-        </div>
+        {/* Call Details Section */}
+        {currentCall && (
+          <div className="call-details-summary">
+            <h3>
+              <AlertCircle className="h-5 w-5" />
+              פרטי הקריאה
+            </h3>
+            
+            {/* Quick Stats */}
+            <div className="quick-stats">
+              <div className="stat-item">
+                <div className="stat-icon">
+                  <Clock className="h-4 w-4" />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-label">זמן טיפול</span>
+                  <span className="stat-value">
+                    {currentCall.call?.createdAt ? 
+                      Math.round((new Date().getTime() - new Date(currentCall.call.createdAt).getTime()) / (1000 * 60)) + ' דקות' :
+                      'לא זמין'
+                    }
+                  </span>
+                </div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-icon priority">
+                  <AlertCircle className="h-4 w-4" />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-label">רמת דחיפות</span>
+                  <span className="stat-value">{currentCall.call?.urgencyLevel || 'בינונית'}</span>
+                </div>
+              </div>
+            </div>
 
-        {/* שדה שם בית חולים */}
-        {sentToHospital && (
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-              שם בית החולים:
-            </label>
-            <input
-              type="text"
-              value={hospitalName}
-              onChange={(e) => setHospitalName(e.target.value)}
-              placeholder="הזן שם בית החולים"
-              required={sentToHospital}
-              disabled={finalIsLoading}
-              style={{
-                width: '100%',
-                padding: '0.8rem',
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                fontSize: '1rem'
-              }}
-            />
+            <div className="details-grid-summary">
+              <div className="detail-item-summary">
+                <FileText className="h-4 w-4" />
+                <div>
+                  <span className="detail-label-summary">תיאור</span>
+                  <span className="detail-value-summary">{currentCall.call?.description || currentCall.description || 'לא זמין'}</span>
+                </div>
+              </div>
+              <div className="detail-item-summary">
+                <MapPin className="h-4 w-4" />
+                <div>
+                  <span className="detail-label-summary">כתובת</span>
+                  <span className="detail-value-summary">{currentCall.call?.address || currentCall.address || 'לא צוין'}</span>
+                </div>
+              </div>
+              <div className="detail-item-summary">
+                <CheckCircle className="h-4 w-4" />
+                <div>
+                  <span className="detail-label-summary">סטטוס נוכחי</span>
+                  <span className="detail-value-summary status-current">{currentCall.volunteerStatus || currentCall.status || 'לא זמין'}</span>
+                </div>
+              </div>
+              <div className="detail-item-summary">
+                <Clock className="h-4 w-4" />
+                <div>
+                  <span className="detail-label-summary">זמן קריאה</span>
+                  <span className="detail-value-summary">{
+                    currentCall.call?.createdAt ? new Date(currentCall.call.createdAt).toLocaleString('he-IL') :
+                    currentCall.createdAt ? new Date(currentCall.createdAt).toLocaleString('he-IL') : 'לא זמין'
+                  }</span>
+                </div>
+              </div>
+            </div>
           </div>
         )}
+        
+        {/* Form Section */}
+        <form onSubmit={handleSubmit} className="close-call-form">
+          {/* Summary Textarea */}
+          <div className="form-section">
+            <label className="form-label">
+              <FileText className="h-5 w-5" />
+              <span>סיכום הטיפול</span>
+              <span className="required">*</span>
+            </label>
+            <div className="textarea-container">
+              <textarea
+                value={summary}
+                onChange={handleSummaryChange}
+                placeholder="אנא פרט את הפעולות שבוצעו, המצב הסופי, והערות רלוונטיות נוספות..."
+                required
+                minLength={10}
+                disabled={finalIsLoading}
+                className="form-textarea"
+              />
+              <div className={`char-counter ${charCount > maxChars * 0.8 ? 'warning' : ''}`}>
+                {charCount}/{maxChars}
+              </div>
+            </div>
+            {summary.length > 0 && summary.length < 10 && (
+              <div className="validation-message">
+                <AlertCircle className="h-4 w-4" />
+                <span>נדרשים לפחות 10 תווים לדוח</span>
+              </div>
+            )}
+          </div>
 
-        {/* כפתורי פעולה */}
-        <div className="card-actions" style={{ marginTop: '1.5rem' }}>
-          <button
-            type="submit"
-            className="btn btn-success"
-            disabled={finalIsLoading || !isValid}
-            style={{
-              opacity: finalIsLoading || !isValid ? 0.6 : 1,
-              cursor: finalIsLoading || !isValid ? 'not-allowed' : 'pointer',
-              marginLeft: '0.5rem'
-            }}
-          >
-            {finalIsLoading ? '🔄 שולח...' : '📤 שלח דוח'}
-          </button>
-          
-          {onCancel && (
-            <button 
-              type="button" 
-              className="btn btn-secondary" 
-              onClick={onCancel}
-              disabled={finalIsLoading}
-            >
-              ❌ ביטול
-            </button>
+          {/* Hospital Checkbox */}
+          <div className="form-section">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={sentToHospital}
+                onChange={(e) => setSentToHospital(e.target.checked)}
+                disabled={finalIsLoading}
+                className="form-checkbox"
+              />
+              <div className="checkbox-content">
+                <Hospital className="h-5 w-5" />
+                <span>נשלח לבית חולים</span>
+              </div>
+            </label>
+          </div>
+
+          {/* Hospital Name Input */}
+          {sentToHospital && (
+            <div className="form-section hospital-section">
+              <label className="form-label">
+                <Hospital className="h-5 w-5" />
+                <span>שם בית החולים</span>
+                <span className="required">*</span>
+              </label>
+              <input
+                type="text"
+                value={hospitalName}
+                onChange={(e) => setHospitalName(e.target.value)}
+                placeholder="הזן שם בית החולים"
+                required={sentToHospital}
+                disabled={finalIsLoading}
+                className="form-input"
+              />
+            </div>
           )}
-        </div>
-      </form>
+
+          {/* Action Buttons */}
+          <div className="form-actions">
+            <button
+              type="submit"
+              className={`action-btn submit-btn ${finalIsLoading || !isValid ? 'disabled' : ''}`}
+              disabled={finalIsLoading || !isValid}
+            >
+              {finalIsLoading ? (
+                <>
+                  <div className="spinner"></div>
+                  <span>שולח דוח...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="h-5 w-5" />
+                  <span>שלח דוח סיום</span>
+                </>
+              )}
+            </button>
+            
+            {onCancel && (
+              <button 
+                type="button" 
+                className="action-btn cancel-btn" 
+                onClick={onCancel}
+                disabled={finalIsLoading}
+              >
+                <XCircle className="h-5 w-5" />
+                <span>ביטול</span>
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

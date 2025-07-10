@@ -77,7 +77,7 @@ export default function CreateCallPage() {
   return (
     <BackgroundLayout>
       <div className="create-call-container">
-        <h2 className="page-title">🚨 פתיחת קריאה</h2>
+        <h2 className="page-title" style={{ color: '#ef4444', textShadow: '0 2px 4px rgba(239, 68, 68, 0.2)' }}>🚨 פתיחת קריאת חירום</h2>
 
    
 
@@ -116,14 +116,16 @@ export default function CreateCallPage() {
             <small className="file-help-text">📸 אפשר לצרף תמונה להמחשת המצב</small>
           </div>
 
-          <button type="submit" disabled={isLoading}>
+          <button type="submit" disabled={isLoading} className="emergency-submit-btn">
             {isLoading ? (
               <>
                 <span className="loading-spinner"></span>
-                שולח קריאה...
+                שולח קריאת חירום...
               </>
             ) : (
-              "📤 שלח קריאה "
+              <>
+                � שלח קריאת חירום
+              </>
             )}
           </button>
         </form>

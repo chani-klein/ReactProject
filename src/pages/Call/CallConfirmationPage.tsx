@@ -109,23 +109,25 @@ const handleCompleteCall = async (summary: { summary: string; sentToHospital: bo
 
   const getStatusColor = (currentStatus: string) => {
     switch (currentStatus) {
-      
+      case "נשלחה":
+        return "#ef4444"; // Primary red
       case "נפתח":
-        return "var(--warning-orange)";
+        return "#f59e0b"; // Warning orange
       case "בטיפול":
-        return "var(--primary-blue)";
+        return "#10b981"; // Success green
       case "נסגר":
-        return "var(--success-green)";
+        return "#6b7280"; // Neutral gray
       default:
-        return "var(--text-gray)";
+        return "#9ca3af"; // Light gray
     }
   };
 
   const getStatusIcon = (currentStatus: string) => {
     switch (currentStatus) {
-     
+      case "נשלחה":
+        return "📤";
       case "נפתח":
-        return "🚨";
+        return "�";
       case "בטיפול":
         return "🚑";
       case "נסגר":
@@ -137,63 +139,108 @@ const handleCompleteCall = async (summary: { summary: string; sentToHospital: bo
 
   return (
     <BackgroundLayout>
-      <div className="confirmation-container sos-confirmation">
-        <div className="sos-header">
-          <div className="sos-circle">
-            <span className="sos-text">SOS</span>
-          </div>
-          <h2 className="confirmation-title success-bounce">
-            ✔️ הקריאה נשלחה בהצלחה
-          </h2>
+      <div className="confirmation-container">
+        {/* כותרת ראשית עם הדגשה אדומה */}
+        <div className="emergency-success-banner">
+          <div className="confirmation-icon">🚨</div>
+          <h2>קריאת חירום נשלחה!</h2>
+          <p className="call-sent-indicator">✅ הקריאה התקבלה בהצלחה</p>
+          <p>מתנדבים מוכשרים הוזעקו ויגיעו בהקדם האפשרי</p>
         </div>
 
-        <div className="alert-message">
-          <div className="alert-message-text">
-            🚑 כעת יצאו כוננים לאזור שלך!
-          </div>
-          <div style={{ fontSize: "1rem", color: "var(--emergency-text-red)" }}>
-            אנא הישאר במקום ושמור על קשר
+        {/* פרטי הקריאה עם עיצוב אדום */}
+        <div className="call-details-section">
+          <h2 className="section-title">📋 פרטי הקריאה</h2>
+          <div className="confirmation-card">
+            <div className="confirmation-header">
+              <div className="confirmation-icon">🆔</div>
+              <h3>מידע על הקריאה</h3>
+            </div>
+            
+            <div className="call-info-grid">
+              <div className="call-info-item">
+                <div className="call-info-label">מספר קריאה</div>
+                <div className="call-info-value">#{callId}</div>
+              </div>
+              
+              <div className="call-info-item">
+                <div className="call-info-label">סטטוס נוכחי</div>
+                <div className="call-info-value">
+                  <span className="emergency-status-badge" style={{ backgroundColor: getStatusColor(status) }}>
+                    {getStatusIcon(status)} {status}
+                  </span>
+                </div>
+              </div>
+              
+              {description && (
+                <div className="call-info-item" style={{ gridColumn: '1 / -1' }}>
+                  <div className="call-info-label">תיאור המצב</div>
+                  <div className="call-info-value description-text">{description}</div>
+                </div>
+              )}
+              
+              <div className="call-info-item">
+                <div className="call-info-label">זמן יצירה</div>
+                <div className="call-info-value">{new Date().toLocaleString('he-IL')}</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="status-container">
-          <div className="status-text">
-            {getStatusIcon(status)} סטטוס הקריאה:{" "}
-            <span className="status-value" style={{ color: getStatusColor(status) }}>
-              {status}
-            </span>
+        {/* הודעת התראה עם עיצוב אדום */}
+        <div className="alert-section">
+          <div className="volunteers-notified">
+            <div className="confirmation-icon">🚑</div>
+            <h3>מתנדבים הוזעקו!</h3>
+            <div className="volunteer-count">🚨</div>
+            <p>אנא הישאר במקום ושמור על קשר</p>
+            <div className="emergency-tip">
+              💡 מתנדבים מוכשרים בעזרה ראשונה יגיעו בהקדם האפשרי למיקומך
+            </div>
           </div>
         </div>
 
-        {/* כפתורים לניווט */}
-        <div className="action-buttons">
-          <button className="secondary-btn" onClick={() => navigate("/")}>
-            🏠 חזור לעמוד הבית
-          </button>
-          <button className="primary-btn" onClick={() => navigate("/my-calls")}>
-            📋 הקריאות שלי
-          </button>
-          <button className="secondary-btn" onClick={fetchVolunteers}>
-            📋 הצג רשימת מתנדבים
-          </button>
+        {/* כפתורי פעולה עם עיצוב משופר */}
+        <div className="emergency-actions">
+          <h3>⚡ פעולות זמינות</h3>
+          <div className="action-buttons-grid">
+            <button className="action-btn primary" onClick={() => navigate("/my-calls")}>
+              <span className="btn-icon">📋</span>
+              <span className="btn-text">הקריאות שלי</span>
+            </button>
+            
+            <button className="action-btn secondary" onClick={fetchVolunteers}>
+              <span className="btn-icon">👥</span>
+              <span className="btn-text">רשימת מתנדבים</span>
+            </button>
+            
+            <button className="action-btn neutral" onClick={() => navigate("/")}>
+              <span className="btn-icon">🏠</span>
+              <span className="btn-text">חזור לבית</span>
+            </button>
+          </div>
         </div>
 
         {/* הוראות עזרה ראשונה */}
         {(guides.length > 0 || isLoadingGuides) && (
           <div className="guides-section">
-            <h3 className="guides-title">📋 הוראות עזרה ראשונה</h3>
-
+            <h2 className="section-title">🩺 הוראות עזרה ראשונה</h2>
+            
             {isLoadingGuides ? (
-              <div className="loading-container">
-                <span className="loading-spinner"></span>
-                <span>טוען הוראות עזרה ראשונה...</span>
+              <div className="loading-card">
+                <div className="loading-spinner"></div>
+                <span className="loading-text">טוען הוראות עזרה ראשונה...</span>
               </div>
             ) : (
               <div className="guides-container">
                 {guides.map((guide, index) => (
                   <div key={index} className="guide-card">
-                    <h4 className="guide-title">🩺 {guide.title}</h4>
-                    <div className="guide-description">{guide.description}</div>
+                    <div className="guide-header">
+                      <h3 className="guide-title">{guide.title}</h3>
+                    </div>
+                    <div className="guide-content">
+                      <p className="guide-description">{guide.description}</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -201,28 +248,46 @@ const handleCompleteCall = async (summary: { summary: string; sentToHospital: bo
           </div>
         )}
 
-        {/* Display volunteers list */}
+        {/* רשימת מתנדבים */}
         {isLoadingVolunteers ? (
-          <div className="loading-container">
-            <span className="loading-spinner"></span>
-            <span>טוען רשימת מתנדבים...</span>
+          <div className="volunteers-section">
+            <h2 className="section-title">👥 מתנדבים</h2>
+            <div className="loading-card">
+              <div className="loading-spinner"></div>
+              <span className="loading-text">טוען רשימת מתנדבים...</span>
+            </div>
           </div>
         ) : volunteers.length > 0 ? (
-          <div className="volunteers-list">
-            <h3 className="volunteers-title">רשימת מתנדבים</h3>
-            <ul>
+          <div className="volunteers-section">
+            <h2 className="section-title">👥 מתנדבים מוקצים</h2>
+            <div className="volunteers-grid">
               {volunteers.map((volunteer: any, index) => (
-                <li key={index}>
-                  {volunteer.fullName} - {volunteer.phoneNumber} - {volunteer.city}
-                </li>
+                <div key={index} className="volunteer-card">
+                  <div className="volunteer-info">
+                    <div className="volunteer-name">{volunteer.fullName}</div>
+                    <div className="volunteer-details">
+                      <span className="volunteer-phone">📞 {volunteer.phoneNumber}</span>
+                      <span className="volunteer-city">📍 {volunteer.city}</span>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         ) : null}
 
-        {/* הודעת זהירות */}
-        <div className="warning-note">
-          <strong>⚠️ חשוב:</strong> הוראות אלו הן לעזרה ראשונה בלבד. אל תחליף טיפול רפואי מקצועי.
+        {/* הודעת זהירות עם עיצוב אדום */}
+        <div className="warning-section">
+          <div className="emergency-alert">
+            <div className="warning-icon">⚠️</div>
+            <div className="warning-content">
+              <h3>הודעה חשובה</h3>
+              <p>
+                הוראות אלו הן לעזרה ראשונה בלבד ואינן מחליפות טיפול רפואי מקצועי.
+                במקרה של חירום רפואי חמור, אנא המתן למתנדבים שיבואו.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </BackgroundLayout>

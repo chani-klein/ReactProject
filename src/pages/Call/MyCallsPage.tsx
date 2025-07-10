@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { getMyCalls } from "../../services/calls.service";
 import "../../style/MyCallsPage.css"; // תיקון הנתיב לקובץ CSS
 
@@ -16,6 +18,11 @@ interface Call {
 export default function MyCallsPage() {
   const [calls, setCalls] = useState<Call[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const handleGoBack = () => {
+    navigate(-1); // חזור לדף הקודם
+  };
 
   useEffect(() => {
     const fetchCalls = async () => {
@@ -42,7 +49,18 @@ export default function MyCallsPage() {
   return (
     <div className="calls-wrapper">
       <div className="calls-container">
-        <h2>📋 הקריאות שלי</h2>
+        <div className="header-section">
+          <button 
+            onClick={handleGoBack}
+            className="back-button"
+          >
+            <ArrowRight className="back-icon" />
+            חזור
+          </button>
+          <h2 style={{ color: 'var(--emergency-red)', textShadow: '0 2px 4px rgba(220, 38, 38, 0.2)' }}>
+            📋 הקריאות שלי
+          </h2>
+        </div>
         {loading ? (
           <p>טוען קריאות...</p>
         ) : calls.length === 0 ? (

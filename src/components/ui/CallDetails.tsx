@@ -24,7 +24,7 @@ export const CallDetails: React.FC<CallDetailsProps> = ({
     switch (status?.toLowerCase()) {
       case 'going':
       case 'בדרך':
-        return 'text-blue-600 bg-blue-100';
+        return 'text-red-600 bg-red-100';
       case 'arrived':
       case 'הגיע':
         return 'text-green-600 bg-green-100';

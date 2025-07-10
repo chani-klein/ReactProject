@@ -27,7 +27,7 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
         return 'bg-red-500 text-white hover:bg-red-600';
       case 'primary':
       default:
-        return 'bg-blue-500 text-white hover:bg-blue-600';
+        return 'bg-red-500 text-white hover:bg-red-600';
     }
   };
 

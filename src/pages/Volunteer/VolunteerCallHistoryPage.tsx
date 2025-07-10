@@ -1,23 +1,41 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import BackgroundLayout from '../../layouts/BackgroundLayout';
 import { getVolunteerDetails } from '../../services/volunteer.service';
 import { getVolunteerCallHistory } from '../../services/calls.service';
 import type { Call } from '../../types/call.types';
+import '../../style/VolunteerHistoryPage.css';
+import '../../style/emergency-styles.css';
 
 export default function HistoryPage() {
   const [calls, setCalls] = useState<Call[]>([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleGoBack = () => {
+    navigate(-1); // חזור לדף הקודם
+  };
 
   useEffect(() => {
     const fetchHistory = async () => {
       setLoading(true);
       try {
         const volunteerId = await getVolunteerDetails();
+        console.log('📋 Volunteer ID:', volunteerId);
+        
         if (!volunteerId) throw new Error('מתנדב לא מזוהה');
+        
         const res = await getVolunteerCallHistory(volunteerId);
-        setCalls(res);
+        console.log('📋 Raw history data:', res);
+        
+        // בדיקה אם זה array או object
+        const callsData = Array.isArray(res) ? res : res.data || res.calls || [];
+        console.log('📋 Processed calls data:', callsData);
+        
+        setCalls(callsData);
       } catch (error) {
         console.error('❌ שגיאה בטעינת היסטוריית הקריאות:', error);
         alert('שגיאה בטעינת היסטוריית קריאות');
@@ -30,83 +48,165 @@ export default function HistoryPage() {
   }, []);
 
   const formatStatus = (status: string | null | undefined) => {
-    switch (status) {
-      case 'Open': return 'פתוחה';
-      case 'InProgress': return 'בטיפול';
-      case 'Closed': return 'הושלמה';
-      default: return 'לא ידוע';
+    console.log('🔍 Formatting status:', status);
+    switch (status?.toLowerCase()) {
+      case 'open': 
+      case 'פתוח':
+        return 'פתוחה';
+      case 'inprogress':
+      case 'in_progress': 
+      case 'בטיפול':
+        return 'בטיפול';
+      case 'closed':
+      case 'נסגר':
+      case 'הושלם':
+        return 'הושלמה';
+      default: 
+        console.log('🔍 Unknown status:', status);
+        return status || 'לא ידוע';
+    }
+  };
+
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return '---';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '---';
+      return date.toLocaleString('he-IL', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return '---';
+    }
+  };
+
+  const formatUrgencyLevel = (level: number | string | null | undefined) => {
+    if (!level) return '---';
+    const numLevel = typeof level === 'string' ? parseInt(level) : level;
+    switch (numLevel) {
+      case 1: return 'נמוכה';
+      case 2: return 'בינונית';
+      case 3: return 'גבוהה';
+      case 4: return 'קריטית';
+      default: return level?.toString() || '---';
     }
   };
 
   return (
     <BackgroundLayout>
-      <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>📖 היסטוריית קריאות</h2>
+      <div className="history-wrapper">
+        <div className="history-container">
+          <div className="history-header">
+            <button 
+              onClick={handleGoBack}
+              className="back-button"
+            >
+              <ArrowRight className="back-icon" />
+              חזור
+            </button>
+            <h2>📖 היסטוריית קריאות</h2>
+          </div>
 
-      {loading ? (
-        <p>טוען נתונים...</p>
-      ) : calls.length === 0 ? (
-        <p>אין קריאות להצגה.</p>
-      ) : (
-        <div style={{ overflowX: 'auto', direction: 'rtl' }}>
-          <table
-            style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              backgroundColor: '#fff',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-              borderRadius: '8px',
-              overflow: 'hidden',
-            }}
-          >
-            <thead style={{ backgroundColor: '#f0f0f0' }}>
-              <tr>
-                <th style={thStyle}>#</th>
-                <th style={thStyle}>תיאור</th>
-                <th style={thStyle}>תאריך</th>
-                <th style={thStyle}>סטטוס</th>
-                <th style={thStyle}>רמת דחיפות</th>
-                <th style={thStyle}>מיקום (X,Y)</th>
-                <th style={thStyle}>מס' מתנדבים</th>
-                <th style={thStyle}>נשלח לבי"ח</th>
-                <th style={thStyle}>שם בי"ח</th>
-                <th style={thStyle}>סיכום</th>
-                <th style={thStyle}>תמונה</th>
-              </tr>
-            </thead>
-            <tbody>
-              {calls.map((call, index) => (
-                <tr key={call.id} style={{ borderBottom: '1px solid #ddd' }}>
-                  <td style={tdStyle}>{index + 1}</td>
-                  <td style={tdStyle}>{call.description || '---'}</td>
-                  <td style={tdStyle}>
-                    {call.date ? new Date(call.date).toLocaleString('he-IL') : '---'}
-                  </td>
-                  <td style={tdStyle}>{formatStatus(call.status)}</td>
-                  <td style={tdStyle}>{call.urgencyLevel ?? '---'}</td>
-                  <td style={tdStyle}>
-                    ({call.locationY}, {call.locationX})
-                  </td>
-                  <td style={tdStyle}>{call.numVolanteer}</td>
-                  <td style={tdStyle}>{call.sentToHospital ? '✔️' : '❌'}</td>
-                  <td style={tdStyle}>{call.hospitalName || '---'}</td>
-                  <td style={{ ...tdStyle, maxWidth: '200px', whiteSpace: 'pre-wrap' }}>
-                    {call.summary || '---'}
-                  </td>
-                  <td style={tdStyle}>
-                    {call.imageUrl ? (
-                      <a href={call.imageUrl} target="_blank" rel="noopener noreferrer">
-                        📷 צפייה
-                      </a>
-                    ) : (
-                      '---'
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {loading ? (
+            <div className="loading-section">
+              <div className="loading-spinner"></div>
+              <p>טוען נתונים...</p>
+            </div>
+          ) : calls.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📭</div>
+              <h3>אין קריאות להצגה</h3>
+              <p>עדיין לא השתתפת בקריאות חירום</p>
+            </div>
+          ) : (
+            <div className="calls-grid">
+              {calls.map((call, index) => {
+                console.log('🔍 Rendering call:', call);
+                return (
+                  <div key={call.id || index} className="call-card">
+                    <div className="call-header">
+                      <span className="call-number">#{call.id || index + 1}</span>
+                      <span className={`status-badge status-${call.status?.toLowerCase() || 'unknown'}`}>
+                        {formatStatus(call.status)}
+                      </span>
+                    </div>
+                    
+                    <div className="call-content">
+                      <div className="call-section">
+                        <h4>תיאור הקריאה</h4>
+                        <p>{call.description || call.Description || 'אין תיאור זמין'}</p>
+                      </div>
+                      
+                      <div className="call-details">
+                        <div className="detail-item">
+                          <strong>תאריך:</strong>
+                          <span>{formatDate(call.date || call.createdAt || call.timestamp)}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>רמת דחיפות:</strong>
+                          <span className={`urgency-level urgency-${call.urgencyLevel || call.UrgencyLevel}`}>
+                            {formatUrgencyLevel(call.urgencyLevel || call.UrgencyLevel)}
+                          </span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>מיקום:</strong>
+                          <span>
+                            {(call.locationX || call.LocationX) && (call.locationY || call.LocationY) 
+                              ? `(${call.locationY || call.LocationY}, ${call.locationX || call.LocationX})`
+                              : 'מיקום לא זמין'
+                            }
+                          </span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>מס' מתנדבים:</strong>
+                          <span>{call.numVolanteer || call.NumVolunteer || '---'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>נשלח לבי"ח:</strong>
+                          <span className={(call.sentToHospital || call.SentToHospital) ? 'sent-yes' : 'sent-no'}>
+                            {(call.sentToHospital || call.SentToHospital) ? '✔️ כן' : '❌ לא'}
+                          </span>
+                        </div>
+                        {(call.hospitalName || call.HospitalName) && (
+                          <div className="detail-item">
+                            <strong>שם בי"ח:</strong>
+                            <span>{call.hospitalName || call.HospitalName}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {(call.summary || call.Summary) && (
+                        <div className="call-section">
+                          <h4>סיכום</h4>
+                          <p className="summary-text">{call.summary || call.Summary}</p>
+                        </div>
+                      )}
+                      
+                      {(call.imageUrl || call.ImageUrl || call.fileImage || call.FileImage) && (
+                        <div className="call-section">
+                          <h4>תמונה</h4>
+                          <a 
+                            href={call.imageUrl || call.ImageUrl || call.fileImage || call.FileImage} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="image-link"
+                          >
+                            📷 צפייה בתמונה
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </BackgroundLayout>
   );
 }

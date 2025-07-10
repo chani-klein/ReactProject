@@ -34,6 +34,20 @@ export interface Call {
   type: string; // Updated to mandatory
   numVolanteer?: number; // Added property
   imageUrl?: string; // Added property
+  
+  // Alternative field names that might come from the server (C# convention)
+  Description?: string;
+  UrgencyLevel?: number;
+  LocationX?: number;
+  LocationY?: number;
+  NumVolunteer?: number;
+  SentToHospital?: boolean | null;
+  HospitalName?: string | null;
+  Summary?: string;
+  ImageUrl?: string;
+  FileImage?: string;
+  createdAt?: string;
+  [key: string]: any; // Allow additional properties from server
 }
 
 export interface VolunteerStatus {
