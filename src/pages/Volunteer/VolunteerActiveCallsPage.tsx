@@ -4,34 +4,55 @@ import BackgroundLayout from '../../layouts/BackgroundLayout';
 import LoadingContainer from "../../components/LoadingContainer";
 import ErrorContainer from  '../../components/ErrorContainer';
 import { getActiveCalls } from '../../services/volunteer.service';
-import type { Call } from '../../types/call.types';
+import type { VolunteerCall } from '../../types/volunteerCall.types';
 
 export default function VolunteerActiveCallsPage() {
-  const [activeCalls, setActiveCalls] = useState<Call[]>([]);
+  const [activeCalls, setActiveCalls] = useState<VolunteerCall[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-const loadActiveCalls = async () => {
-  setIsLoading(true);
-  setError(null);
-  try {
-    const res = await getActiveCalls();
-    
-    // כאן תראה מה באמת הגיע מהשרת
-    console.log("res.data", res.data);
+  const loadActiveCalls = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // שליפת קריאות פעילות למתנדב הנוכחי
+      const res = await getActiveCalls();
+      console.log('Raw active calls data:', res.data);
 
-    const callsWithId = res.data.map((call: any) => ({
-      ...call,
-      id: call.id || call.callId || call.callsId,
-    }));
+      const callsWithMappedData = res.data.map((call: any) => ({
+        callsId: call.callsId,
+        volunteerId: call.volunteerId,
+        volunteerStatus: call.volunteerStatus,
+        responseTime: call.responseTime,
+        call: {
+          id: call.call.id,
+          locationX: call.call.locationX,
+          locationY: call.call.locationY,
+          arrImage: call.call.arrImage,
+          date: call.call.date,
+          fileImage: call.call.fileImage,
+          description: call.call.description,
+          urgencyLevel: call.call.urgencyLevel,
+          status: call.call.status,
+          summary: call.call.summary,
+          sentToHospital: call.call.sentToHospital,
+          hospitalName: call.call.hospitalName,
+          userId: call.call.userId,
+          address: call.call.address || 'כתובת לא זמינה',
+          priority: call.call.priority || 'נמוך',
+          timestamp: call.call.timestamp || new Date().toISOString(),
+          type: call.call.type || 'חירום',
+        },
+        goingVolunteersCount: call.goingVolunteersCount,
+      }));
 
-    setActiveCalls(callsWithId);
-  } catch (err: any) {
-    setError(err.message || 'שגיאה בטעינת קריאות פעילות');
-  } finally {
-    setIsLoading(false);
-  }
-};
+      setActiveCalls(callsWithMappedData);
+    } catch (err: any) {
+      setError(err.message || 'שגיאה בטעינת קריאות פעילות');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     loadActiveCalls();
@@ -64,35 +85,14 @@ const loadActiveCalls = async () => {
         {activeCalls.length === 0 ? (
           <div>אין קריאות פעילות כרגע</div>
         ) : (
-          activeCalls.map((call) => {
-            const volunteerStatus = call.volunteersStatus?.[0]?.response || 'לא זמין';
-            const volunteerId = call.volunteersStatus?.[0]?.volunteerId || 0;
-
-         const mappedCall = {
-  ...call,
-  address: call.address || 'כתובת לא זמינה',
-  description: call.description || 'תיאור לא זמין',
-  priority: call.priority || 'נמוך',
-  timestamp: call.createdAt || new Date().toISOString(),
-  type: call.type || 'חירום',
-};
-
-            return (
-              <ActiveCallCard
-                key={call.id}
-                volunteerCall={{
-                  call: mappedCall,
-                  callsId: call.id,
-                  volunteerId,
-                  volunteerStatus,
-                  responseTime: call.createdAt,
-                  goingVolunteersCount: call.goingVolunteersCount || 0,
-                }}
-                onStatusUpdate={handleStatusUpdate}
-                showArrivedOnly={volunteerStatus === 'going'}
-              />
-            );
-          })
+          activeCalls.map((call) => (
+            <ActiveCallCard
+              key={call.callsId}
+              volunteerCall={call}
+              onStatusUpdate={handleStatusUpdate}
+              showArrivedOnly={call.volunteerStatus === 'going'}
+            />
+          ))
         )}
       </div>
     </BackgroundLayout>

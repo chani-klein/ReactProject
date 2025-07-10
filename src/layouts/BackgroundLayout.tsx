@@ -1,5 +1,5 @@
 import React from "react";
-import "./BackgroundLayout.css";
+import "./CSS/BackgroundLayout.css";
 
 interface Props {
   children: React.ReactNode;

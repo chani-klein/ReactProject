@@ -231,7 +231,7 @@ html, body {
 .background-layout {
   min-height: 100vh; /* ✨ שימי לב – min-height ולא height */
   width: 100vw;
-  background-image: url("../../public/images/ambulance.jpg");
+  background-image: url("https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

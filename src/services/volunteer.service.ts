@@ -3,8 +3,6 @@ import type { AxiosResponse } from "axios"
 import type { Call, Volunteer } from "../types"
 import { AxiosHeaders } from "axios";
 
-const API_BASE = 'https://localhost:7219/api';
-
 // 🔧 פונקציה מאוחדת לקבלת volunteer ID
 const getVolunteerIdFromStorage = (): number | null => {
   // בדיקה ב-localStorage קודם
@@ -114,22 +112,7 @@ export const updateVolunteerStatus = async (
 }
 
 // 🔧 קבלת היסטוריית קריאות
-export const getVolunteerHistory = async (): Promise<AxiosResponse<Call[]>> => {
-  try {
-    const volunteerId = getVolunteerIdFromStorage()
-    if (!volunteerId) {
-      throw new Error("Volunteer ID not found - please login again")
-    }
 
-    console.log("📚 Getting volunteer history for:", volunteerId)
-
-    const response = await axios.get(`/VolunteersCalls/history/${volunteerId}`)
-    return response
-  } catch (error: any) {
-    console.error("❌ Failed to get volunteer history:", error.response?.data || error.message)
-    throw error
-  }
-}
 
 // 🔧 קבלת קריאות פעילות
 export const getActiveCalls = async (): Promise<AxiosResponse<Call[]>> => {

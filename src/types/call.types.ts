@@ -15,24 +15,25 @@ export interface CompleteCallDto {
 
 
 export interface Call {
-  id: number
-  description: string
-  urgencyLevel: number // 🔧 שינוי מ-string ל-number
-  locationX: number
-  locationY: number
-  createdAt: string
-  status: "Open" | "InProgress" | "Closed"
-  imageUrl?: string
-  summary?: string
-  volunteersStatus?: VolunteerStatus[]
-  goingVolunteersCount?: number
-  date?: string // תאריך הקריאה
-  numVolanteer?: number // מספר מתנדבים
-  sentToHospital?: boolean // האם נשלח לבית חולים
-  hospitalName?: string // שם בית החולים
-  address?: string // נוספה כתובת
-  priority?: string // נוספה עדיפות
-  type?: string // נוספה סוג קריאה
+  id: number;
+  locationX: number;
+  locationY: number;
+  arrImage?: string;
+  date: string;
+  fileImage?: string | null;
+  description: string;
+  urgencyLevel: number;
+  status: "Open" | "InProgress" | "Closed";
+  summary?: string;
+  sentToHospital?: boolean | null;
+  hospitalName?: string | null;
+  userId: number;
+  address: string; // Updated to mandatory
+  priority: string; // Updated to mandatory
+  timestamp: string; // Updated to mandatory
+  type: string; // Updated to mandatory
+  numVolanteer?: number; // Added property
+  imageUrl?: string; // Added property
 }
 
 export interface VolunteerStatus {

@@ -1,34 +1,106 @@
 'use client';
 import type React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { CompleteCallDto } from '../types/call.types';
+import { useNavigate } from 'react-router-dom';
+import { finishVolunteerCall } from '../services/calls.service';
+import { getVolunteerCallHistory } from '../services/calls.service'; // תיקון הייבוא  
 
 interface CloseCallFormProps {
-  onSubmit: (summary: CompleteCallDto) => void;
+  onSubmit?: (summary: CompleteCallDto) => void; // עכשיו אופציונלי
   isLoading?: boolean;
   onCancel?: () => void;
+  volunteerId: number;
+  callId: number; // הוספת callId
+  onClose: () => void;
 }
 
-export default function CloseCallForm({ onSubmit, isLoading = false, onCancel }: CloseCallFormProps) {
+export default function CloseCallForm({ 
+  onSubmit, 
+  isLoading: externalLoading = false, 
+  onCancel, 
+  volunteerId, 
+  callId, 
+  onClose 
+}: CloseCallFormProps) {
   const [summary, setSummary] = useState('');
   const [sentToHospital, setSentToHospital] = useState(false);
   const [hospitalName, setHospitalName] = useState('');
   const [charCount, setCharCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [callHistory, setCallHistory] = useState<any[]>([]);
+  const [currentCall, setCurrentCall] = useState<any>(null);
+  const [loadingHistory, setLoadingHistory] = useState(true);
   const maxChars = 500;
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // שליפת היסטוריית הקריאות כדי למצוא את הקריאה הנוכחית
+  useEffect(() => {
+    const fetchCallHistory = async () => {
+      try {
+        setLoadingHistory(true);
+        const response = await getVolunteerCallHistory(volunteerId).then();
+        const history = response.data;
+        setCallHistory(history);
+        
+        // מחפש את הקריאה הנוכחית
+        const current = history.find((call: any) => call.callsId === callId || call.id === callId);
+        if (current) {
+          setCurrentCall(current);
+          console.log('📋 פרטי הקריאה הנוכחית:', current);
+        } else {
+          console.warn('⚠️ לא נמצאה קריאה עם ID:', callId);
+        }
+      } catch (error) {
+        console.error('❌ שגיאה בשליפת היסטוריית הקריאות:', error);
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
+
+    if (callId && volunteerId) {
+      fetchCallHistory();
+    }
+  }, [callId, volunteerId]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (summary.trim() && summary.length >= 8) {
-      onSubmit({ 
+    if (summary.trim() && summary.length >= 10) {
+      const callData: CompleteCallDto = { 
         summary: summary.trim(), 
         sentToHospital, 
         hospitalName: sentToHospital ? hospitalName : undefined 
-      });
-      // איפוס הטופס
-      setSummary('');
-      setCharCount(0);
-      setHospitalName('');
-      setSentToHospital(false);
+      };
+
+      try {
+        setIsLoading(true);
+        
+        // קריאה לשירות
+        await finishVolunteerCall(callId, volunteerId, callData);
+        
+        // אם יש callback חיצוני - קוראים לו
+        if (onSubmit) {
+          onSubmit(callData);
+        }
+        
+        // איפוס הטופס
+        setSummary('');
+        setCharCount(0);
+        setHospitalName('');
+        setSentToHospital(false);
+
+        // סגירת המודל
+        onClose();
+        
+        // מעבר לדף היסטוריית הקריאות
+        navigate('/volunteer/history');
+        
+      } catch (error: any) {
+        console.error('❌ שגיאה בסיום הקריאה:', error);
+        alert('שגיאה בשליחת הדוח. אנא נסה שוב.');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -41,12 +113,40 @@ export default function CloseCallForm({ onSubmit, isLoading = false, onCancel }:
   };
 
   const isValid = summary.trim().length >= 10 && (!sentToHospital || hospitalName.trim().length > 0);
+  const finalIsLoading = isLoading || externalLoading || loadingHistory;
+
+  // אם עדיין טוען היסטוריה
+  if (loadingHistory) {
+    return (
+      <div className="card" style={{ marginTop: '1rem' }}>
+        <div className="card-body" style={{ textAlign: 'center', padding: '2rem' }}>
+          <div>🔄 טוען פרטי קריאה...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="card" style={{ marginTop: '1rem' }}>
       <div className="card-header">
         <h3 style={{ margin: 0 }}>📝 דוח סיום קריאה</h3>
       </div>
+      
+      {/* הצגת פרטי הקריאה */}
+      {currentCall && (
+        <div style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderBottom: '1px solid #ddd' }}>
+          <h4 style={{ margin: '0 0 1rem 0', color: '#495057' }}>📋 פרטי הקריאה</h4>
+          <div style={{ display: 'grid', gap: '0.5rem' }}>
+            <div><strong>תיאור:</strong> {currentCall.call?.description || currentCall.description || 'לא זמין'}</div>
+            <div><strong>כתובת:</strong> {currentCall.call?.address || currentCall.address || 'לא צוין'}</div>
+            <div><strong>סטטוס:</strong> {currentCall.volunteerStatus || currentCall.status || 'לא זמין'}</div>
+            <div><strong>זמן יצירה:</strong> {
+              currentCall.call?.createdAt ? new Date(currentCall.call.createdAt).toLocaleString('he-IL') :
+              currentCall.createdAt ? new Date(currentCall.createdAt).toLocaleString('he-IL') : 'לא זמין'
+            }</div>
+          </div>
+        </div>
+      )}
       
       <form onSubmit={handleSubmit} className="card-body">
         {/* שדה סיכום */}
@@ -61,7 +161,7 @@ export default function CloseCallForm({ onSubmit, isLoading = false, onCancel }:
               placeholder="אנא פרט את הפעולות שבוצעו, המצב הסופי, והערות רלוונטיות נוספות..."
               required
               minLength={10}
-              disabled={isLoading}
+              disabled={finalIsLoading}
               style={{
                 width: '100%',
                 minHeight: '120px',
@@ -100,7 +200,7 @@ export default function CloseCallForm({ onSubmit, isLoading = false, onCancel }:
               type="checkbox"
               checked={sentToHospital}
               onChange={(e) => setSentToHospital(e.target.checked)}
-              disabled={isLoading}
+              disabled={finalIsLoading}
               style={{ marginLeft: '0.5rem' }}
             />
             <span style={{ fontWeight: 'bold' }}>🏥 נשלח לבית חולים</span>
@@ -119,7 +219,7 @@ export default function CloseCallForm({ onSubmit, isLoading = false, onCancel }:
               onChange={(e) => setHospitalName(e.target.value)}
               placeholder="הזן שם בית החולים"
               required={sentToHospital}
-              disabled={isLoading}
+              disabled={finalIsLoading}
               style={{
                 width: '100%',
                 padding: '0.8rem',
@@ -136,14 +236,14 @@ export default function CloseCallForm({ onSubmit, isLoading = false, onCancel }:
           <button
             type="submit"
             className="btn btn-success"
-            disabled={isLoading || !isValid}
+            disabled={finalIsLoading || !isValid}
             style={{
-              opacity: isLoading || !isValid ? 0.6 : 1,
-              cursor: isLoading || !isValid ? 'not-allowed' : 'pointer',
+              opacity: finalIsLoading || !isValid ? 0.6 : 1,
+              cursor: finalIsLoading || !isValid ? 'not-allowed' : 'pointer',
               marginLeft: '0.5rem'
             }}
           >
-            {isLoading ? '🔄 שולח...' : '📤 שלח דוח'}
+            {finalIsLoading ? '🔄 שולח...' : '📤 שלח דוח'}
           </button>
           
           {onCancel && (
@@ -151,7 +251,7 @@ export default function CloseCallForm({ onSubmit, isLoading = false, onCancel }:
               type="button" 
               className="btn btn-secondary" 
               onClick={onCancel}
-              disabled={isLoading}
+              disabled={finalIsLoading}
             >
               ❌ ביטול
             </button>
