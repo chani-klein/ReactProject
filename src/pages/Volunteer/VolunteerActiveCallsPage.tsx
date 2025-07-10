@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import ActiveCallCard from '../../components/ActiveCallCard';
 import BackgroundLayout from '../../layouts/BackgroundLayout';
 import LoadingContainer from "../../components/LoadingContainer";
-import ErrorContainer from  '../../components/ErrorContainer';
+import ErrorContainer from '../../components/ErrorContainer';
 import { getActiveCalls } from '../../services/volunteer.service';
 import type { VolunteerCall } from '../../types/volunteerCall.types';
+import '../../layouts/VolunteerActiveCallsPage.css';
 
 export default function VolunteerActiveCallsPage() {
   const [activeCalls, setActiveCalls] = useState<VolunteerCall[]>([]);
@@ -15,10 +16,7 @@ export default function VolunteerActiveCallsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      // שליפת קריאות פעילות למתנדב הנוכחי
       const res = await getActiveCalls();
-      console.log('Raw active calls data:', res.data);
-
       const callsWithMappedData = res.data.map((call: any) => ({
         callsId: call.callsId,
         volunteerId: call.volunteerId,
@@ -58,7 +56,6 @@ export default function VolunteerActiveCallsPage() {
     loadActiveCalls();
   }, []);
 
-  // רענון קריאות לאחר עדכון סטטוס
   const handleStatusUpdate = () => {
     loadActiveCalls();
   };
@@ -83,7 +80,7 @@ export default function VolunteerActiveCallsPage() {
     <BackgroundLayout>
       <div className="calls-container">
         {activeCalls.length === 0 ? (
-          <div>אין קריאות פעילות כרגע</div>
+          <div className="no-calls-message">אין קריאות פעילות כרגע</div>
         ) : (
           activeCalls.map((call) => (
             <ActiveCallCard
