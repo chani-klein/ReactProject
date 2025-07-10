@@ -11,22 +11,27 @@ export default function VolunteerActiveCallsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadActiveCalls = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      // שליפת קריאות פעילות למתנדב הנוכחי
-      const res = await getActiveCalls();
-      // טיפול במיפוי id במקרה שהשדה מגיע בשם אחר (למשל callId)
-      const callsWithId = res.data.map((call: any) => ({ ...call, id: call.id || call.callId || call.callsId }));
-      console.log("callsWithId", callsWithId);
-      setActiveCalls(callsWithId);
-    } catch (err: any) {
-      setError(err.message || 'שגיאה בטעינת קריאות פעילות');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+const loadActiveCalls = async () => {
+  setIsLoading(true);
+  setError(null);
+  try {
+    const res = await getActiveCalls();
+    
+    // כאן תראה מה באמת הגיע מהשרת
+    console.log("res.data", res.data);
+
+    const callsWithId = res.data.map((call: any) => ({
+      ...call,
+      id: call.id || call.callId || call.callsId,
+    }));
+
+    setActiveCalls(callsWithId);
+  } catch (err: any) {
+    setError(err.message || 'שגיאה בטעינת קריאות פעילות');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   useEffect(() => {
     loadActiveCalls();
@@ -63,13 +68,14 @@ export default function VolunteerActiveCallsPage() {
             const volunteerStatus = call.volunteersStatus?.[0]?.response || 'לא זמין';
             const volunteerId = call.volunteersStatus?.[0]?.volunteerId || 0;
 
-            const mappedCall = {
-              ...call,
-              address: call.address || 'כתובת לא זמינה',
-              priority: call.priority || 'נמוך',
-              timestamp: call.createdAt || new Date().toISOString(),
-              type: call.type || 'חירום',
-            };
+         const mappedCall = {
+  ...call,
+  address: call.address || 'כתובת לא זמינה',
+  description: call.description || 'תיאור לא זמין',
+  priority: call.priority || 'נמוך',
+  timestamp: call.createdAt || new Date().toISOString(),
+  type: call.type || 'חירום',
+};
 
             return (
               <ActiveCallCard

@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useCallContext } from "../contexts/CallContext";
-import { getAssignedCalls } from "../services/calls.service";
+// החלפנו כאן את הפונקציה השגויה בפונקציה המתאימה
+import { getnotifiedAssignedCalls } from "../services/calls.service";
 import { useLocation } from "react-router-dom";
 
 const UnifiedVolunteerCallWatcher: React.FC = () => {
@@ -31,14 +32,11 @@ const UnifiedVolunteerCallWatcher: React.FC = () => {
     }
 
     console.log("🔍 Current volunteerId:", volunteerId);
-    console.log(
-      "🔍 API Path:",
-      `/Volunteer/${volunteerId}/calls/by-status/notified`
-    );
+    console.log("🔍 Using API: getnotifiedAssignedCalls");
 
     const interval = setInterval(async () => {
       try {
-        const calls = await getAssignedCalls(Number(volunteerId), "notified");
+        const calls = await getnotifiedAssignedCalls(Number(volunteerId));
         console.log("🔍 Calls fetched:", calls);
 
         if (calls && calls.length > 0) {
