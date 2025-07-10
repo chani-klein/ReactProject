@@ -160,7 +160,27 @@ export const getCallsByStatus = async (status: string): Promise<AxiosResponse<Ca
     console.error("❌ Failed to get calls by status:", error.response?.data || error.message)
     throw error
   }
+}// ...existing code...
+
+// 🔧 קבלת היסטוריית קריאות של מתנדב
+export const getVolunteerCallsHistory = async (): Promise<any[]> => {
+  try {
+    const volunteerId = getVolunteerIdFromStorage();
+    if (!volunteerId) {
+      throw new Error("Volunteer ID not found - please login again");
+    }
+
+    console.log("📜 Getting call history for volunteer:", volunteerId);
+
+    const response = await axios.get(`/VolunteersCalls/history/${volunteerId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Failed to get volunteer call history:", error.response?.data || error.message);
+    throw error;
+  }
 }
+
+// ...existing code...
 
 // 🔧 קבלת מידע על מתנדבים בקריאה
 export const getCallVolunteersInfo = async (callId: number): Promise<AxiosResponse<any>> => {

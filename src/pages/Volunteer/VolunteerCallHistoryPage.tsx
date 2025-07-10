@@ -1,22 +1,18 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import BackgroundLayout from '../../layouts/BackgroundLayout';
-import { getVolunteerDetails } from '../../services/volunteer.service';
-import { getVolunteerCallHistory } from '../../services/calls.service';
-import type { Call } from '../../types/call.types';
+import { getVolunteerCallsHistory, getVolunteerDetails } from '../../services/volunteer.service';
 import '../../style/VolunteerHistoryPage.css';
 import '../../style/emergency-styles.css';
 
-export default function HistoryPage() {
-  const [calls, setCalls] = useState<Call[]>([]);
+export default function VolunteerCallHistoryPage() {
+  const [calls, setCalls] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleGoBack = () => {
-    navigate(-1); // חזור לדף הקודם
+    navigate(-1);
   };
 
   useEffect(() => {
@@ -24,18 +20,9 @@ export default function HistoryPage() {
       setLoading(true);
       try {
         const volunteerId = await getVolunteerDetails();
-        console.log('📋 Volunteer ID:', volunteerId);
-        
         if (!volunteerId) throw new Error('מתנדב לא מזוהה');
-        
-        const res = await getVolunteerCallHistory(volunteerId);
-        console.log('📋 Raw history data:', res);
-        
-        // בדיקה אם זה array או object
-        const callsData = Array.isArray(res) ? res : res.data || res.calls || [];
-        console.log('📋 Processed calls data:', callsData);
-        
-        setCalls(callsData);
+        const res = await getVolunteerCallsHistory();
+        setCalls(Array.isArray(res) ? res : []);
       } catch (error) {
         console.error('❌ שגיאה בטעינת היסטוריית הקריאות:', error);
         alert('שגיאה בטעינת היסטוריית קריאות');
@@ -43,12 +30,10 @@ export default function HistoryPage() {
         setLoading(false);
       }
     };
-
     fetchHistory();
   }, []);
 
   const formatStatus = (status: string | null | undefined) => {
-    console.log('🔍 Formatting status:', status);
     switch (status?.toLowerCase()) {
       case 'open': 
       case 'פתוח':
@@ -60,9 +45,9 @@ export default function HistoryPage() {
       case 'closed':
       case 'נסגר':
       case 'הושלם':
+      case 'finished':
         return 'הושלמה';
       default: 
-        console.log('🔍 Unknown status:', status);
         return status || 'לא ידוע';
     }
   };
@@ -101,10 +86,7 @@ export default function HistoryPage() {
       <div className="history-wrapper">
         <div className="history-container">
           <div className="history-header">
-            <button 
-              onClick={handleGoBack}
-              className="back-button"
-            >
+            <button onClick={handleGoBack} className="back-button">
               <ArrowRight className="back-icon" />
               חזור
             </button>
@@ -124,74 +106,70 @@ export default function HistoryPage() {
             </div>
           ) : (
             <div className="calls-grid">
-              {calls.map((call, index) => {
-                console.log('🔍 Rendering call:', call);
+              {calls.map((item, index) => {
+                const call = item.call || {};
                 return (
                   <div key={call.id || index} className="call-card">
                     <div className="call-header">
                       <span className="call-number">#{call.id || index + 1}</span>
-                      <span className={`status-badge status-${call.status?.toLowerCase() || 'unknown'}`}>
-                        {formatStatus(call.status)}
+                      <span className={`status-badge status-${item.volunteerStatus?.toLowerCase() || 'unknown'}`}>
+                        {formatStatus(item.volunteerStatus)}
                       </span>
                     </div>
-                    
                     <div className="call-content">
                       <div className="call-section">
                         <h4>תיאור הקריאה</h4>
-                        <p>{call.description || call.Description || 'אין תיאור זמין'}</p>
+                        <p>{call.description || 'אין תיאור זמין'}</p>
                       </div>
-                      
                       <div className="call-details">
                         <div className="detail-item">
                           <strong>תאריך:</strong>
-                          <span>{formatDate(call.date || call.createdAt || call.timestamp)}</span>
+                          <span>{formatDate(call.date)}</span>
                         </div>
                         <div className="detail-item">
                           <strong>רמת דחיפות:</strong>
-                          <span className={`urgency-level urgency-${call.urgencyLevel || call.UrgencyLevel}`}>
-                            {formatUrgencyLevel(call.urgencyLevel || call.UrgencyLevel)}
+                          <span className={`urgency-level urgency-${call.urgencyLevel}`}>
+                            {formatUrgencyLevel(call.urgencyLevel)}
                           </span>
                         </div>
                         <div className="detail-item">
                           <strong>מיקום:</strong>
                           <span>
-                            {(call.locationX || call.LocationX) && (call.locationY || call.LocationY) 
-                              ? `(${call.locationY || call.LocationY}, ${call.locationX || call.LocationX})`
+                            {(call.locationX && call.locationY)
+                              ? `(${call.locationY}, ${call.locationX})`
                               : 'מיקום לא זמין'
                             }
                           </span>
                         </div>
                         <div className="detail-item">
                           <strong>מס' מתנדבים:</strong>
-                          <span>{call.numVolanteer || call.NumVolunteer || '---'}</span>
+                          <span>{item.goingVolunteersCount ?? '---'}</span>
                         </div>
                         <div className="detail-item">
                           <strong>נשלח לבי"ח:</strong>
-                          <span className={(call.sentToHospital || call.SentToHospital) ? 'sent-yes' : 'sent-no'}>
-                            {(call.sentToHospital || call.SentToHospital) ? '✔️ כן' : '❌ לא'}
+                          <span className={call.sentToHospital ? 'sent-yes' : 'sent-no'}>
+                            {call.sentToHospital ? '✔️ כן' : '❌ לא'}
                           </span>
                         </div>
-                        {(call.hospitalName || call.HospitalName) && (
+                        {call.hospitalName && (
                           <div className="detail-item">
                             <strong>שם בי"ח:</strong>
-                            <span>{call.hospitalName || call.HospitalName}</span>
+                            <span>{call.hospitalName}</span>
                           </div>
                         )}
                       </div>
-                      
-                      {(call.summary || call.Summary) && (
+                      {call.summary && (
                         <div className="call-section">
                           <h4>סיכום</h4>
-                          <p className="summary-text">{call.summary || call.Summary}</p>
+                          <p className="summary-text">{call.summary}</p>
                         </div>
                       )}
-                      
-                      {(call.imageUrl || call.ImageUrl || call.fileImage || call.FileImage) && (
+                      {(call.arrImage || call.fileImage) && (
                         <div className="call-section">
                           <h4>תמונה</h4>
-                          <a 
-                            href={call.imageUrl || call.ImageUrl || call.fileImage || call.FileImage} 
-                            target="_blank" 
+                          <a
+                            href={call.arrImage || call.fileImage}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="image-link"
                           >
@@ -210,17 +188,3 @@ export default function HistoryPage() {
     </BackgroundLayout>
   );
 }
-
-const thStyle: React.CSSProperties = {
-  padding: '12px',
-  textAlign: 'right',
-  fontWeight: 'bold',
-  fontSize: '0.95rem',
-  borderBottom: '2px solid #ccc',
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: '10px',
-  textAlign: 'right',
-  fontSize: '0.9rem',
-};
