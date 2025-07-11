@@ -1,11 +1,10 @@
-// CallConfirmationPage.tsx - עמוד אישור קריאה עם עיצוב מודרני
 import { useLocation, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { getCallStatus } from "../../services/calls.service";
 import { getVolunteersForCall, updateVolunteerStatus, finishVolunteerCall } from "../../services/calls.service";
-import { getAIFirstAidGuide } from "../../services/firstAid.service";
+import { getLocalFirstAidGuide } from "../../services/firstAid"; // פונקציה חדשה ל-POST /api/Ask/local
 import BackgroundLayout from "../../layouts/BackgroundLayout";
-import "../../style/emergency-styles.css"; // יבוא קובץ ה-CSS
+import "../../style/emergency-styles.css";
 
 export default function CallConfirmationPage() {
   const location = useLocation();
@@ -16,8 +15,8 @@ export default function CallConfirmationPage() {
   const [status, setStatus] = useState("נשלחה");
   const [guides, setGuides] = useState<{ title: string; description: string }[]>([]);
   const [isLoadingGuides, setIsLoadingGuides] = useState(false);
-  const [volunteers, setVolunteers] = useState<string[]>([]); // Add state for volunteers
-  const [isLoadingVolunteers, setIsLoadingVolunteers] = useState(false); // Add loading state for volunteers
+  const [volunteers, setVolunteers] = useState<string[]>([]);
+  const [isLoadingVolunteers, setIsLoadingVolunteers] = useState(false);
 
   // סטטוס הקריאה כל 3 שניות
   useEffect(() => {
@@ -35,24 +34,24 @@ export default function CallConfirmationPage() {
     return () => clearInterval(interval);
   }, [callId]);
 
-  // תמיד לקרוא ל-AI בלי קשר ל-guides קיימים
+  // הוראות עזרה ראשונה מ-POST /api/Ask/local
   useEffect(() => {
-    const fetchGuideFromAI = async () => {
+    const fetchGuideFromLocal = async () => {
       if (!description) return;
 
       setIsLoadingGuides(true);
       try {
-        // שימוש בפונקציה מהשרת
-        const aiGuide = await getAIFirstAidGuide(description);
-        setGuides([{ title: "הוראות עזרה ראשונה", description: aiGuide }]);
+        // קריאה לשרת שלך
+const localGuide = await getLocalFirstAidGuide(description);
+setGuides([{ title: "הוראות עזרה ראשונה", description: localGuide }]);
       } catch (err) {
-        console.error("שגיאה בקבלת הוראות AI", err);
+        console.error("שגיאה בקבלת הוראות עזרה ראשונה מהשרת המקומי", err);
       } finally {
         setIsLoadingGuides(false);
       }
     };
 
-    fetchGuideFromAI();
+    fetchGuideFromLocal();
   }, [description]);
 
   const fetchVolunteers = async () => {
@@ -74,51 +73,45 @@ export default function CallConfirmationPage() {
 
   const handleArrivedUpdate = async () => {
     if (status !== 'נפתח') {
-        alert('לא ניתן לעדכן ל-"הגעתי" לפני שהסטטוס הוא "נפתח".');
-        return;
+      alert('לא ניתן לעדכן ל-"הגעתי" לפני שהסטטוס הוא "נפתח".');
+      return;
     }
 
     setIsLoadingVolunteers(true);
     try {
-        console.log('🔄 Attempting to update status to arrived for call:', callId);
-        await updateVolunteerStatus(callId, 176, 'arrived'); // הוספת volunteerId
-        console.log('✅ Status updated to arrived successfully');
-        setStatus('בטיפול');
+      await updateVolunteerStatus(callId, 176, 'arrived');
+      setStatus('בטיפול');
     } catch (error) {
-        console.error('❌ Error updating status to arrived:', error);
-        alert('שגיאה בעדכון הסטטוס, נסה שוב');
+      alert('שגיאה בעדכון הסטטוס, נסה שוב');
     } finally {
-        setIsLoadingVolunteers(false);
+      setIsLoadingVolunteers(false);
     }
-};
+  };
 
-const handleCompleteCall = async (summary: { summary: string; sentToHospital: boolean; hospitalName?: string }) => {
+  const handleCompleteCall = async (summary: { summary: string; sentToHospital: boolean; hospitalName?: string }) => {
     setIsLoadingVolunteers(true);
     try {
-        console.log('🔄 Completing call with summary:', summary);
-        await finishVolunteerCall(callId, 176, summary); // הוספת volunteerId
-        console.log('✅ Call completed successfully');
-        setStatus('נסגר');
+      await finishVolunteerCall(callId, 176, summary);
+      setStatus('נסגר');
     } catch (error) {
-        console.error('❌ Error completing call:', error);
-        alert('שגיאה בסיום הקריאה, נסה שוב');
+      alert('שגיאה בסיום הקריאה, נסה שוב');
     } finally {
-        setIsLoadingVolunteers(false);
+      setIsLoadingVolunteers(false);
     }
-};
+  };
 
   const getStatusColor = (currentStatus: string) => {
     switch (currentStatus) {
       case "נשלחה":
-        return "#ef4444"; // Primary red
+        return "#ef4444";
       case "נפתח":
-        return "#f59e0b"; // Warning orange
+        return "#f59e0b";
       case "בטיפול":
-        return "#10b981"; // Success green
+        return "#10b981";
       case "נסגר":
-        return "#6b7280"; // Neutral gray
+        return "#6b7280";
       default:
-        return "#9ca3af"; // Light gray
+        return "#9ca3af";
     }
   };
 
@@ -148,7 +141,7 @@ const handleCompleteCall = async (summary: { summary: string; sentToHospital: bo
           <p>מתנדבים מוכשרים הוזעקו ויגיעו בהקדם האפשרי</p>
         </div>
 
-        {/* פרטי הקריאה עם עיצוב אדום */}
+        {/* פרטי הקריאה */}
         <div className="call-details-section">
           <h2 className="section-title">📋 פרטי הקריאה</h2>
           <div className="confirmation-card">
@@ -156,13 +149,11 @@ const handleCompleteCall = async (summary: { summary: string; sentToHospital: bo
               <div className="confirmation-icon">🆔</div>
               <h3>מידע על הקריאה</h3>
             </div>
-            
             <div className="call-info-grid">
               <div className="call-info-item">
                 <div className="call-info-label">מספר קריאה</div>
                 <div className="call-info-value">#{callId}</div>
               </div>
-              
               <div className="call-info-item">
                 <div className="call-info-label">סטטוס נוכחי</div>
                 <div className="call-info-value">
@@ -171,14 +162,12 @@ const handleCompleteCall = async (summary: { summary: string; sentToHospital: bo
                   </span>
                 </div>
               </div>
-              
               {description && (
                 <div className="call-info-item" style={{ gridColumn: '1 / -1' }}>
                   <div className="call-info-label">תיאור המצב</div>
                   <div className="call-info-value description-text">{description}</div>
                 </div>
               )}
-              
               <div className="call-info-item">
                 <div className="call-info-label">זמן יצירה</div>
                 <div className="call-info-value">{new Date().toLocaleString('he-IL')}</div>
@@ -187,7 +176,7 @@ const handleCompleteCall = async (summary: { summary: string; sentToHospital: bo
           </div>
         </div>
 
-        {/* הודעת התראה עם עיצוב אדום */}
+        {/* הודעת התראה */}
         <div className="alert-section">
           <div className="volunteers-notified">
             <div className="confirmation-icon">🚑</div>
@@ -200,7 +189,7 @@ const handleCompleteCall = async (summary: { summary: string; sentToHospital: bo
           </div>
         </div>
 
-        {/* כפתורי פעולה עם עיצוב משופר */}
+        {/* כפתורי פעולה */}
         <div className="emergency-actions">
           <h3>⚡ פעולות זמינות</h3>
           <div className="action-buttons-grid">
@@ -208,12 +197,10 @@ const handleCompleteCall = async (summary: { summary: string; sentToHospital: bo
               <span className="btn-icon">📋</span>
               <span className="btn-text">הקריאות שלי</span>
             </button>
-            
             <button className="action-btn secondary" onClick={fetchVolunteers}>
               <span className="btn-icon">👥</span>
               <span className="btn-text">רשימת מתנדבים</span>
             </button>
-            
             <button className="action-btn neutral" onClick={() => navigate("/")}>
               <span className="btn-icon">🏠</span>
               <span className="btn-text">חזור לבית</span>
@@ -225,7 +212,6 @@ const handleCompleteCall = async (summary: { summary: string; sentToHospital: bo
         {(guides.length > 0 || isLoadingGuides) && (
           <div className="guides-section">
             <h2 className="section-title">🩺 הוראות עזרה ראשונה</h2>
-            
             {isLoadingGuides ? (
               <div className="loading-card">
                 <div className="loading-spinner"></div>
@@ -276,7 +262,7 @@ const handleCompleteCall = async (summary: { summary: string; sentToHospital: bo
           </div>
         ) : null}
 
-        {/* הודעת זהירות עם עיצוב אדום */}
+        {/* הודעת זהירות */}
         <div className="warning-section">
           <div className="emergency-alert">
             <div className="warning-icon">⚠️</div>
@@ -293,4 +279,3 @@ const handleCompleteCall = async (summary: { summary: string; sentToHospital: bo
     </BackgroundLayout>
   );
 }
-
