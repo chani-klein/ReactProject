@@ -1657,3 +1657,21 @@
     padding: 0.75rem;
   }
 }
+
+/* הודעה שהקריאה הסתיימה */
+.finished-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-green-light);
+  border-radius: 8px;
+  color: var(--success-green-dark);
+  font-weight: 500;
+  margin-top: 10px;
+}
+
+.finished-message svg {
+  color: var(--success-green);
+}

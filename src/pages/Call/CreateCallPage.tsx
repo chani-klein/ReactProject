@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import BackgroundLayout from "../../layouts/BackgroundLayout";
-import { createCall, getFirstAidSuggestions } from "../../services/calls.service";
+import { createCall, getFirstAidSuggestions, assignNearbyVolunteers } from "../../services/calls.service";
 import "../../style/emergency-styles.css";
 
 export default function CreateCallPage() {
@@ -61,6 +61,17 @@ export default function CreateCallPage() {
       // נוודא שה-id מגיע מהשרת
       const callId = (response.data as any).id || (response.data as any).callId;
       if (!callId) throw new Error("לא התקבל מזהה קריאה מהשרת");
+      
+      // שיוך מתנדבים קרובים לקריאה
+      try {
+        console.log("👥 Assigning volunteers to regular call:", callId);
+        await assignNearbyVolunteers(callId);
+        console.log("✅ Volunteers assigned to regular call successfully");
+      } catch (assignError) {
+        console.error("❌ Failed to assign volunteers to regular call:", assignError);
+        // אל תעצור את התהליך - הקריאה נוצרה בהצלחה
+      }
+      
       let guides = [];
       if (formData.description) {
         const res = await getFirstAidSuggestions(formData.description);

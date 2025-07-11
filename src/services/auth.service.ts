@@ -24,11 +24,7 @@ export const refreshTokenIfVolunteer = async () => {
     console.error("❌ לא הצלחנו לרענן טוקן למתנדב", err);
     removeSession();
   }
-};
-
-export const checkUserExists = (gmail: string) => {
-  return axios.get(`/User/exists?gmail=${encodeURIComponent(gmail)}`);
-};
+};;
 // 🔧 הרשמת משתמש רגיל
 export const registerUser = async (user: any) => {
   try {
@@ -184,3 +180,32 @@ export const registerUser = async (user: any) => {
 // export const getUserRole = (): string | null => {
 //   return localStorage.getItem("userRole")
 // }
+
+// 🔧 בדיקת קיום מתנדב לפי אימייל
+export const checkVolunteerExists = async (gmail: string): Promise<{ exists: boolean }> => {
+  try {
+    console.log("🔍 בדיקת קיום מתנדב עבור:", gmail);
+    const response = await axios.get("/Volunteer/exists", {
+      params: { gmail }
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ שגיאה בבדיקת קיום מתנדב:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// בדיקה אם משתמש קיים במערכת
+export const checkUserExists = async (email: string) => {
+  try {
+    console.log(`Checking if user exists: ${email}`)
+    const response = await axios.get("/User/exists", {
+      params: { email }
+    })
+    console.log('User exists check response:', response.data)
+    return response.data
+  } catch (error) {
+    console.error('Error checking user existence:', error)
+    throw error
+  }
+}

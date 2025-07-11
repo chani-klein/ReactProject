@@ -209,11 +209,11 @@ const handleCompleteCall = async (summary: { summary: string; sentToHospital: bo
               <span className="btn-text">הקריאות שלי</span>
             </button>
             
-            <button className="action-btn secondary" onClick={fetchVolunteers}>
+            {/* <button className="action-btn secondary" onClick={fetchVolunteers}>
               <span className="btn-icon">👥</span>
               <span className="btn-text">רשימת מתנדבים</span>
             </button>
-            
+             */}
             <button className="action-btn neutral" onClick={() => navigate("/")}>
               <span className="btn-icon">🏠</span>
               <span className="btn-text">חזור לבית</span>

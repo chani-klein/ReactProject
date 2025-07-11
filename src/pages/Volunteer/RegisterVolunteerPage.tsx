@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react"
 import type React from "react"
 import {registerVolunteer} from "../../services/volunteer.service";
+import { checkVolunteerExists } from "../../services/auth.service";
 import { useNavigate } from "react-router-dom"
 import { setSession } from "../../auth/auth.utils"
 import { Paths } from "../../routes/paths"
 import type { VolunteerRegisterData } from "../../types"
 import { Heart, Mail, Lock, User, Phone, MapPin, Building } from "lucide-react"
 import BackgroundLayout from "../../layouts/BackgroundLayout"
-import axios from "../../services/axios"
 import "../../style/auth.css"
 
 interface ValidationErrors {
@@ -87,9 +87,9 @@ export default function RegisterVolunteerPage() {
     e.preventDefault()
     setIsSubmitting(true)
     try {
-      // בדיקה אם המתנדב כבר קיים
-      const existsResponse = await axios.get(`/Volunteer/exists?email=${encodeURIComponent(volunteer.Gmail)}`)
-      if (existsResponse.data.exists) {
+      // בדיקה אם המתנדב כבר קיים באמצעות הפעולה החדשה
+      const existsResponse = await checkVolunteerExists(volunteer.Gmail)
+      if (existsResponse.exists) {
         alert("❗ המתנדב כבר קיים במערכת. אנא התחבר או השתמש באימייל אחר.")
         setIsSubmitting(false)
         return

@@ -46,6 +46,7 @@ const ActiveCallCard: React.FC<ActiveCallCardProps> = ({ volunteerCall, onStatus
   const [isLoading, setIsLoading] = useState(false);
   const [showCloseCallPage, setShowCloseCallPage] = useState(false);
   const [currentVolunteerStatus, setCurrentVolunteerStatus] = useState(volunteerCall.volunteerStatus);
+  const [actualGoingCount, setActualGoingCount] = useState(volunteerCall.goingVolunteersCount);
 
   const { call, callsId, volunteerId, responseTime, goingVolunteersCount } = volunteerCall;
 
@@ -55,6 +56,8 @@ const ActiveCallCard: React.FC<ActiveCallCardProps> = ({ volunteerCall, onStatus
     try {
       await updateVolunteerStatus(callsId, 'arrived');
       setCurrentVolunteerStatus('arrived');
+      // קריאה מיידית לעדכון הדף הראשי כדי לקבל נתונים חדשים מהשרת
+      onStatusUpdate(); 
     } catch (error) {
       console.error('Error updating volunteer status:', error);
     } finally {
@@ -66,6 +69,24 @@ const ActiveCallCard: React.FC<ActiveCallCardProps> = ({ volunteerCall, onStatus
   const handleCloseCallPage = () => {
     setShowCloseCallPage(false);
   };
+
+  // פונקציה לעדכון מספר המתנדבים בדרך
+  const updateGoingVolunteersCount = async () => {
+    try {
+      // כאן נוכל לעשות קריאה לשרת לקבל את המספר המעודכן
+      // לעת עתה נעדכן בהתאם לשינוי הסטטוס המקומי
+      if (currentVolunteerStatus === 'Going' || currentVolunteerStatus === 'בדרך') {
+        setActualGoingCount(prev => Math.max(1, prev)); // וודא שיש לפחות 1
+      }
+    } catch (error) {
+      console.error('Error updating going volunteers count:', error);
+    }
+  };
+
+  // עדכון מספר המתנדבים כשהסטטוס משתנה
+  React.useEffect(() => {
+    updateGoingVolunteersCount();
+  }, [currentVolunteerStatus]);
 
   return (
     <>
@@ -164,28 +185,41 @@ const ActiveCallCard: React.FC<ActiveCallCardProps> = ({ volunteerCall, onStatus
 
         {/* Action Buttons */}
         <div className="action-section">
-          {currentVolunteerStatus === 'going' && (
-            <button
-              onClick={handleArrivedClick}
-              disabled={isLoading}
-              className={`action-btn arrived-btn ${isLoading ? 'loading' : ''}`}
-            >
-              <CheckCircle className="h-5 w-5" />
-              <span>{isLoading ? 'מעדכן...' : 'הגעתי לזירה'}</span>
-            </button>
-          )}
-          
-          {currentVolunteerStatus === 'arrived' && (
-            <button
-              onClick={() => setShowCloseCallPage(true)}
-              className="action-btn close-btn"
-            >
-              <AlertCircle className="h-5 w-5" />
-              <span>סגור קריאה</span>
-            </button>
+          {/* בדיקה שהקריאה לא FINISHED */}
+          {call.status !== 'Finished' && call.status !== 'finished' && call.status !== 'FINISHED' && (
+            <>
+              {currentVolunteerStatus === 'going' && (
+                <button
+                  onClick={handleArrivedClick}
+                  disabled={isLoading}
+                  className={`action-btn arrived-btn ${isLoading ? 'loading' : ''}`}
+                >
+                  <CheckCircle className="h-5 w-5" />
+                  <span>{isLoading ? 'מעדכן...' : 'הגעתי לזירה'}</span>
+                </button>
+              )}
+              
+              {currentVolunteerStatus === 'arrived' && (
+                <button
+                  onClick={() => setShowCloseCallPage(true)}
+                  className="action-btn close-btn"
+                >
+                  <AlertCircle className="h-5 w-5" />
+                  <span>סגור קריאה</span>
+                </button>
+              )}
+            </>
           )}
 
-          {!currentVolunteerStatus && (
+          {/* הודעה שהקריאה הסתיימה */}
+          {(call.status === 'Finished' || call.status === 'finished' || call.status === 'FINISHED') && (
+            <div className="finished-message">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              <span>הקריאה הושלמה בהצלחה</span>
+            </div>
+          )}
+
+          {!currentVolunteerStatus && call.status !== 'Finished' && call.status !== 'finished' && call.status !== 'FINISHED' && (
             <div className="info-message">
               <User className="h-5 w-5" />
               <span>ממתין לעדכון סטטוס</span>

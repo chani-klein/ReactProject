@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ActiveCallCard from '../../components/ActiveCallCard';
 import BackgroundLayout from '../../layouts/BackgroundLayout';
 import LoadingContainer from "../../components/LoadingContainer";
@@ -64,9 +65,22 @@ const mockActiveCalls: VolunteerCall[] = [
 ];
 
 export default function VolunteerActiveCallsPage() {
+  const navigate = useNavigate();
   const [activeCalls, setActiveCalls] = useState<VolunteerCall[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // פונקציה לקביעת דרגת חומרה לפי רמת דחיפות
+  const getPriorityByUrgency = (urgencyLevel: number): string => {
+    switch (urgencyLevel) {
+      case 1: return 'נמוך';
+      case 2: return 'בינוני';
+      case 3: return 'גבוה';
+      case 4: 
+      case 5: return 'קריטי';
+      default: return 'בינוני';
+    }
+  };
 
   const loadActiveCalls = async () => {
     setIsLoading(true);
@@ -85,6 +99,12 @@ export default function VolunteerActiveCallsPage() {
 
       const callsWithMappedData = res.data.map((call: any) => {
         console.log('🔍 Processing call:', call);
+        console.log('🔍 Going volunteers count options:', {
+          goingVolunteersCount: call.goingVolunteersCount,
+          numVolunteer: call.numVolunteer,
+          callNumVolunteer: call.call?.numVolunteer,
+          callNumVolunteerCap: call.call?.NumVolunteer
+        });
         
         // חילוץ כתובת מכל השדות האפשריים
         const address = call.call?.address || 
@@ -111,13 +131,15 @@ export default function VolunteerActiveCallsPage() {
             fileImage: call.call?.fileImage || call.fileImage || undefined,
             description: call.call?.description || call.description || call.call?.Description || call.Description || 'תיאור לא זמין',
             urgencyLevel: call.call?.urgencyLevel || call.urgencyLevel || call.call?.UrgencyLevel || call.UrgencyLevel || 1,
-            status: call.call?.status || call.status || 'Open',
+            status: call.call?.status || call.status || call.call?.Status || call.Status || 
+                    (call.volunteerStatus === 'arrived' ? 'בטיפול' : 
+                     call.volunteerStatus === 'going' ? 'מתנדב בדרך' : 'פתוח'),
             summary: call.call?.summary || call.summary || call.call?.Summary || call.Summary || '',
             sentToHospital: call.call?.sentToHospital || call.sentToHospital || call.call?.SentToHospital || call.SentToHospital || false,
             hospitalName: call.call?.hospitalName || call.hospitalName || call.call?.HospitalName || call.HospitalName || '',
             userId: call.call?.userId || call.userId || 0,
             address: address,
-            priority: call.call?.priority || call.priority || 'בינוני',
+            priority: call.call?.priority || call.priority || getPriorityByUrgency(call.call?.urgencyLevel || call.urgencyLevel || 1),
             timestamp: call.call?.timestamp || call.timestamp || call.call?.createdAt || call.createdAt || new Date().toISOString(),
             type: call.call?.type || call.type || 'חירום',
           },
@@ -126,24 +148,10 @@ export default function VolunteerActiveCallsPage() {
       });
 
       console.log('✅ Processed calls:', callsWithMappedData);
-      
-      // אם אין נתונים אמיתיים, השתמש בנתוני דמה
-      if (callsWithMappedData.length === 0) {
-        console.log('📋 No real data found, using mock data for demonstration');
-        setActiveCalls(mockActiveCalls);
-      } else {
-        setActiveCalls(callsWithMappedData);
-      }
+      setActiveCalls(callsWithMappedData);
     } catch (err: any) {
       console.error('❌ Error loading active calls:', err);
-      
-      // בדיקה אם השגיאה היא 404 או שאין נתונים
-      if (err.response?.status === 404) {
-        console.log('📭 No active calls found (404), using mock data');
-        setActiveCalls(mockActiveCalls);
-      } else {
-        setError(err.message || 'שגיאה בטעינת קריאות פעילות');
-      }
+      setError(err.message || 'שגיאה בטעינת קריאות פעילות');
     } finally {
       setIsLoading(false);
     }
@@ -177,7 +185,15 @@ export default function VolunteerActiveCallsPage() {
     <BackgroundLayout>
       <div className="active-calls-page">
         <div className="page-header">
-          <h1 className="page-title">🚨 קריאות פעילות</h1>
+          <div className="header-top">
+            <button 
+              className="back-btn"
+              onClick={() => navigate(-1)}
+            >
+              ← חזרה
+            </button>
+            <h1 className="page-title">🚨 קריאות פעילות</h1>
+          </div>
           <p className="page-subtitle">מעקב אחר כל הקריאות הפעילות במערכת</p>
           <div className="header-actions">
             <button 
@@ -208,7 +224,9 @@ export default function VolunteerActiveCallsPage() {
             <div className="stat-label">קריאות פעילות</div>
           </div>
           <div className="stat-card">
-            <div className="stat-number">{activeCalls.filter(call => call.volunteerStatus === 'going').length}</div>
+            <div className="stat-number">{activeCalls.filter(call => 
+              call.volunteerStatus === 'going'
+            ).length}</div>
             <div className="stat-label">מתנדבים בדרך</div>
           </div>
           <div className="stat-card">

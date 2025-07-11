@@ -101,7 +101,8 @@
 .card-icon {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #ff6b7a, #ff4757);
+
+  /* background: linear-gradient(135deg, #ff6b7a, #ff4757); */
   border-radius: 15px;
   display: flex;
   align-items: center;
@@ -141,6 +142,42 @@
   color: rgba(255, 255, 255, 0.8);
   font-size: 1rem;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* כפתור התחברות בפינה */
+.login-corner {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+}
+
+.corner-login-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.corner-login-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.corner-login-btn:active {
+  transform: translateY(0);
 }
 
 /* Responsive Design */

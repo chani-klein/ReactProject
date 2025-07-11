@@ -8,6 +8,17 @@ export default function HomePage() {
 
   return (
     <BackgroundLayout>
+      {/* כפתור התחברות קטן בפינה */}
+      <div className="login-corner">
+        <button 
+          className="corner-login-btn"
+          onClick={() => navigate("/login")}
+        >
+          <LogIn size={20} />
+          התחברות
+        </button>
+      </div>
+
       <div className="hero-container">
         <div className="hero-content">
           <div className="hero-icon">
@@ -31,14 +42,6 @@ export default function HomePage() {
               </div>
               <h3>הרשמת מתנדב</h3>
               <p>הצטרף לצוות המצילים</p>
-            </div>
-            
-            <div className="action-card login" onClick={() => navigate("/login")}>
-              <div className="card-icon">
-                <LogIn size={32} />
-              </div>
-              <h3>התחברות</h3>
-              <p>כניסה למשתמשים קיימים</p>
             </div>
           </div>
           

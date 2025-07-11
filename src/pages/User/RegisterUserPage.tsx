@@ -1,13 +1,12 @@
 import type React from "react"
 import { useState } from "react"
-import { registerUser } from "../../services/auth.service"
+import { registerUser, checkUserExists } from "../../services/auth.service"
 import { useNavigate } from "react-router-dom"
 import { setSession } from "../../auth/auth.utils"
 import { Paths } from "../../routes/paths"
 import type { UserRegisterData } from "../../types"
 import { UserPlus, Mail, Lock, User, Phone } from "lucide-react"
 import BackgroundLayout from "../../layouts/BackgroundLayout"
-import axios from "../../services/axios"
 import "../../style/auth.css"
 
 interface ValidationErrors {
@@ -115,9 +114,9 @@ export default function RegisterUserPage() {
     setIsSubmitting(true)
 
     try {
-      // בדיקה אם המשתמש כבר קיים
-      const existsResponse = await axios.get(`/User/exists?email=${encodeURIComponent(user.Gmail)}`)
-      if (existsResponse.data.exists) {
+      // בדיקה אם המשתמש כבר קיים באמצעות הפעולה החדשה
+      const existsResponse = await checkUserExists(user.Gmail)
+      if (existsResponse.exists) {
         alert("❗ המשתמש כבר קיים במערכת. אנא התחבר או השתמש באימייל אחר.")
         setIsSubmitting(false)
         return
