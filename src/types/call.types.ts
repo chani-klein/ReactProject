@@ -1,18 +1,4 @@
-// ✅ הגדרות בסיסיות ללא circular imports
-export interface VolunteerCall {
-  id: number
-  callsId: number
-  volunteerId: number
-  volunteerStatus?: "notified" | "going" | "cant" | "arrived" | "finished"
-  responseTime?: string
-  // volunteer יוגדר בנפרד כדי למנוע circular imports
-}
-export interface CompleteCallDto {
-  summary: string;
-  sentToHospital: boolean;
-  hospitalName?: string;
-}
-
+// ✅ הגדרות בסיסיות של קריאות חירום
 
 export interface Call {
   id: number;
@@ -28,26 +14,34 @@ export interface Call {
   sentToHospital?: boolean | null;
   hospitalName?: string | null;
   userId: number;
-  address: string; // Updated to mandatory
-  priority: string; // Updated to mandatory
-  timestamp: string; // Updated to mandatory
-  type: string; // Updated to mandatory
-  numVolanteer?: number; // Added property
+  address?: string; // Made optional since it might not always be available
+  priority?: string; // Made optional
+  timestamp?: string; // Made optional
+  type?: string; // Made optional
+  numVolunteer?: number; // Added property
   imageUrl?: string; // Added property
-  
-  // Alternative field names that might come from the server (C# convention)
-  Description?: string;
-  UrgencyLevel?: number;
-  LocationX?: number;
-  LocationY?: number;
-  NumVolunteer?: number;
-  SentToHospital?: boolean | null;
-  HospitalName?: string | null;
-  Summary?: string;
-  ImageUrl?: string;
-  FileImage?: string;
-  createdAt?: string;
-  [key: string]: any; // Allow additional properties from server
+}
+
+export interface VolunteerCall {
+  id: number;
+  callsId: number;
+  volunteerId: number;
+  volunteerStatus?: "notified" | "going" | "cant" | "arrived" | "finished";
+  responseTime?: string;
+  call: Call;
+  goingVolunteersCount?: number;
+}
+
+export interface CompleteCallDto {
+  summary: string;
+  sentToHospital: boolean;
+  hospitalName?: string;
+}
+
+export interface CallStatus {
+  Open: "Open";
+  InProgress: "InProgress";
+  Closed: "Closed";
 }
 
 export interface VolunteerStatus {

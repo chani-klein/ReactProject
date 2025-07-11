@@ -1510,72 +1510,92 @@
   }
 }
 
-/* Address with Map Icon */
-.address-with-map {
+/* Map Buttons Container */
+.map-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-right: auto;
+}
+
+/* Map Button */
+.map-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-}
-
-.address-with-map .detail-value {
-  flex: 1;
-}
-
-/* Map Icon Button - קטן ועדין */
-.map-icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: var(--primary-red);
-  color: var(--text-white);
+  padding: 0.75rem 1rem;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
-  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+  box-shadow: var(--shadow-light);
+  white-space: nowrap;
+  color: var(--text-white);
+}
+
+.map-btn.google-maps {
+  background: linear-gradient(135deg, #4285F4, #34A853);
+}
+
+.map-btn.google-maps:hover {
+  background: linear-gradient(135deg, #3367D6, #2E8B43);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.map-btn.waze {
+  background: linear-gradient(135deg, #33CCFF, #0099CC);
+}
+
+.map-btn.waze:hover {
+  background: linear-gradient(135deg, #00B8E6, #0088BB);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.map-btn:active {
+  transform: translateY(0);
+}
+
+.map-btn svg {
   flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
 }
 
-.map-icon-btn:hover {
-  background: var(--emergency-red);
-  transform: scale(1.1);
-  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+/* Map button styles */
+.map-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--gradient-red);
+  color: var(--text-white);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+  box-shadow: var(--shadow-light);
+  margin-left: auto;
+  white-space: nowrap;
 }
 
-.map-icon-btn:active {
-  transform: scale(1.05);
+.map-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
+  background: linear-gradient(135deg, #ff4757, #ff3742);
 }
 
-.map-icon-btn svg {
+.map-button:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-light);
+}
+
+.map-button svg {
   width: 16px;
   height: 16px;
-  transition: var(--transition);
-}
-
-.map-icon-btn:hover svg {
-  transform: scale(1.1);
-}
-
-/* Pulse effect for better visibility */
-.map-icon-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(0);
-  transition: transform 0.3s ease;
-}
-
-.map-icon-btn:hover::before {
-  transform: scale(1);
+  flex-shrink: 0;
 }
 
 /* Update detail-row for better button placement */
@@ -1608,26 +1628,32 @@
     align-self: center;
   }
   
-  /* Responsive for map icon button */
-  .map-icon-btn {
-    width: 32px;
-    height: 32px;
+  .map-button {
+    margin-left: 0;
+    margin-top: 0.75rem;
+    align-self: center;
+    width: fit-content;
   }
   
-  .map-icon-btn svg {
-    width: 18px;
-    height: 18px;
+  .map-buttons {
+    align-self: center;
+    margin-top: 0.75rem;
+    margin-right: 0;
+    justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
-  .address-with-map {
+  .map-buttons {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
+    width: 100%;
+    gap: 0.5rem;
   }
   
-  .map-icon-btn {
-    align-self: flex-end;
+  .map-btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.875rem;
+    padding: 0.75rem;
   }
 }

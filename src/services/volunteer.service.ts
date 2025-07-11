@@ -124,10 +124,49 @@ export const getActiveCalls = async (): Promise<AxiosResponse<Call[]>> => {
 
     console.log("🔄 Getting active calls for volunteer:", volunteerId)
 
-    const response = await axios.get(`/VolunteersCalls/active/${volunteerId}`)
+    // נסה קודם עם ה-endpoint הספציפי למתנדב
+    let response;
+    try {
+      response = await axios.get(`/VolunteersCalls/active/${volunteerId}`)
+      console.log("✅ Active calls response:", response.data)
+    } catch (error: any) {
+      console.warn("⚠️ Specific endpoint failed, trying general endpoint:", error.response?.status)
+      
+      // אם זה לא עובד, נסה endpoint כללי
+      try {
+        response = await axios.get('/VolunteersCalls/active')
+        console.log("✅ General active calls response:", response.data)
+      } catch (generalError: any) {
+        console.warn("⚠️ General endpoint also failed, trying calls endpoint:", generalError.response?.status)
+        
+        // אם גם זה לא עובד, נסה endpoint של calls כללי
+        response = await axios.get('/calls/active')
+        console.log("✅ Calls endpoint response:", response.data)
+      }
+    }
+
+    // אם התגובה ריקה, החזר מערך ריק במקום שגיאה
+    if (!response.data || response.data.length === 0) {
+      console.log("📭 No active calls found")
+      return { ...response, data: [] }
+    }
+
     return response
   } catch (error: any) {
     console.error("❌ Failed to get active calls:", error.response?.data || error.message)
+    
+    // אם זה שגיאת 404, החזר מערך ריק במקום לזרוק שגיאה
+    if (error.response?.status === 404) {
+      console.log("📭 No active calls found (404)")
+      return { 
+        data: [], 
+        status: 200, 
+        statusText: 'OK', 
+        headers: {}, 
+        config: { headers: {} }
+      } as any
+    }
+    
     throw error
   }
 }

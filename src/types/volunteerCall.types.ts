@@ -3,8 +3,8 @@ import type { Call } from './call.types';
 export interface VolunteerCall {
   callsId: number;
   volunteerId: number;
-  volunteerStatus: string;
-  responseTime: string;
+  volunteerStatus?: "notified" | "going" | "cant" | "arrived" | "finished" | "pending";
+  responseTime?: string;
   call: Call;
   goingVolunteersCount: number;
 }

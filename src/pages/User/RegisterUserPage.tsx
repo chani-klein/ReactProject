@@ -1,13 +1,14 @@
-"use client"
 import type React from "react"
 import { useState } from "react"
 import { registerUser } from "../../services/auth.service"
-import BackgroundLayout from "../../layouts/BackgroundLayout"
 import { useNavigate } from "react-router-dom"
 import { setSession } from "../../auth/auth.utils"
 import { Paths } from "../../routes/paths"
 import type { UserRegisterData } from "../../types"
-import "../register.css"
+import { UserPlus, Mail, Lock, User, Phone } from "lucide-react"
+import BackgroundLayout from "../../layouts/BackgroundLayout"
+import axios from "../../services/axios"
+import "../../style/auth.css"
 
 interface ValidationErrors {
   [key: string]: string
@@ -114,6 +115,14 @@ export default function RegisterUserPage() {
     setIsSubmitting(true)
 
     try {
+      // בדיקה אם המשתמש כבר קיים
+      const existsResponse = await axios.get(`/User/exists?email=${encodeURIComponent(user.Gmail)}`)
+      if (existsResponse.data.exists) {
+        alert("❗ המשתמש כבר קיים במערכת. אנא התחבר או השתמש באימייל אחר.")
+        setIsSubmitting(false)
+        return
+      }
+
       const res = await registerUser(user)
       const { token } = res.data
 
@@ -138,73 +147,124 @@ export default function RegisterUserPage() {
 
   return (
     <BackgroundLayout>
-      <div className="content-wrapper">
-        <div className="form-layout">
-          <h2 className="form-title">טופס הרשמה למשתמשים</h2>
-          <form onSubmit={handleSubmit}>
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <div className="auth-icon">
+              <UserPlus size={28} />
+            </div>
+            <h1 className="auth-title">הרשמת משתמש</h1>
+            <p className="auth-subtitle">הצטרף למערכת החירום שלנו</p>
+          </div>
+
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="form-row">
             <div className="form-group">
+              <label className="form-label">שם פרטי</label>
               <input
+                className={`form-input ${errors.firstName ? 'error' : ''}`}
                 name="firstName"
-                placeholder="שם פרטי"
+                placeholder="הכנס שם פרטי"
                 value={user.firstName}
                 onChange={handleChange}
-                className={errors.firstName ? "error" : user.firstName ? "success" : ""}
               />
-              {errors.firstName && <div className="error-message show">{errors.firstName}</div>}
+              {errors.firstName && (
+                <div className="error-message">
+                  <User size={14} />
+                  {errors.firstName}
+                </div>
+              )}
             </div>
 
             <div className="form-group">
+              <label className="form-label">שם משפחה</label>
               <input
+                className={`form-input ${errors.lastName ? 'error' : ''}`}
                 name="lastName"
-                placeholder="שם משפחה"
+                placeholder="הכנס שם משפחה"
                 value={user.lastName}
                 onChange={handleChange}
-                className={errors.lastName ? "error" : user.lastName ? "success" : ""}
               />
-              {errors.lastName && <div className="error-message show">{errors.lastName}</div>}
+              {errors.lastName && (
+                <div className="error-message">
+                  <User size={14} />
+                  {errors.lastName}
+                </div>
+              )}
             </div>
+          </div>
 
-            <div className="form-group">
-              <input
-                name="phoneNumber"
-                placeholder="טלפון (לדוגמה: 050-1234567)"
-                value={user.phoneNumber}
-                onChange={handleChange}
-                className={errors.phoneNumber ? "error" : user.phoneNumber ? "success" : ""}
-              />
-              {errors.phoneNumber && <div className="error-message show">{errors.phoneNumber}</div>}
-            </div>
+          <div className="form-group">
+            <label className="form-label">מספר טלפון</label>
+            <input
+              className={`form-input ${errors.phoneNumber ? 'error' : ''}`}
+              name="phoneNumber"
+              placeholder="050-1234567"
+              value={user.phoneNumber}
+              onChange={handleChange}
+            />
+            {errors.phoneNumber && (
+              <div className="error-message">
+                <Phone size={14} />
+                {errors.phoneNumber}
+              </div>
+            )}
+          </div>
 
-            <div className="form-group">
-              <input
-                name="Gmail" // 🔧 שינוי מ-gmail ל-email
-                type="email"
-                placeholder="אימייל"
-                value={user.Gmail}
-                onChange={handleChange}
-                className={errors.email ? "error" : user.Gmail ? "success" : ""}
-              />
-              {errors.email && <div className="error-message show">{errors.email}</div>}
-            </div>
+          <div className="form-group">
+            <label className="form-label">כתובת אימייל</label>
+            <input
+              className={`form-input ${errors.email ? 'error' : ''}`}
+              name="Gmail"
+              type="email"
+              placeholder="example@gmail.com"
+              value={user.Gmail}
+              onChange={handleChange}
+            />
+            {errors.email && (
+              <div className="error-message">
+                <Mail size={14} />
+                {errors.email}
+              </div>
+            )}
+          </div>
 
-            <div className="form-group">
-              <input
-                name="password"
-                type="password"
-                placeholder="סיסמה (לפחות 8 תווים)"
-                value={user.password}
-                onChange={handleChange}
-                className={errors.password ? "error" : user.password ? "success" : ""}
-              />
-              {errors.password && <div className="error-message show">{errors.password}</div>}
-            </div>
+          <div className="form-group">
+            <label className="form-label">סיסמה</label>
+            <input
+              className={`form-input ${errors.password ? 'error' : ''}`}
+              name="password"
+              type="password"
+              placeholder="הכנס סיסמה חזקה"
+              value={user.password}
+              onChange={handleChange}
+            />
+            {errors.password && (
+              <div className="error-message">
+                <Lock size={14} />
+                {errors.password}
+              </div>
+            )}
+          </div>
 
-            <button type="submit" className="submit-button" disabled={isSubmitting}>
-              {isSubmitting ? "מבצע הרשמה..." : "הירשם עכשיו"}
-            </button>
-          </form>
+          <button 
+            type="submit" 
+            className="submit-button"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <div className="loading-spinner" />
+            ) : (
+              'הרשמה'
+            )}
+          </button>
+        </form>
+
+        <div className="auth-footer">
+          <p>כבר יש לך חשבון? <a href="/login" className="auth-link">התחבר כאן</a></p>
         </div>
       </div>
+    </div>
     </BackgroundLayout>
   )
 }
