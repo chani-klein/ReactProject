@@ -1,6 +1,5 @@
 // routes/Router.jsx
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/Volunteer/LoginPage";
 import RegisterUserPage from "../pages/User/RegisterUserPage";
 import RegisterVolunteerPage from "../pages/Volunteer/RegisterVolunteerPage";
@@ -15,7 +14,9 @@ import HistoryPage from "../pages/Volunteer/VolunteerCallHistoryPage";
 import AuthRedirector from "../components/AuthRedirector";
 import VolunteerMenu from "../pages/Volunteer/volunteerPage";
 import MyCallsPage from "../pages/Call/MyCallsPage";
-import UnifiedVolunteerCallWatcher from "../components/GlobalVolunteerCallWatcher";
+import CallWatcher from "../components/CallWatcher";
+import NotificationDebugPanel from "../components/NotificationDebugPanel";
+import PageLayout from "../layouts/PageLayout";
 
 const router = createBrowserRouter([
   {
@@ -60,27 +61,27 @@ const router = createBrowserRouter([
   },
   {
     path: "/volunteerPage",
-    element: <><UnifiedVolunteerCallWatcher /><VolunteerPage /></>,
+    element: <PageLayout><VolunteerPage /><NotificationDebugPanel /></PageLayout>,
   },
   {
     path: "/VolunteerListPage",
-    element: <><UnifiedVolunteerCallWatcher /><VolunteerListPage /></>,
+    element: <PageLayout><VolunteerListPage /><NotificationDebugPanel /></PageLayout>,
   },
   {
     path: "/volunteer/update-details",
-    element: <><UnifiedVolunteerCallWatcher /><VolunteerUpdatePage /></>,
+    element: <PageLayout><VolunteerUpdatePage /><NotificationDebugPanel /></PageLayout>,
   },
   {
     path: "/volunteer/active-calls",
-    element: <><UnifiedVolunteerCallWatcher /><ActiveCallsPage /></>,
+    element: <PageLayout><ActiveCallsPage /><NotificationDebugPanel /></PageLayout>,
   },
   {
     path: "/volunteer/history",
-    element: <><UnifiedVolunteerCallWatcher /><HistoryPage /></>,
+    element: <PageLayout><HistoryPage /><NotificationDebugPanel /></PageLayout>,
   },
   {
     path: "/volunteer/menu",
-    element: <><UnifiedVolunteerCallWatcher /><VolunteerMenu /></>,
+    element: <PageLayout><VolunteerMenu /><NotificationDebugPanel /></PageLayout>,
   },
   {
     path: "*",
@@ -88,7 +89,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/my-calls",
-    element: <><UnifiedVolunteerCallWatcher /><MyCallsPage /></>,
+    element: <PageLayout><MyCallsPage /><NotificationDebugPanel /></PageLayout>,
   },
 ]);
 

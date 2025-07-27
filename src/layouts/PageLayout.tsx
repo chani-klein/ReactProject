@@ -1,7 +1,8 @@
 // src/layouts/PageLayout.tsx
 import { ReactNode } from "react";
 import "./PageLayout.css";
-import GlobalVolunteerCallWatcher from "../components/GlobalVolunteerCallWatcher";
+import SignalRVolunteerCallWatcher from "../components/SignalRVolunteerCallWatcher";
+import CallPopupModal from "../components/CallPopupModal";
 
 type Props = {
   children: ReactNode;
@@ -10,7 +11,8 @@ type Props = {
 export default function PageLayout({ children }: Props) {
   return (
     <div className="page-layout">
-      <GlobalVolunteerCallWatcher />
+      <SignalRVolunteerCallWatcher />
+      <CallPopupModal />
       <div className="page-container">
         {children}
       </div>

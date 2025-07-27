@@ -1,5 +1,4 @@
 // App.jsx
-import CallPopupModal from "./components/CallPopupModal";
 import { CallProvider } from "./contexts/CallContext";
 import AppRouter from "./routes/Router"; // הנתיב החדש שלך
 
@@ -8,7 +7,6 @@ function App() {
   return (
    
       <CallProvider>
-        <CallPopupModal />
         <AppRouter />
       </CallProvider>
    

@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import BackgroundLayout from "../../layouts/BackgroundLayout"
-// import AlertModal from "../../components/AlertModal"
 import {  getVolunteerDetails,} from "../../services/volunteer.service"
 import { getActiveVolunteerCalls, updateVolunteerStatus, finishVolunteerCall } from "../../services/calls.service"
+import { NOTIFICATION_CONFIG } from "../../config/notifications.config"
+import { signalRService } from "../../services/signalR.service"
+import { useCallContext } from "../../contexts/CallContext"
 export default function VolunteerMenu() {
   const [modalCall, setModalCall] = useState<any | null>(null)
   const [coords, setCoords] = useState<{ x: number; y: number } | null>(null)
@@ -13,6 +15,7 @@ export default function VolunteerMenu() {
   const [volunteerId, setVolunteerId] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
+  const { setPopupCall } = useCallContext()
 
   // חילוץ id מהטוקן JWT
   const extractVolunteerIdFromToken = (token: string): number | null => {
@@ -214,8 +217,13 @@ export default function VolunteerMenu() {
     initializeApp()
   }, [navigate])
 
-  // בדיקת קריאות פעילות כל 2 שניות
+  // בדיקת קריאות פעילות כל 2 שניות - DISABLED להשתמש ב-SignalR
   useEffect(() => {
+    // השבתת polling בגלל שימוש ב-SignalR
+    console.log('🔇 VolunteerPage polling disabled - using SignalR instead');
+    return;
+
+    /* DISABLED POLLING CODE - Using SignalR instead
     if (!coords || !volunteerId || isLoading) return
 
     const interval = setInterval(async () => {
@@ -258,6 +266,7 @@ export default function VolunteerMenu() {
     }, 2000)
 
     return () => clearInterval(interval)
+    */
   }, [coords, volunteerId, modalCall, isLoading])
 
   if (isLoading) {
@@ -304,7 +313,84 @@ export default function VolunteerMenu() {
         </div>
 
         <div style={{ textAlign: "center", marginTop: "2rem" }}>
-          {/* כפתור debug הוסר לפי בקשת המשתמש */}
+          {/* כפתור debug לבדיקת SignalR */}
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button 
+              onClick={async () => {
+                console.log('🔍 בדיקת SignalR...');
+                const info = signalRService.getConnectionInfo();
+                console.log('📊 מידע חיבור:', info);
+                
+                if (signalRService.isConnected()) {
+                  await signalRService.testConnection();
+                  alert('SignalR חיבור פעיל ✅');
+                } else {
+                  alert('SignalR לא מחובר ❌');
+                }
+              }}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              🔍 בדוק SignalR
+            </button>
+
+            <button 
+              onClick={async () => {
+                console.log('🧪 יצירת קריאת חירום אמיתית למבחן...');
+                
+                try {
+                  // יצירת קריאה אמיתית במערכת
+                  const testCall = {
+                    description: "בדיקה - קריאת חירום למבחן",
+                    locationX: 32.0853,
+                    locationY: 34.7818,
+                    urgencyLevel: 3,
+                    callerName: "מבדק מערכת"
+                  };
+
+                  // יצירת קריאה דרך ה-API
+                  const response = await fetch('https://localhost:7219/api/Calls', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(testCall)
+                  });
+
+                  if (response.ok) {
+                    const newCall = await response.json();
+                    console.log('✅ קריאה אמיתית נוצרה:', newCall);
+                    alert('✅ קריאת מבחן נוצרה בהצלחה! המתנדבים יקבלו התראה.');
+                  } else {
+                    console.error('❌ שגיאה ביצירת קריאה:', await response.text());
+                    alert('❌ שגיאה ביצירת קריאת מבחן');
+                  }
+                } catch (error) {
+                  console.error('❌ שגיאה ביצירת קריאה:', error);
+                  alert('❌ שגיאה ביצירת קריאת מבחן');
+                }
+              }}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              🧪 צור קריאת מבחן
+            </button>
+          </div>
         </div>
       </div>
 

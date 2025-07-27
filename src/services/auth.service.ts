@@ -195,17 +195,3 @@ export const checkVolunteerExists = async (gmail: string): Promise<{ exists: boo
   }
 };
 
-// בדיקה אם משתמש קיים במערכת
-export const checkUserExists = async (email: string) => {
-  try {
-    console.log(`Checking if user exists: ${email}`)
-    const response = await axios.get("/User/exists", {
-      params: { email }
-    })
-    console.log('User exists check response:', response.data)
-    return response.data
-  } catch (error) {
-    console.error('Error checking user existence:', error)
-    throw error
-  }
-}

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useContext, createContext } from 'react';
+import React, { useState, useContext, createContext } from 'react';
 import { Call } from '../types/call.types'
 
 interface CallContextType {

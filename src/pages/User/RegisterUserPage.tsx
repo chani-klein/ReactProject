@@ -1,6 +1,6 @@
 import type React from "react"
 import { useState } from "react"
-import { registerUser, checkUserExists } from "../../services/auth.service"
+import { registerUser } from "../../services/auth.service"
 import { useNavigate } from "react-router-dom"
 import { setSession } from "../../auth/auth.utils"
 import { Paths } from "../../routes/paths"
@@ -113,14 +113,7 @@ export default function RegisterUserPage() {
 
     setIsSubmitting(true)
 
-    try {
-      // בדיקה אם המשתמש כבר קיים באמצעות הפעולה החדשה
-      const existsResponse = await checkUserExists(user.Gmail)
-      if (existsResponse.exists) {
-        alert("❗ המשתמש כבר קיים במערכת. אנא התחבר או השתמש באימייל אחר.")
-        setIsSubmitting(false)
-        return
-      }
+    try { 
 
       const res = await registerUser(user)
       const { token } = res.data

@@ -2,12 +2,19 @@ import React, { useEffect } from 'react';
 import { useCallContext } from '../contexts/CallContext';
 import { getAssignedCalls } from '../services/calls.service';
 import { useLocation } from 'react-router-dom';
+import { NOTIFICATION_CONFIG } from '../notifications.config';
 
 const UnifiedVolunteerCallWatcher: React.FC = () => {
   const { setPopupCall } = useCallContext();
   const location = useLocation();
 
   useEffect(() => {
+    // בדיקה אם polling מופעל בכלל
+    if (!NOTIFICATION_CONFIG.POLLING.ENABLED) {
+      console.warn('🔇 Polling is disabled due to server issues. Check NOTIFICATION_CONFIG.');
+      return;
+    }
+
     const allowedPaths = [
       '/volunteerPage',
       '/VolunteerListPage',
