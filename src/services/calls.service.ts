@@ -153,12 +153,20 @@ export const getFirstAidSuggestions = async (description: string) => {
   if (!description || typeof description !== "string") return [];
 
   try {
+    console.log('🩺 Sending first aid request with description:', description);
     const response = await axios.post(
-      `${API_BASE}/FirstAid/ai`,
-      { description },
-      { headers: getAuthHeaders() }
+      `${API_BASE}/Ask/first-aid`,
+      description, // שליחת string ישירות
+      { 
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        }
+      }
     );
+    console.log('✅ First aid response:', response.data);
 
+    // טיפול נכון בתשובה
     if (Array.isArray(response.data)) {
       return response.data;
     } else if (response.data.guides && Array.isArray(response.data.guides)) {
@@ -167,6 +175,9 @@ export const getFirstAidSuggestions = async (description: string) => {
       return response.data.instructions;
     } else if (typeof response.data === "string") {
       return [response.data];
+    } else if (typeof response.data === "object") {
+      // אם זה אובייקט, נמיר אותו ל-string
+      return [JSON.stringify(response.data, null, 2)];
     } else {
       return [];
     }

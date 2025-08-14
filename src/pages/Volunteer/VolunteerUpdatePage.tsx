@@ -51,8 +51,7 @@ export default function UpdateVolunteerPage() {
           address: res.data.address || "",
           Gmail: res.data.Gmail || res.data.gmail || "",
           specialization: res.data.specialization || "",
-          password: "",
-      
+          password: res.data.password || "", // מציג את הסיסמה הקיימת כברירת מחדל
         });
       })
       .catch(() => alert("❌ שגיאה בטעינת פרטים"));

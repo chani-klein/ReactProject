@@ -1,43 +1,80 @@
-# Getting Started with Create React App
+# מערכת חירום למתנדבים - React + Node/NET
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+מערכת זו מאפשרת ניהול קריאות חירום, מתנדבים, משתמשים, עזרה ראשונה ועוד.
 
-## Available Scripts
+## תכונות עיקריות
+- **הרשמת מתנדבים ומשתמשים**
+- **התחברות ואימות משתמשים**
+- **יצירת קריאת חירום**
+- **הצגת סטטוס קריאה ועדכון סטטוס מתנדב**
+- **רשימת מתנדבים מוקצים לקריאה**
+- **הוראות עזרה ראשונה אוטומטיות**
+- **עדכון פרטי מתנדב**
+- **היסטוריית קריאות**
+- **התראות, ניווט אוטומטי, טיפול בשגיאות**
 
-In the project directory, you can run:
+## מבנה הפרויקט
+```
+ReactProject/
+├── public/                # קבצים סטטיים (תמונות, סאונדים, favicon)
+├── src/
+│   ├── App.tsx            # רכיב ראשי
+│   ├── components/        # רכיבי UI
+│   ├── pages/             # דפי מערכת (הרשמה, התחברות, קריאות, מתנדבים)
+│   ├── services/          # שירותי API (קריאות, מתנדבים, עזרה ראשונה)
+│   ├── auth/              # ניהול session ואימות
+│   ├── contexts/          # Contexts גלובליים
+│   ├── hooks/             # Hooks מותאמים אישית
+│   ├── layouts/           # Layouts עיצוביים
+│   ├── routes/            # ניתוב בין דפים
+│   ├── style/             # קבצי CSS
+│   ├── types/             # טיפוסים (TypeScript)
+│   └── Utils/             # פונקציות עזר
+├── package.json           # תלותים והגדרות npm
+├── tsconfig.json          # הגדרות TypeScript
+└── README.md              # מדריך זה
+```
 
-### `npm start`
+## התקנה והרצה
+1. התקנת תלויות:
+   ```bash
+   npm install
+   ```
+2. הרצת פיתוח:
+   ```bash
+   npm start
+   ```
+3. בניית פרויקט:
+   ```bash
+   npm run build
+   ```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## קבצים חשובים
+- `src/pages/RegisterVolunteerPage.tsx` - הרשמת מתנדב
+- `src/pages/Volunteer/LoginPage.tsx` - התחברות מתנדב
+- `src/pages/Volunteer/VolunteerUpdatePage.tsx` - עדכון פרטי מתנדב
+- `src/pages/Call/CallConfirmationPage.tsx` - אישור קריאה
+- `src/services/volunteer.service.ts` - שירות מתנדבים
+- `src/services/calls.service.ts` - שירות קריאות
+- `src/services/firstAid.ts` - שירות עזרה ראשונה
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## טכנולוגיות
+- React, TypeScript
+- Axios (קריאות API)
+- React Router (ניווט)
+- CSS מותאם
+- .NET/Node.js (שרת)
 
-### `npm test`
+## הערות
+- יש להגדיר את כתובת השרת בקבצי השירותים לפי הסביבה.
+- התמונות והסאונדים נמצאים ב־`public/images` ו־`public/sounds`.
+- יש להפעיל את השרת במקביל ל־client.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## תרומה
+כל תרומה/הצעה/דיווח באג תתקבל בברכה!
 
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+---
+בהצלחה!
 
 ## Learn More
 

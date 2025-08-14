@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { getCallStatus } from "../../services/calls.service";
 import { getVolunteersForCall, updateVolunteerStatus, finishVolunteerCall } from "../../services/calls.service";
-import { getLocalFirstAidGuide } from "../../services/firstAid"; // פונקציה חדשה ל-POST /api/Ask/local
+import { getLocalFirstAidGuide } from "../../services/firstAid"; // פונקציה ל-POST /api/Ask/first-aid
 import BackgroundLayout from "../../layouts/BackgroundLayout";
 import "../../style/emergency-styles.css";
 
@@ -27,14 +27,18 @@ export default function CallConfirmationPage() {
         const response = await getCallStatus(callId);
         setStatus(response.data.status);
       } catch (err) {
-        console.error("שגיאה בקבלת סטטוס", err);
+        if (typeof err === "object" && err !== null && "response" in err && (err as any).response?.status === 401) {
+          navigate("/login");
+        } else {
+          console.error("שגיאה בקבלת סטטוס", err);
+        }
       }
     }, 3000);
 
     return () => clearInterval(interval);
   }, [callId]);
 
-  // הוראות עזרה ראשונה מ-POST /api/Ask/local
+  // הוראות עזרה ראשונה מ-POST /api/Ask/first-aid
   useEffect(() => {
     const fetchGuideFromLocal = async () => {
       if (!description) return;
@@ -65,7 +69,11 @@ setGuides([{ title: "הוראות עזרה ראשונה", description: localGuid
       const response = await getVolunteersForCall(callId);
       setVolunteers(response.data);
     } catch (err) {
-      console.error("שגיאה בקבלת רשימת מתנדבים", err);
+      if (typeof err === "object" && err !== null && "response" in err && (err as any).response?.status === 401) {
+        navigate("/login");
+      } else {
+        console.error("שגיאה בקבלת רשימת מתנדבים", err);
+      }
     } finally {
       setIsLoadingVolunteers(false);
     }
@@ -198,12 +206,11 @@ setGuides([{ title: "הוראות עזרה ראשונה", description: localGuid
               <span className="btn-text">הקריאות שלי</span>
             </button>
             
-            {/* <button className="action-btn secondary" onClick={fetchVolunteers}>
             <button className="action-btn secondary" onClick={fetchVolunteers}>
               <span className="btn-icon">👥</span>
               <span className="btn-text">רשימת מתנדבים</span>
             </button>
-             */}
+            
             <button className="action-btn neutral" onClick={() => navigate("/")}>
               <span className="btn-icon">🏠</span>
               <span className="btn-text">חזור לבית</span>
